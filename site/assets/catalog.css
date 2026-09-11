@@ -117,7 +117,7 @@
 .rc-soon-card:hover { transform: translateY(-3px); border-color: var(--rc-blue); }
 .rc-soon-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #1c1e28; }
 .rc-soon-body { padding: 0.75rem 0.85rem 0.9rem; display: flex; flex-direction: column; flex: 1; }
-.rc-soon-title { font-size: 0.92rem; font-weight: 700; line-height: 1.25; margin: 0 0 0.3rem; }
+.rc-soon-title { font-size: 0.92rem; font-weight: 700; line-height: 1.25; margin: 0 0 0.3rem; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .rc-soon-date { font-size: 0.72rem; color: var(--rc-text-3); margin: 0.3rem 0 0; }
 .rc-soon-prices { display: flex; gap: 0.4rem; font-size: 0.72rem; color: var(--rc-text-2); }
 .rc-soon-prices b { color: var(--rc-text); }
@@ -155,7 +155,7 @@
 .rc-card-body { padding: 0.75rem 0.8rem 0.85rem; display: flex; flex-direction: column; flex: 1; }
 .rc-card-top { display: flex; flex-direction: column; gap: 0.3rem; }
 .rc-card-bottom { margin-top: auto; padding-top: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; }
-.rc-card-title { font-size: 0.88rem; font-weight: 700; line-height: 1.25; margin: 0; }
+.rc-card-title { font-size: 0.88rem; font-weight: 700; line-height: 1.25; margin: 0; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .rc-card-genre { font-size: 0.68rem; color: var(--rc-text-3); text-transform: uppercase; letter-spacing: .04em; }
 .rc-plat-badge {
   display: inline-flex; align-items: stretch; border-radius: 999px; overflow: hidden;
