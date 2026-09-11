@@ -199,7 +199,11 @@ margin: 0rem !important;
 <div id="rcComingSoonSection">
   <div class="rc-section-label"><span class="rc-eyebrow">Coming Soon</span><h3>Upcoming &amp; Pre-Reservation</h3></div>
   <p class="rc-section-sub">Reserve early before Trophy slots fill up.</p>
-  <div class="rc-strip" id="rcComingSoonTrack"></div>
+  <div class="rc-strip-wrap">
+    <div class="rc-strip" id="rcComingSoonTrack"></div>
+    <button type="button" class="rc-strip-nav rc-strip-nav-prev" id="rcSoonPrev" aria-label="Scroll left"><svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+    <button type="button" class="rc-strip-nav rc-strip-nav-next" id="rcSoonNext" aria-label="Scroll right"><svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+  </div>
 </div>
 
 <div class="rc-section-label"><span class="rc-eyebrow">Game Catalog</span><h3>Available Now</h3></div>

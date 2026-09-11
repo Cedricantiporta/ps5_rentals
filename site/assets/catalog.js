@@ -11,7 +11,9 @@
   var ICON_PATHS = {
     trophy: '<path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"/><path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"/><path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"/>',
     user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
-    'gamepad-2': '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>'
+    'gamepad-2': '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>',
+    'chevron-left': '<path d="m15 18-6-6 6-6"/>',
+    'chevron-right': '<path d="m9 18 6-6-6-6"/>'
   };
   function icon(name, cls) {
     var paths = ICON_PATHS[name] || '';
@@ -19,6 +21,17 @@
   }
 
   function peso(n) { return (n === null || n === undefined || isNaN(n)) ? '—' : '₱' + Number(n).toLocaleString('en-PH'); }
+
+  function platformBadge(platform) {
+    var parts = String(platform || 'PS5').split('|').map(function (s) { return s.trim(); }).filter(Boolean);
+    if (parts.length < 2) {
+      return '<span class="rc-plat-badge"><span class="rc-plat-seg rc-plat-dark rc-plat-solo">' + parts[0] + '</span></span>';
+    }
+    return '<span class="rc-plat-badge">' +
+      '<span class="rc-plat-seg rc-plat-dark">' + parts[0] + '</span>' +
+      '<span class="rc-plat-seg rc-plat-light">' + parts[1] + '</span>' +
+    '</span>';
+  }
 
   function normalize(s) {
     return String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -111,12 +124,16 @@
             '<img class="rc-soon-cover" loading="lazy" src="' + (g.cover || '') + '" alt="' + g.title + '"/>' +
           '</div>' +
           '<div class="rc-soon-body">' +
-            '<p class="rc-soon-title">' + g.title + '</p>' +
-            '<p class="rc-platform">' + (g.platform || 'PS5') + '</p>' +
-            '<p class="rc-soon-date">Release: ' + releaseDateLabel(g.releaseDate) + '</p>' +
-            '<div class="rc-soon-prices"><span>Wk <b>' + peso(g.trophy.weekly) + '</b></span><span>Mo <b>' + peso(g.trophy.monthly) + '</b></span></div>' +
-            '<div class="rc-slot-row"><span class="rc-slot-label">Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
-            '<div class="rc-slot-row"><span class="rc-slot-label">Non-Trophy</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
+            '<div class="rc-card-top">' +
+              '<p class="rc-soon-title">' + g.title + '</p>' +
+              platformBadge(g.platform) +
+              '<p class="rc-soon-date">Release: ' + releaseDateLabel(g.releaseDate) + '</p>' +
+            '</div>' +
+            '<div class="rc-card-bottom">' +
+              '<div class="rc-slot-row"><span class="rc-slot-label">Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
+              '<div class="rc-slot-row"><span class="rc-slot-label">Non-Trophy</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
+              '<div class="rc-soon-prices"><span>Wk <b>' + peso(g.trophy.weekly) + '</b></span><span>Mo <b>' + peso(g.trophy.monthly) + '</b></span></div>' +
+            '</div>' +
           '</div>' +
         '</div>';
     }).join('');
@@ -151,7 +168,7 @@
             '<div class="rc-card-top">' +
               '<p class="rc-card-title">' + g.title + '</p>' +
               '<p class="rc-card-genre">' + (g.genre[0] || '') + '</p>' +
-              '<p class="rc-platform">' + (g.platform || 'PS5') + '</p>' +
+              platformBadge(g.platform) +
             '</div>' +
             '<div class="rc-card-bottom">' +
               '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('trophy') + ' Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
@@ -217,7 +234,7 @@
 
     body.innerHTML = '' +
       '<h2 class="rc-modal-title">' + g.title + '</h2>' +
-      '<p class="rc-platform">' + (g.platform || 'PS5') + '</p>' +
+      platformBadge(g.platform) +
       '<p class="rc-modal-genre">' + g.genre.join(' · ') + (g.releaseDate ? ' · Release ' + releaseDateLabel(g.releaseDate) : '') + '</p>' +
       '<div class="rc-plan-tabs">' +
         '<button type="button" class="rc-plan-tab" data-plan="weekly">Weekly</button>' +
@@ -226,11 +243,11 @@
       '<div class="rc-slot-options">' +
         '<button type="button" class="rc-slot-option' + (!trophyOn ? ' is-disabled' : '') + '" data-slot="trophy">' +
           '<div class="rc-slot-option-top"><span class="rc-slot-option-name">' + icon('trophy') + ' Trophy</span></div>' +
-          '<div class="rc-slot-option-price">Own account · ' + peso(priceOf('trophy')) + '</div>' +
+          '<div class="rc-slot-option-price">Own account · <span class="rc-slot-option-amount">' + peso(priceOf('trophy')) + '</span></div>' +
         '</button>' +
         '<button type="button" class="rc-slot-option' + (!nontrophyOn ? ' is-disabled' : '') + '" data-slot="nontrophy">' +
           '<div class="rc-slot-option-top"><span class="rc-slot-option-name">' + icon('user') + ' Non-Trophy</span></div>' +
-          '<div class="rc-slot-option-price">Shared account · ' + peso(priceOf('nontrophy')) + '</div>' +
+          '<div class="rc-slot-option-price">Shared account · <span class="rc-slot-option-amount">' + peso(priceOf('nontrophy')) + '</span></div>' +
         '</button>' +
       '</div>' +
       '<a class="rc-modal-cta" id="rcModalCta" href="' + MESSENGER_URL + '" target="_blank" rel="noopener">' +
@@ -278,6 +295,18 @@
     });
     document.getElementById('rcModalClose').addEventListener('click', closeModal);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+
+    var track = document.getElementById('rcComingSoonTrack');
+    var prevBtn = document.getElementById('rcSoonPrev');
+    var nextBtn = document.getElementById('rcSoonNext');
+    if (track && prevBtn && nextBtn) {
+      var scrollByAmount = function (dir) {
+        var cardWidth = track.firstElementChild ? track.firstElementChild.getBoundingClientRect().width + 16 : 220;
+        track.scrollBy({ left: dir * cardWidth * 2, behavior: 'smooth' });
+      };
+      prevBtn.addEventListener('click', function () { scrollByAmount(-1); });
+      nextBtn.addEventListener('click', function () { scrollByAmount(1); });
+    }
   }
 
   function wireNavSolidOnScroll() {
