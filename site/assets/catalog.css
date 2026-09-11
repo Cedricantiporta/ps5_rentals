@@ -25,23 +25,20 @@
 .rc-icon { width: 1em; height: 1em; display: inline-block; vertical-align: -0.15em; stroke: currentColor; }
 .rc-icon-lg { width: 1.4em; height: 1.4em; }
 
-/* the site's own "Rent A Game" nav button look (.button_left): near-black
-   navy gradient pill with a thin white edge. Reused here for every
-   selected/active control and CTA button so they match the rest of the site. */
+/* solid PlayStation blue, no border -- the site's buttons/selected states
+   all share this look. */
 .rc-frame-btn,
-.rc-select,
 .rc-chip.is-active,
 .rc-plan-tab.is-active,
 .rc-slot-option.is-active,
 .rc-modal-cta {
-  background-color: #0a0a0a;
-  background-image: linear-gradient(#000, #151581a6);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: var(--rc-blue);
+  border: none;
   color: #fff;
 }
 .rc-frame-btn:hover,
 .rc-modal-cta:hover {
-  background-image: linear-gradient(#000, #1d1da3b0);
+  filter: brightness(1.1);
 }
 
 /* toolbar */

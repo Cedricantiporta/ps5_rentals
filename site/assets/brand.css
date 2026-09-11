@@ -1,0 +1,28 @@
+/* June Digitals brand pass. Loaded after the base Webflow stylesheet, so these
+   rules override it: pure black backgrounds everywhere, solid PS-blue buttons
+   (no border/gradient), permanently solid navbar, footer fading to solid blue. */
+
+:root {
+  --grey--grey-900: #000;
+  --grey--grey-800: #000;
+  --_colors-2---bg-primary: #000;
+}
+
+.navbar { background-color: #000 !important; }
+
+.button_left,
+.button_left:where(.w-variant-16339642-0577-1bb6-ab84-e46e09c4ed4d) {
+  background-image: none !important;
+  background-color: var(--base--blue) !important;
+  border: none !important;
+}
+
+.button.is-secondary {
+  background-color: var(--base--blue) !important;
+  border: none !important;
+  color: #fff !important;
+}
+
+.footer {
+  background: linear-gradient(180deg, #000 0%, #000 20%, #0a1f4d 55%, #123b8f 80%, var(--base--blue) 100%);
+}
