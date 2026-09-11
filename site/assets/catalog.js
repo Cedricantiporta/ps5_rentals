@@ -25,11 +25,11 @@
   function platformBadge(platform) {
     var parts = String(platform || 'PS5').split('|').map(function (s) { return s.trim(); }).filter(Boolean);
     if (parts.length < 2) {
-      return '<span class="rc-plat-badge"><span class="rc-plat-seg rc-plat-dark rc-plat-solo">' + parts[0] + '</span></span>';
+      return '<span class="rc-plat-badge"><span class="rc-plat-seg rc-plat-primary rc-plat-solo">' + parts[0] + '</span></span>';
     }
     return '<span class="rc-plat-badge">' +
-      '<span class="rc-plat-seg rc-plat-dark">' + parts[0] + '</span>' +
-      '<span class="rc-plat-seg rc-plat-light">' + parts[1] + '</span>' +
+      '<span class="rc-plat-seg rc-plat-primary">' + parts[0] + '</span>' +
+      '<span class="rc-plat-seg rc-plat-secondary">' + parts[1] + '</span>' +
     '</span>';
   }
 
@@ -107,6 +107,25 @@
     return t.content.firstElementChild;
   }
 
+  function updateStripEdges() {
+    var wrap = document.querySelector('.rc-strip-wrap');
+    var track = document.getElementById('rcComingSoonTrack');
+    if (!wrap || !track) return;
+    var maxScroll = track.scrollWidth - track.clientWidth;
+    // the track has its own left/right padding (for the circular nav buttons), and
+    // scroll-snap rests there rather than at an exact 0 -- so use a generous edge buffer
+    var EDGE_BUFFER = 48;
+    var atStart = track.scrollLeft <= EDGE_BUFFER;
+    var atEnd = track.scrollLeft >= maxScroll - EDGE_BUFFER;
+    wrap.classList.toggle('can-scroll-left', !atStart && maxScroll > 0);
+    wrap.classList.toggle('can-scroll-right', !atEnd && maxScroll > 0);
+    var leftFade = atStart ? '0px' : '44px';
+    var rightFade = atEnd ? '0px' : '60px';
+    var mask = 'linear-gradient(to right, transparent 0, black ' + leftFade + ', black calc(100% - ' + rightFade + '), transparent 100%)';
+    track.style.maskImage = mask;
+    track.style.webkitMaskImage = mask;
+  }
+
   function renderComingSoon() {
     var track = document.getElementById('rcComingSoonTrack');
     var section = document.getElementById('rcComingSoonSection');
@@ -140,6 +159,8 @@
     Array.prototype.forEach.call(track.children, function (card) {
       card.addEventListener('click', function () { openModal(card.getAttribute('data-slug')); });
     });
+    track.scrollLeft = 0;
+    updateStripEdges();
   }
 
   function renderGrid() {
@@ -306,6 +327,8 @@
       };
       prevBtn.addEventListener('click', function () { scrollByAmount(-1); });
       nextBtn.addEventListener('click', function () { scrollByAmount(1); });
+      track.addEventListener('scroll', updateStripEdges, { passive: true });
+      window.addEventListener('resize', updateStripEdges);
     }
   }
 
