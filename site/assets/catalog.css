@@ -25,6 +25,24 @@
 .rc-icon { width: 1em; height: 1em; display: inline-block; vertical-align: -0.15em; stroke: currentColor; }
 .rc-icon-lg { width: 1.4em; height: 1.4em; }
 
+/* the site's own "Rent A Game" nav button look (.button_left): near-black
+   navy gradient pill with a thin white edge. Reused here for every
+   selected/active control and CTA button so they match the rest of the site. */
+.rc-frame-btn,
+.rc-chip.is-active,
+.rc-plan-tab.is-active,
+.rc-slot-option.is-active,
+.rc-modal-cta {
+  background-color: #0a0a0a;
+  background-image: linear-gradient(#000, #151581a6);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  color: #fff;
+}
+.rc-frame-btn:hover,
+.rc-modal-cta:hover {
+  background-image: linear-gradient(#000, #1d1da3b0);
+}
+
 /* toolbar */
 .rc-toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 1.25rem; }
 .rc-search { position: relative; flex: 1 1 260px; min-width: 220px; }
@@ -54,8 +72,8 @@
   background: transparent; color: var(--rc-text-2); font-size: 0.8rem; font-weight: 700;
   cursor: pointer; transition: all .15s; letter-spacing: .01em; white-space: nowrap;
 }
-.rc-chip:hover { color: var(--rc-text); background: var(--rc-panel-2); }
-.rc-chip.is-active { background: var(--rc-blue); color: #fff; box-shadow: 0 4px 14px -4px var(--rc-blue-glow); }
+.rc-chip:hover:not(.is-active) { color: var(--rc-text); background: var(--rc-panel-2); }
+.rc-chip.is-active { box-shadow: 0 4px 14px -4px rgba(0,0,0,.5); }
 
 .rc-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .rc-count { color: var(--rc-text-2); font-size: 0.88rem; }
@@ -174,14 +192,14 @@
   flex: 1; padding: 0.6rem; border-radius: 0.7rem; border: 1px solid var(--rc-border-2); background: var(--rc-panel);
   color: var(--rc-text-2); font-weight: 700; font-size: 0.82rem; cursor: pointer; text-align: center;
 }
-.rc-plan-tab.is-active { border-color: var(--rc-blue); color: #fff; background: var(--rc-blue); box-shadow: 0 4px 14px -4px var(--rc-blue-glow); }
+.rc-plan-tab.is-active { box-shadow: 0 4px 14px -4px rgba(0,0,0,.5); }
 
 .rc-slot-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.1rem; }
 .rc-slot-option {
   border: 1px solid var(--rc-border-2); border-radius: 0.8rem; padding: 0.7rem 0.75rem; background: var(--rc-panel);
   cursor: pointer; text-align: left;
 }
-.rc-slot-option.is-active { border-color: var(--rc-blue); box-shadow: 0 0 0 3px var(--rc-blue-glow); }
+.rc-slot-option.is-active { box-shadow: 0 4px 14px -4px rgba(0,0,0,.5); }
 .rc-slot-option.is-disabled { opacity: .45; cursor: not-allowed; }
 .rc-slot-option-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.3rem; }
 .rc-slot-option-name { display: flex; align-items: center; gap: 0.35rem; font-weight: 700; font-size: 0.85rem; }
@@ -189,11 +207,10 @@
 
 .rc-modal-cta {
   display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%;
-  padding: 0.9rem; border-radius: 0.8rem; background: var(--rc-blue); color: #fff; font-weight: 800;
-  font-size: 0.9rem; text-transform: uppercase; letter-spacing: .04em; border: none; cursor: pointer;
+  padding: 0.9rem; border-radius: 0.8rem; font-weight: 800;
+  font-size: 0.9rem; text-transform: uppercase; letter-spacing: .04em; cursor: pointer;
   text-decoration: none;
 }
-.rc-modal-cta:hover { filter: brightness(1.08); }
 .rc-modal-note { font-size: 0.72rem; color: var(--rc-text-3); text-align: center; margin-top: 0.7rem; line-height: 1.4; }
 
 /* the site nav is transparent by design (meant to sit over a hero image); once the
