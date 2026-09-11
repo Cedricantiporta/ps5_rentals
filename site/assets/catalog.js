@@ -148,14 +148,18 @@
             '<img class="rc-card-cover" loading="lazy" src="' + (g.cover || '') + '" alt="' + g.title + '"/>' +
           '</div>' +
           '<div class="rc-card-body">' +
-            '<p class="rc-card-title">' + g.title + '</p>' +
-            '<p class="rc-card-genre">' + (g.genre[0] || '') + '</p>' +
-            '<p class="rc-platform">' + (g.platform || 'PS5') + '</p>' +
-            '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('trophy') + ' Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
-            '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('user') + ' Non-Trophy</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
-            '<div class="rc-price-row">' +
-              '<div class="rc-price-box"><span class="rc-price-label">Weekly</span><span class="rc-price-value">' + peso(g.trophy.weekly) + '</span></div>' +
-              '<div class="rc-price-box"><span class="rc-price-label">Monthly</span><span class="rc-price-value">' + peso(g.trophy.monthly) + '</span></div>' +
+            '<div class="rc-card-top">' +
+              '<p class="rc-card-title">' + g.title + '</p>' +
+              '<p class="rc-card-genre">' + (g.genre[0] || '') + '</p>' +
+              '<p class="rc-platform">' + (g.platform || 'PS5') + '</p>' +
+            '</div>' +
+            '<div class="rc-card-bottom">' +
+              '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('trophy') + ' Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
+              '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('user') + ' Non-Trophy</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
+              '<div class="rc-price-row">' +
+                '<div class="rc-price-box"><span class="rc-price-label">Weekly</span><span class="rc-price-value">' + peso(g.trophy.weekly) + '</span></div>' +
+                '<div class="rc-price-box"><span class="rc-price-label">Monthly</span><span class="rc-price-value">' + peso(g.trophy.monthly) + '</span></div>' +
+              '</div>' +
             '</div>' +
           '</div>' +
         '</div>';

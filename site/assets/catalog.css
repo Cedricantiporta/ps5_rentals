@@ -29,6 +29,7 @@
    navy gradient pill with a thin white edge. Reused here for every
    selected/active control and CTA button so they match the rest of the site. */
 .rc-frame-btn,
+.rc-select,
 .rc-chip.is-active,
 .rc-plan-tab.is-active,
 .rc-slot-option.is-active,
@@ -56,12 +57,12 @@
 .rc-search input:focus { border-color: var(--rc-blue); box-shadow: 0 0 0 3px var(--rc-blue-glow); }
 
 .rc-select-wrap { position: relative; display: inline-flex; align-items: center; }
-.rc-select-wrap .rc-icon { position: absolute; right: 0.85rem; pointer-events: none; color: var(--rc-text-3); }
+.rc-select-wrap .rc-icon { position: absolute; right: 0.85rem; pointer-events: none; color: #fff; }
 .rc-select {
   appearance: none; padding: 0.7rem 2.3rem 0.7rem 1rem; border-radius: 999px;
-  border: 1px solid var(--rc-border-2); background: var(--rc-panel); color: var(--rc-text);
-  font-size: 0.88rem; cursor: pointer;
+  font-size: 0.88rem; cursor: pointer; font-weight: 700;
 }
+.rc-select:hover { background-image: linear-gradient(#000, #1d1da3b0); }
 
 .rc-chips {
   display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem; padding: 0.35rem;
@@ -135,7 +136,9 @@
 .rc-card:hover { transform: translateY(-4px); border-color: var(--rc-blue); box-shadow: 0 12px 28px -12px var(--rc-blue-glow); }
 .rc-card-cover-wrap { position: relative; }
 .rc-card-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #1c1e28; }
-.rc-card-body { padding: 0.75rem 0.8rem 0.85rem; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+.rc-card-body { padding: 0.75rem 0.8rem 0.85rem; display: flex; flex-direction: column; flex: 1; }
+.rc-card-top { display: flex; flex-direction: column; gap: 0.3rem; }
+.rc-card-bottom { margin-top: auto; padding-top: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; }
 .rc-card-title { font-size: 0.88rem; font-weight: 700; line-height: 1.25; margin: 0; }
 .rc-card-genre { font-size: 0.68rem; color: var(--rc-text-3); text-transform: uppercase; letter-spacing: .04em; }
 .rc-platform { font-family: Playstation, Arial, sans-serif; font-size: 0.72rem; color: var(--rc-text-2); letter-spacing: .02em; }
@@ -151,7 +154,7 @@
 .rc-status-priority .rc-dot { background: var(--rc-purple); } .rc-status-priority { color: var(--rc-purple); }
 .rc-status-closed .rc-dot { background: var(--rc-text-3); } .rc-status-closed { color: var(--rc-text-3); }
 
-.rc-price-row { display: flex; gap: 0.4rem; margin-top: auto; padding-top: 0.4rem; border-top: 1px solid var(--rc-border); }
+.rc-price-row { display: flex; gap: 0.4rem; padding-top: 0.4rem; border-top: 1px solid var(--rc-border); }
 .rc-price-box { flex: 1; text-align: center; padding: 0.35rem 0.2rem; border-radius: 0.5rem; background: var(--rc-panel-2); }
 .rc-price-box .rc-price-label { display: block; font-size: 0.55rem; color: var(--rc-text-3); text-transform: uppercase; letter-spacing: .05em; }
 .rc-price-box .rc-price-value { font-size: 0.82rem; font-weight: 800; color: var(--rc-text); }
