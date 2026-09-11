@@ -211,22 +211,25 @@ margin: 0rem !important;
 
 <div class="rc-toolbar">
   <div class="rc-search">
-    <svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+    <button type="button" class="rc-search-icon" tabindex="-1" aria-hidden="true"><svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg></button>
     <input id="rcSearch" type="text" placeholder="Search games or aliases..."/>
   </div>
-  <div class="rc-select-wrap">
-    <select id="rcGenre" class="rc-select"><option value="">All genres</option></select>
-    <svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-  </div>
-  <div class="rc-select-wrap">
-    <select id="rcSort" class="rc-select">
-      <option value="default">Default order</option>
-      <option value="title">Title A-Z</option>
-      <option value="price-low">Price: low to high</option>
-      <option value="price-high">Price: high to low</option>
-      <option value="rentals">Most rented</option>
-    </select>
-    <svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+  <div class="rc-filter-group">
+    <div class="rc-filter-seg">
+      <span class="rc-filter-label">Genre</span>
+      <select id="rcGenre" class="rc-filter-select"><option value="">Any</option></select>
+    </div>
+    <div class="rc-filter-sep"></div>
+    <div class="rc-filter-seg">
+      <span class="rc-filter-label">Sort by</span>
+      <select id="rcSort" class="rc-filter-select">
+        <option value="default">Default</option>
+        <option value="title">Title A-Z</option>
+        <option value="price-low">Price: low-high</option>
+        <option value="price-high">Price: high-low</option>
+        <option value="rentals">Most rented</option>
+      </select>
+    </div>
   </div>
 </div>
 
