@@ -13,14 +13,15 @@
 .button_left,
 .button_left:where(.w-variant-16339642-0577-1bb6-ab84-e46e09c4ed4d) {
   background-image: none !important;
-  background-color: var(--base--blue) !important;
+  background-color: #fff !important;
   border: none !important;
 }
+.button_left .button_text { color: #0a0a0a !important; }
 
 .button.is-secondary {
-  background-color: var(--base--blue) !important;
+  background-color: #fff !important;
   border: none !important;
-  color: #fff !important;
+  color: #0a0a0a !important;
 }
 
 .footer {

@@ -2,11 +2,12 @@
   'use strict';
 
   var DATA_URL = '/data/games.json';
-  var MESSENGER_URL = 'https://m.me/gamingatfridayfrog';
+  var MESSENGER_URL = 'https://m.me/junedigitalaccess';
   var POPULAR_MIN = 5;
   var HIGH_DEMAND_MIN = 10;
+  var PAGE_SIZE = 20;
 
-  var state = { games: [], query: '', quickFilter: 'all', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null };
+  var state = { games: [], query: '', quickFilter: 'all', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1 };
 
   var ICON_PATHS = {
     trophy: '<path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"/><path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"/><path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"/>',
@@ -166,14 +167,22 @@
   function renderGrid() {
     var grid = document.getElementById('rcGrid');
     var empty = document.getElementById('rcEmpty');
-    var games = filteredSortedGames();
-    document.getElementById('rcCount').textContent = games.length;
-    if (!games.length) {
+    var allGames = filteredSortedGames();
+    document.getElementById('rcCount').textContent = allGames.length;
+    if (!allGames.length) {
       grid.innerHTML = '';
       empty.style.display = '';
+      renderPagination(0);
       return;
     }
     empty.style.display = 'none';
+
+    var totalPages = Math.max(1, Math.ceil(allGames.length / PAGE_SIZE));
+    if (state.page > totalPages) state.page = totalPages;
+    if (state.page < 1) state.page = 1;
+    var start = (state.page - 1) * PAGE_SIZE;
+    var games = allGames.slice(start, start + PAGE_SIZE);
+
     grid.innerHTML = games.map(function (g) {
       var badge = badgeFor(g);
       var t = availInfo(g.trophy.available);
@@ -204,6 +213,46 @@
     }).join('');
     Array.prototype.forEach.call(grid.children, function (card) {
       card.addEventListener('click', function () { openModal(card.getAttribute('data-slug')); });
+    });
+    renderPagination(totalPages);
+  }
+
+  function goToPage(p) {
+    state.page = p;
+    renderGrid();
+    var grid = document.getElementById('rcGrid');
+    if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderPagination(totalPages) {
+    var el = document.getElementById('rcPagination');
+    if (!el) return;
+    if (totalPages <= 1) { el.innerHTML = ''; return; }
+    var page = state.page;
+    var buttons = [];
+    buttons.push('<button type="button" class="rc-page-btn" data-page="' + (page - 1) + '"' + (page <= 1 ? ' disabled' : '') + ' aria-label="Previous page">' + icon('chevron-left') + '</button>');
+
+    var windowSize = 5;
+    var startPage = Math.max(1, page - Math.floor(windowSize / 2));
+    var endPage = Math.min(totalPages, startPage + windowSize - 1);
+    startPage = Math.max(1, endPage - windowSize + 1);
+
+    if (startPage > 1) {
+      buttons.push('<button type="button" class="rc-page-btn" data-page="1">1</button>');
+      if (startPage > 2) buttons.push('<span class="rc-page-ellipsis">…</span>');
+    }
+    for (var p = startPage; p <= endPage; p++) {
+      buttons.push('<button type="button" class="rc-page-btn' + (p === page ? ' is-active' : '') + '" data-page="' + p + '">' + p + '</button>');
+    }
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) buttons.push('<span class="rc-page-ellipsis">…</span>');
+      buttons.push('<button type="button" class="rc-page-btn" data-page="' + totalPages + '">' + totalPages + '</button>');
+    }
+    buttons.push('<button type="button" class="rc-page-btn" data-page="' + (page + 1) + '"' + (page >= totalPages ? ' disabled' : '') + ' aria-label="Next page">' + icon('chevron-right') + '</button>');
+
+    el.innerHTML = buttons.join('');
+    Array.prototype.forEach.call(el.querySelectorAll('.rc-page-btn:not([disabled])'), function (btn) {
+      btn.addEventListener('click', function () { goToPage(Number(btn.getAttribute('data-page'))); });
     });
   }
 
@@ -295,19 +344,20 @@
 
   function wireToolbar() {
     document.getElementById('rcSearch').addEventListener('input', function (e) {
-      state.query = e.target.value; renderGrid();
+      state.query = e.target.value; state.page = 1; renderGrid();
     });
     document.getElementById('rcGenre').addEventListener('change', function (e) {
-      state.genre = e.target.value; renderGrid();
+      state.genre = e.target.value; state.page = 1; renderGrid();
     });
     document.getElementById('rcSort').addEventListener('change', function (e) {
-      state.sort = e.target.value; renderGrid();
+      state.sort = e.target.value; state.page = 1; renderGrid();
     });
     Array.prototype.forEach.call(document.querySelectorAll('.rc-chip'), function (chip) {
       chip.addEventListener('click', function () {
         Array.prototype.forEach.call(document.querySelectorAll('.rc-chip'), function (c) { c.classList.remove('is-active'); });
         chip.classList.add('is-active');
         state.quickFilter = chip.getAttribute('data-filter');
+        state.page = 1;
         renderGrid();
       });
     });

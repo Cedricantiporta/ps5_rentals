@@ -25,20 +25,19 @@
 .rc-icon { width: 1em; height: 1em; display: inline-block; vertical-align: -0.15em; stroke: currentColor; }
 .rc-icon-lg { width: 1.4em; height: 1.4em; }
 
-/* solid PlayStation blue, no border -- the site's buttons/selected states
-   all share this look. */
+/* solid white, no border -- the site's buttons/selected states all share this look. */
 .rc-frame-btn,
 .rc-chip.is-active,
 .rc-plan-tab.is-active,
 .rc-slot-option.is-active,
 .rc-modal-cta {
-  background: var(--rc-blue);
+  background: #fff;
   border: none;
-  color: #fff;
+  color: #0a0a0a;
 }
 .rc-frame-btn:hover,
 .rc-modal-cta:hover {
-  filter: brightness(1.1);
+  filter: brightness(.92);
 }
 
 /* toolbar */
@@ -50,7 +49,7 @@
 }
 .rc-search-icon {
   flex: none; width: 2.4rem; height: 2.4rem; border-radius: 50%; border: none; cursor: default;
-  background: var(--rc-blue); color: #fff; display: flex; align-items: center; justify-content: center;
+  background: #fff; color: #0a0a0a; display: flex; align-items: center; justify-content: center;
 }
 .rc-search input {
   flex: 1; width: 100%; box-sizing: border-box; padding: 0.5rem 1rem 0.5rem 0.75rem;
@@ -121,13 +120,13 @@
 }
 
 .rc-soon-card {
-  position: relative; flex: 0 0 200px; scroll-snap-align: start; border-radius: 1rem;
+  position: relative; flex: 0 0 280px; scroll-snap-align: start; border-radius: 1rem;
   overflow: hidden; background: var(--rc-panel); border: 1px solid var(--rc-border);
   cursor: pointer; transition: transform .18s, border-color .18s;
   display: flex; flex-direction: column;
 }
 .rc-soon-card:hover { transform: translateY(-3px); border-color: var(--rc-blue); }
-.rc-soon-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #1c1e28; }
+.rc-soon-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #1c1e28; border-radius: 20px; }
 .rc-soon-body { padding: 0.75rem 0.85rem 0.9rem; display: flex; flex-direction: column; flex: 1; }
 .rc-soon-title { font-size: 0.92rem; font-weight: 700; line-height: 1.25; margin: 0 0 0.3rem; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .rc-soon-date { font-size: 0.76rem; font-weight: 600; color: var(--rc-text-2); margin: 0.3rem 0 0; }
@@ -163,7 +162,7 @@
 }
 .rc-card:hover { transform: translateY(-4px); border-color: var(--rc-blue); box-shadow: 0 12px 28px -12px var(--rc-blue-glow); }
 .rc-card-cover-wrap { position: relative; }
-.rc-card-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #1c1e28; }
+.rc-card-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #1c1e28; border-radius: 16px; }
 .rc-card-body { padding: 0.75rem 0.8rem 0.85rem; display: flex; flex-direction: column; flex: 1; }
 .rc-card-top { display: flex; flex-direction: column; gap: 0.3rem; }
 .rc-card-bottom { margin-top: auto; padding-top: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; }
@@ -197,6 +196,17 @@
 
 .rc-empty { text-align: center; padding: 3rem 1rem; color: var(--rc-text-2); }
 .rc-empty .rc-icon-lg { margin-bottom: 0.5rem; color: var(--rc-text-3); }
+
+.rc-pagination { display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin-top: 2rem; flex-wrap: wrap; }
+.rc-page-btn {
+  min-width: 2.4rem; height: 2.4rem; padding: 0 0.6rem; border-radius: 999px; border: 1px solid var(--rc-border-2);
+  background: var(--rc-panel); color: var(--rc-text-2); font-weight: 700; font-size: 0.85rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.rc-page-btn:hover:not(:disabled):not(.is-active) { color: var(--rc-text); background: var(--rc-panel-2); }
+.rc-page-btn.is-active { background: #fff; color: #0a0a0a; border-color: #fff; }
+.rc-page-btn:disabled { opacity: .35; cursor: not-allowed; }
+.rc-page-ellipsis { color: var(--rc-text-3); padding: 0 0.2rem; }
 
 /* modal */
 .rc-modal-overlay {
@@ -264,5 +274,5 @@
 
 @media (max-width: 640px) {
   .rc-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-  .rc-soon-card { flex-basis: 160px; }
+  .rc-soon-card { flex-basis: 220px; }
 }
