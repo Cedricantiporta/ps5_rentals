@@ -1,0 +1,4319 @@
+[
+  {
+    "id": 92,
+    "slug": "code-vein-ii",
+    "title": "Code Vein II",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/code-vein-ii.webp",
+    "releaseDate": "2026-01-29",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 17,
+    "slug": "death-stranding-2-on-the-beach",
+    "title": "Death Stranding 2: On The Beach",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/death-stranding-2-on-the-beach.webp",
+    "releaseDate": "2025-06-26",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 141,
+    "slug": "ghost-of-yotei",
+    "title": "Ghost of Yotei",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/ghost-of-yotei.webp",
+    "releaseDate": "2025-10-02",
+    "activeRentals": 15,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 63,
+    "slug": "diablo-iv-lord-of-hatred",
+    "title": "Diablo IV: Lord of Hatred",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/diablo-iv-lord-of-hatred.jpg",
+    "releaseDate": "2024-10-08",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 8,
+    "slug": "resident-evil-remake-trilogy",
+    "title": "Resident Evil Remake Trilogy",
+    "genre": [
+      "Action",
+      "Horror"
+    ],
+    "cover": "/assets/games/resident-evil-remake-trilogy.webp",
+    "releaseDate": "2024-10-11",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 120,
+    "slug": "clair-obscur-expedition-33",
+    "title": "Clair Obscur: Expedition 33",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/clair-obscur-expedition-33.webp",
+    "releaseDate": "2025-04-04",
+    "activeRentals": 8,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 34,
+    "slug": "final-fantasy-vii-rebirth",
+    "title": "Final Fantasy VII Rebirth",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/final-fantasy-vii-rebirth.webp",
+    "releaseDate": "2024-02-29",
+    "activeRentals": 4,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 77,
+    "slug": "battlefield-6",
+    "title": "Battlefield 6",
+    "genre": [
+      "Action",
+      "Shooter"
+    ],
+    "cover": "/assets/games/battlefield-6.webp",
+    "releaseDate": "2025-10-10",
+    "activeRentals": 9,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 149,
+    "slug": "kingdom-come-deliverance-ii",
+    "title": "Kingdom Come: Deliverance II",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/kingdom-come-deliverance-ii.webp",
+    "releaseDate": "2025-02-04",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 51,
+    "slug": "black-myth-wukong",
+    "title": "Black Myth: Wukong",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/black-myth-wukong.webp",
+    "releaseDate": "2024-08-20",
+    "activeRentals": 6,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 12,
+    "slug": "marvel-s-spider-man-2",
+    "title": "Marvel's Spider-Man 2",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/marvel-s-spider-man-2.webp",
+    "releaseDate": "2023-10-20",
+    "activeRentals": 4,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 104,
+    "slug": "it-takes-two",
+    "title": "It Takes Two",
+    "genre": [
+      "Adventure",
+      "Co-op"
+    ],
+    "cover": "/assets/games/it-takes-two.webp",
+    "releaseDate": "2021-03-26",
+    "activeRentals": 4,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 68,
+    "slug": "digimon-story-time-stranger",
+    "title": "Digimon Story: Time Stranger",
+    "genre": [
+      "RPG"
+    ],
+    "cover": "/assets/games/digimon-story-time-stranger.webp",
+    "releaseDate": "2025-10-03",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 3,
+    "slug": "wuchang-fallen-feathers",
+    "title": "Wuchang: Fallen Feathers",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/wuchang-fallen-feathers.webp",
+    "releaseDate": "2025-07-24",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 137,
+    "slug": "assassin-s-creed-shadows",
+    "title": "Assassin's Creed Shadows",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/assassin-s-creed-shadows.webp",
+    "releaseDate": "2024-11-15",
+    "activeRentals": 6,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 86,
+    "slug": "uncharted-legacy-of-thieves-collection",
+    "title": "Uncharted: Legacy of Thieves Collection",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/uncharted-legacy-of-thieves-collection.webp",
+    "releaseDate": "2022-01-28",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 28,
+    "slug": "alan-wake-ii",
+    "title": "Alan Wake II",
+    "genre": [
+      "Adventure",
+      "Horror"
+    ],
+    "cover": "/assets/games/alan-wake-ii.webp",
+    "releaseDate": "2023-10-27",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 115,
+    "slug": "f1-2025",
+    "title": "F1 2025",
+    "genre": [
+      "Racing",
+      "Sports"
+    ],
+    "cover": "/assets/games/f1-2025.webp",
+    "releaseDate": "2025-05-30",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 45,
+    "slug": "cyberpunk-2077-phantom-liberty",
+    "title": "Cyberpunk 2077: Phantom Liberty",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/cyberpunk-2077-phantom-liberty.webp",
+    "releaseDate": "2023-09-26",
+    "activeRentals": 5,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 131,
+    "slug": "ea-sports-ufc-5",
+    "title": "EA SPORTS UFC 5",
+    "genre": [
+      "Fighting",
+      "Sports"
+    ],
+    "cover": "/assets/games/ea-sports-ufc-5.webp",
+    "releaseDate": "2023-10-27",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 59,
+    "slug": "borderlands-4",
+    "title": "Borderlands 4",
+    "genre": [
+      "Action",
+      "Shooter"
+    ],
+    "cover": "/assets/games/borderlands-4.webp",
+    "releaseDate": "2025-09-12",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 21,
+    "slug": "indiana-jones-and-the-great-circle",
+    "title": "Indiana Jones and the Great Circle",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/indiana-jones-and-the-great-circle.webp",
+    "releaseDate": "2025-09-12",
+    "activeRentals": 5,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 97,
+    "slug": "hell-is-us",
+    "title": "Hell Is Us",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/hell-is-us.webp",
+    "releaseDate": "2025-09-04",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 73,
+    "slug": "grand-theft-auto-v",
+    "title": "Grand Theft Auto V",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/grand-theft-auto-v.webp",
+    "releaseDate": "2022-03-15",
+    "activeRentals": 4,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 6,
+    "slug": "hollow-knight-silksong",
+    "title": "Hollow Knight: Silksong",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/hollow-knight-silksong.webp",
+    "releaseDate": "2025-09-04",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 124,
+    "slug": "helldivers-2",
+    "title": "Helldivers 2",
+    "genre": [
+      "Action",
+      "Shooter"
+    ],
+    "cover": "/assets/games/helldivers-2.webp",
+    "releaseDate": "2024-02-08",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 39,
+    "slug": "dying-light-the-beast",
+    "title": "Dying Light: The Beast",
+    "genre": [
+      "Action",
+      "Survival"
+    ],
+    "cover": "/assets/games/dying-light-the-beast.webp",
+    "releaseDate": "2025-09-18",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 142,
+    "slug": "nba-2k26",
+    "title": "NBA 2K26",
+    "genre": [
+      "Sports"
+    ],
+    "cover": "/assets/games/nba-2k26.webp",
+    "releaseDate": "2025-09-25",
+    "activeRentals": 7,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 84,
+    "slug": "horizon-forbidden-west-complete-edition",
+    "title": "Horizon Forbidden West Complete Edition",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/horizon-forbidden-west-complete-edition.webp",
+    "releaseDate": "2023-10-06",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 15,
+    "slug": "the-elder-scrolls-iv-oblivion-remastered",
+    "title": "The Elder Scrolls IV: Oblivion (Remastered)",
+    "genre": [
+      "RPG"
+    ],
+    "cover": "/assets/games/the-elder-scrolls-iv-oblivion-remastered.webp",
+    "releaseDate": "2025-04-22",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 109,
+    "slug": "fantasy-life",
+    "title": "Fantasy Life",
+    "genre": [
+      "RPG",
+      "Simulation"
+    ],
+    "cover": "/assets/games/fantasy-life.webp",
+    "releaseDate": "2025-05-21",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 56,
+    "slug": "final-fantasy-xvi",
+    "title": "Final Fantasy XVI",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/final-fantasy-xvi.webp",
+    "releaseDate": "2023-06-22",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 2,
+    "slug": "the-first-berserker-khazan",
+    "title": "The First Berserker: Khazan",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/the-first-berserker-khazan.webp",
+    "releaseDate": "2025-03-07",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 126,
+    "slug": "mafia-old-country",
+    "title": "Mafia: Old Country",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/mafia-old-country.webp",
+    "releaseDate": "2025-08-08",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 48,
+    "slug": "granblue-fantasy-relink",
+    "title": "Granblue Fantasy: Relink",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/granblue-fantasy-relink.jpg",
+    "releaseDate": "2024-02-01",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 94,
+    "slug": "ready-or-not",
+    "title": "Ready or Not",
+    "genre": [
+      "Shooter",
+      "Tactical"
+    ],
+    "cover": "/assets/games/ready-or-not.webp",
+    "releaseDate": "2025-07-15",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 32,
+    "slug": "silent-hill-f",
+    "title": "Silent Hill f",
+    "genre": [
+      "Adventure",
+      "Horror"
+    ],
+    "cover": "/assets/games/silent-hill-f.webp",
+    "releaseDate": "2025-09-25",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 140,
+    "slug": "silent-hill-2-remake",
+    "title": "Silent Hill 2 (Remake)",
+    "genre": [
+      "Adventure",
+      "Horror"
+    ],
+    "cover": "/assets/games/silent-hill-2-remake.webp",
+    "releaseDate": "2024-10-08",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 67,
+    "slug": "forza-horizon-5",
+    "title": "Forza Horizon 5",
+    "genre": [
+      "Racing"
+    ],
+    "cover": "/assets/games/forza-horizon-5.webp",
+    "releaseDate": "2025-04-09",
+    "activeRentals": 6,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 10,
+    "slug": "metaphor-refantazio",
+    "title": "Metaphor: ReFantazio",
+    "genre": [
+      "RPG"
+    ],
+    "cover": "/assets/games/metaphor-refantazio.webp",
+    "releaseDate": "2024-10-11",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 118,
+    "slug": "sekiro-shadows-die-twice",
+    "title": "Sekiro: Shadows Die Twice",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/sekiro-shadows-die-twice.webp",
+    "releaseDate": "2019-03-22",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 53,
+    "slug": "split-fiction",
+    "title": "Split Fiction",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/split-fiction.webp",
+    "releaseDate": "2025-03-06",
+    "activeRentals": 10,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 25,
+    "slug": "metal-gear-solid-snake-eater",
+    "title": "Metal Gear Solid Δ: Snake Eater",
+    "genre": [
+      "Action",
+      "Stealth"
+    ],
+    "cover": "/assets/games/metal-gear-solid-snake-eater.webp",
+    "releaseDate": "2025-08-26",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 100,
+    "slug": "stellar-blade",
+    "title": "Stellar Blade",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/stellar-blade.webp",
+    "releaseDate": "2024-04-26",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 81,
+    "slug": "tekken-8",
+    "title": "Tekken 8",
+    "genre": [
+      "Fighting"
+    ],
+    "cover": "/assets/games/tekken-8.webp",
+    "releaseDate": "2024-01-26",
+    "activeRentals": 7,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 145,
+    "slug": "the-last-of-us-part-ii-remastered",
+    "title": "The Last of Us Part II Remastered",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/the-last-of-us-part-ii-remastered.webp",
+    "releaseDate": "2024-01-19",
+    "activeRentals": 4,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 41,
+    "slug": "ninja-gaiden-4",
+    "title": "Ninja Gaiden 4",
+    "genre": [
+      "Action"
+    ],
+    "cover": "/assets/games/ninja-gaiden-4.webp",
+    "releaseDate": "2025-10-21",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 13,
+    "slug": "undisputed",
+    "title": "Undisputed",
+    "genre": [
+      "Fighting",
+      "Sports"
+    ],
+    "cover": "/assets/games/undisputed.webp",
+    "releaseDate": "2024-10-11",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 112,
+    "slug": "dragon-quest-i-ii-hd-2d-remake",
+    "title": "Dragon Quest I & II HD-2D Remake",
+    "genre": [
+      "RPG"
+    ],
+    "cover": "/assets/games/dragon-quest-i-ii-hd-2d-remake.webp",
+    "releaseDate": "2025-10-30",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 70,
+    "slug": "arc-raiders",
+    "title": "ARC Raiders",
+    "genre": [
+      "Action",
+      "Shooter"
+    ],
+    "cover": "/assets/games/arc-raiders.webp",
+    "releaseDate": "2025-10-30",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 30,
+    "slug": "the-outer-worlds-2",
+    "title": "The Outer Worlds 2",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/the-outer-worlds-2.webp",
+    "releaseDate": "2025-10-29",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 136,
+    "slug": "hogwarts-legacy-quidditch-champions",
+    "title": "Hogwarts Legacy + Quidditch Champions",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/hogwarts-legacy-quidditch-champions.webp",
+    "releaseDate": "2023-02-23",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 88,
+    "slug": "street-fighter-6",
+    "title": "Street Fighter 6",
+    "genre": [
+      "Action",
+      "Adventure",
+      "RPG",
+      "Fighting"
+    ],
+    "cover": "/assets/games/street-fighter-6.webp",
+    "releaseDate": "2023-06-02",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 5,
+    "slug": "assassin-s-creed-valhalla",
+    "title": "Assassin's Creed Valhalla",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/assassin-s-creed-valhalla.webp",
+    "releaseDate": "2023-10-05",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 122,
+    "slug": "octopath-traveler-1-and-2-bundle",
+    "title": "Octopath traveler 1 and 2 bundle",
+    "genre": [
+      "RPG"
+    ],
+    "cover": "/assets/games/octopath-traveler-1-and-2-bundle.webp",
+    "releaseDate": "2025-04-02",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 57,
+    "slug": "astrobot",
+    "title": "Astrobot",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/astrobot.webp",
+    "releaseDate": "2024-09-06",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 19,
+    "slug": "the-witcher-3-wild-hunt",
+    "title": "The Witcher 3: Wild Hunt",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/the-witcher-3-wild-hunt.webp",
+    "releaseDate": "2022-12-14",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 99,
+    "slug": "baldur-s-gate-3",
+    "title": "Baldur's Gate 3",
+    "genre": [
+      "RPG"
+    ],
+    "cover": "/assets/games/baldur-s-gate-3.webp",
+    "releaseDate": "2023-09-06",
+    "activeRentals": 4,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 75,
+    "slug": "little-nightmares-iii",
+    "title": "Little Nightmares III",
+    "genre": [
+      "Adventure",
+      "Horror"
+    ],
+    "cover": "/assets/games/little-nightmares-iii.webp",
+    "releaseDate": "2025-10-10",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 15,
+    "slug": "dragon-ball-sparking-zero",
+    "title": "Dragon Ball: Sparking! Zero",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Fighting"
+    ],
+    "cover": "/assets/games/dragon-ball-sparking-zero.webp",
+    "releaseDate": "2024-10-11",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 128,
+    "slug": "ghost-of-tsushima-director-s-cut",
+    "title": "Ghost of Tsushima Director's Cut",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/ghost-of-tsushima-director-s-cut.webp",
+    "releaseDate": "2021-08-20",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 46,
+    "slug": "marvel-s-spider-man-remastered",
+    "title": "Marvel’s Spider-Man Remastered",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/marvel-s-spider-man-remastered.webp",
+    "releaseDate": "2020-11-20",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 91,
+    "slug": "god-of-war-ragnarok",
+    "title": "God of War Ragnarök",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/god-of-war-ragnarok.webp",
+    "releaseDate": "2022-11-09",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 35,
+    "slug": "marvel-s-spider-man-miles-morales",
+    "title": "Marvel's Spider-Man: Miles Morales",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/marvel-s-spider-man-miles-morales.webp",
+    "releaseDate": "2020-11-20",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 147,
+    "slug": "ratchet-clank-rift-apart",
+    "title": "Ratchet & Clank: Rift Apart",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Shooter"
+    ],
+    "cover": "/assets/games/ratchet-clank-rift-apart.webp",
+    "releaseDate": "2021-06-11",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 64,
+    "slug": "the-last-of-us-part-i",
+    "title": "The Last of Us Part I",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Shooter"
+    ],
+    "cover": "/assets/games/the-last-of-us-part-i.webp",
+    "releaseDate": "2022-09-02",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 24,
+    "slug": "elden-ring-shadow-of-the-erdtree",
+    "title": "Elden Ring Shadow of the Erdtree",
+    "genre": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "cover": "/assets/games/elden-ring-shadow-of-the-erdtree.webp",
+    "releaseDate": "2024-06-21",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 106,
+    "slug": "octopath-traveler-0",
+    "title": "Octopath Traveler 0",
+    "genre": [
+      "RPG"
+    ],
+    "cover": "/assets/games/octopath-traveler-0.webp",
+    "releaseDate": "2025-12-04",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 79,
+    "slug": "cronos-the-new-dawn",
+    "title": "Cronos: The New Dawn",
+    "genre": [
+      "Action",
+      "Shooter",
+      "Survival"
+    ],
+    "cover": "/assets/games/cronos-the-new-dawn.webp",
+    "releaseDate": "2025-09-25",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 11,
+    "slug": "days-gone-remastered",
+    "title": "Days Gone Remastered",
+    "genre": [
+      "Adventure",
+      "Shooter"
+    ],
+    "cover": "/assets/games/days-gone-remastered.webp",
+    "releaseDate": "2025-04-05",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 134,
+    "slug": "like-a-dragon-ishin",
+    "title": "Like a Dragon: Ishin!",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/like-a-dragon-ishin.webp",
+    "releaseDate": "2023-02-21",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 60,
+    "slug": "like-a-dragon-infinite-wealth",
+    "title": "Like a Dragon: Infinite Wealth",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/like-a-dragon-infinite-wealth.webp",
+    "releaseDate": "2024-01-26",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 29,
+    "slug": "resident-evil-7-8",
+    "title": "Resident Evil : 7 8",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Horror"
+    ],
+    "cover": "/assets/games/resident-evil-7-8.webp",
+    "releaseDate": "2021-05-31",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 114,
+    "slug": "the-hinokami-chronicles-2-deluxe-edition",
+    "title": "The Hinokami Chronicles 2 Deluxe Edition",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Fighting"
+    ],
+    "cover": "/assets/games/the-hinokami-chronicles-2-deluxe-edition.webp",
+    "releaseDate": "2025-07-21",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 52,
+    "slug": "from-the-ashes-edition-avatar-frontiers-of-pandora",
+    "title": "From The Ashes Edition - Avatar: Frontiers of Pandora™",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/from-the-ashes-edition-avatar-frontiers-of-pandora.webp",
+    "releaseDate": "2025-12-19",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 7,
+    "slug": "monster-hunter-wilds",
+    "title": "Monster Hunter: Wilds",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/monster-hunter-wilds.webp",
+    "releaseDate": "2025-06-26",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 125,
+    "slug": "doom-dark-ages",
+    "title": "Doom Dark Ages",
+    "genre": [
+      "Action",
+      "RPG",
+      "Shooter"
+    ],
+    "cover": "/assets/games/doom-dark-ages.webp",
+    "releaseDate": "2025-05-15",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 43,
+    "slug": "gran-turismo-7",
+    "title": "Gran Turismo 7",
+    "genre": [
+      "Racing"
+    ],
+    "cover": "/assets/games/gran-turismo-7.webp",
+    "releaseDate": "2023-03-04",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 96,
+    "slug": "hitman-world-of-assassination",
+    "title": "Hitman World of Assassination",
+    "genre": [
+      "Action",
+      "Shooter",
+      "Stealth"
+    ],
+    "cover": "/assets/games/hitman-world-of-assassination.webp",
+    "releaseDate": "2023-01-26",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 72,
+    "slug": "dragon-age-the-veilguard",
+    "title": "Dragon Age: The Veilguard",
+    "genre": [
+      "Action",
+      "RPG",
+      "Shooter",
+      "Fighting"
+    ],
+    "cover": "/assets/games/dragon-age-the-veilguard.webp",
+    "releaseDate": "2024-10-31",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 18,
+    "slug": "red-dead-redemption-2",
+    "title": "Red Dead Redemption 2",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/red-dead-redemption-2.webp",
+    "releaseDate": "2018-10-16",
+    "activeRentals": 5,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 139,
+    "slug": "trails-in-the-sky-1st-chapter-remake",
+    "title": "Trails in the Sky 1st Chapter remake",
+    "genre": [
+      "RPG"
+    ],
+    "cover": "/assets/games/trails-in-the-sky-1st-chapter-remake.webp",
+    "releaseDate": "2025-09-19",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 66,
+    "slug": "dispatch",
+    "title": "Dispatch",
+    "genre": [
+      "Strategy"
+    ],
+    "cover": "/assets/games/dispatch.webp",
+    "releaseDate": "2025-10-22",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 4,
+    "slug": "a-way-out-it-takes-two",
+    "title": "A way out / It Takes Two",
+    "genre": [
+      "Strategy",
+      "Co-op"
+    ],
+    "cover": "/assets/games/a-way-out-it-takes-two.webp",
+    "releaseDate": "2021-03-26",
+    "activeRentals": 6,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 117,
+    "slug": "naruto-x-boruto-ultimate-ninja-storm-connections",
+    "title": "NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS",
+    "genre": [
+      "Action",
+      "Fighting"
+    ],
+    "cover": "/assets/games/naruto-x-boruto-ultimate-ninja-storm-connections.webp",
+    "releaseDate": "2022-11-17",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 55,
+    "slug": "cairn",
+    "title": "Cairn",
+    "genre": [
+      "Adventure"
+    ],
+    "cover": "/assets/games/cairn.webp",
+    "releaseDate": "2026-01-09",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 27,
+    "slug": "nioh-3",
+    "title": "Nioh 3",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/nioh-3.webp",
+    "releaseDate": "2026-02-06",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 102,
+    "slug": "dragon-quest-vii-reimagined",
+    "title": "Dragon Quest VII Reimagined",
+    "genre": [
+      "RPG"
+    ],
+    "cover": "/assets/games/dragon-quest-vii-reimagined.webp",
+    "releaseDate": "2026-02-05",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 83,
+    "slug": "god-of-war-sons-of-sparta",
+    "title": "God of War Sons of Sparta",
+    "genre": [
+      "Action"
+    ],
+    "cover": "/assets/games/god-of-war-sons-of-sparta.webp",
+    "releaseDate": "2026-02-13",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 143,
+    "slug": "reanimal",
+    "title": "Reanimal",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/reanimal.webp",
+    "releaseDate": "2026-02-13",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 1,
+    "slug": "resident-evil-requiem",
+    "title": "Resident Evil Requiem",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Horror"
+    ],
+    "cover": "/assets/games/resident-evil-requiem.webp",
+    "releaseDate": "2026-02-27",
+    "activeRentals": 7,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 14,
+    "slug": "resident-evil-5",
+    "title": "Resident Evil 5",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Horror"
+    ],
+    "cover": "/assets/games/resident-evil-5.webp",
+    "releaseDate": "2009-03-05",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 110,
+    "slug": "resident-evil-6",
+    "title": "Resident Evil 6",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Horror"
+    ],
+    "cover": "/assets/games/resident-evil-6.webp",
+    "releaseDate": "2012-10-02",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 58,
+    "slug": "fatal-frame-2-crimson-butterfly-remake",
+    "title": "Fatal Frame 2 Crimson Butterfly Remake",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/fatal-frame-2-crimson-butterfly-remake.webp",
+    "releaseDate": "2026-03-12",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 22,
+    "slug": "monster-hunter-stories-3-twisted-reflection",
+    "title": "Monster Hunter Stories 3: Twisted Reflection",
+    "genre": [
+      "Adventure"
+    ],
+    "cover": "/assets/games/monster-hunter-stories-3-twisted-reflection.webp",
+    "releaseDate": "2026-03-13",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 129,
+    "slug": "wwe-2k26",
+    "title": "WWE 2k26",
+    "genre": [
+      "Sports"
+    ],
+    "cover": "/assets/games/wwe-2k26.webp",
+    "releaseDate": "2026-03-13",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 47,
+    "slug": "crimson-desert",
+    "title": "Crimson Desert",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/crimson-desert.webp",
+    "releaseDate": "2026-03-19",
+    "activeRentals": 12,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 90,
+    "slug": "unravel-yarny-bundle",
+    "title": "Unravel: Yarny Bundle",
+    "genre": [
+      "Adventure",
+      "Co-op"
+    ],
+    "cover": "/assets/games/unravel-yarny-bundle.webp",
+    "releaseDate": "2018-12-07",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 33,
+    "slug": "raccoon-city-edition",
+    "title": "Raccoon City Edition",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/raccoon-city-edition.webp",
+    "releaseDate": "2022-06-13",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 148,
+    "slug": "call-of-duty-black-ops-7",
+    "title": "Call of Duty: Black Ops 7",
+    "genre": [
+      "Action",
+      "Shooter"
+    ],
+    "cover": "/assets/games/call-of-duty-black-ops-7.webp",
+    "releaseDate": "2025-11-14",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 62,
+    "slug": "dying-light-2-stay-human-reloaded-edition",
+    "title": "Dying Light 2 Stay Human: Reloaded Edition",
+    "genre": [
+      "Action",
+      "Survival"
+    ],
+    "cover": "/assets/games/dying-light-2-stay-human-reloaded-edition.webp",
+    "releaseDate": "2024-02-22",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 26,
+    "slug": "dead-space",
+    "title": "Dead Space",
+    "genre": [
+      "Action",
+      "Survival"
+    ],
+    "cover": "/assets/games/dead-space.webp",
+    "releaseDate": "2023-01-27",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 107,
+    "slug": "tony-hawk-s-pro-skater-3-4",
+    "title": "Tony Hawk's Pro Skater 3 + 4",
+    "genre": [
+      "Sports",
+      "Arcade"
+    ],
+    "cover": "/assets/games/tony-hawk-s-pro-skater-3-4.webp",
+    "releaseDate": "2025-07-11",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 80,
+    "slug": "a-plague-tale-requiem",
+    "title": "A Plague Tale: Requiem",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/a-plague-tale-requiem.webp",
+    "releaseDate": "2022-10-18",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 9,
+    "slug": "final-fantasy-vii-remake-intergrade",
+    "title": "FINAL FANTASY VII REMAKE INTERGRADE",
+    "genre": [
+      "Adventure",
+      "RPG",
+      "Strategy"
+    ],
+    "cover": "/assets/games/final-fantasy-vii-remake-intergrade.jpg",
+    "releaseDate": "2022-06-10",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 132,
+    "slug": "mafia-trilogy",
+    "title": "Mafia: Trilogy",
+    "genre": [
+      "Adventure",
+      "Shooter",
+      "Fighting"
+    ],
+    "cover": "/assets/games/mafia-trilogy.jpg",
+    "releaseDate": "2020-09-25",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 54,
+    "slug": "starfield",
+    "title": "Starfield",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Shooter"
+    ],
+    "cover": "/assets/games/starfield.jpg",
+    "releaseDate": "2026-04-07",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 299,
+      "monthly": 799,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 20,
+    "slug": "resident-evil-4",
+    "title": "Resident Evil 4",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Shooter"
+    ],
+    "cover": "/assets/games/resident-evil-4.jpg",
+    "releaseDate": "2023-03-04",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 103,
+    "slug": "hades",
+    "title": "Hades",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/hades.jpg",
+    "releaseDate": "2020-09-16",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 76,
+    "slug": "overcooked-all-you-can-eat",
+    "title": "Overcooked! All You Can Eat",
+    "genre": [
+      "Strategy",
+      "Co-op"
+    ],
+    "cover": "/assets/games/overcooked-all-you-can-eat.jpg",
+    "releaseDate": "2020-11-10",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 16,
+    "slug": "fallout-4",
+    "title": "Fallout 4",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/fallout-4.jpg",
+    "releaseDate": "2023-04-25",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 138,
+    "slug": "ultimate-marvel-vs-capcom-3",
+    "title": "Ultimate Marvel vs. Capcom 3",
+    "genre": [
+      "Fighting"
+    ],
+    "cover": "/assets/games/ultimate-marvel-vs-capcom-3.jpg",
+    "releaseDate": "2021-11-15",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 1,
+    "slug": "pragmata",
+    "title": "Pragmata",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Puzzle"
+    ],
+    "cover": "/assets/games/pragmata.jpg",
+    "releaseDate": "2026-04-17",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 31,
+    "slug": "hades-ii",
+    "title": "Hades II",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/hades-ii.jpg",
+    "releaseDate": "2026-04-15",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 121,
+    "slug": "horizon-zero-dawn",
+    "title": "Horizon Zero Dawn",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/horizon-zero-dawn.jpg",
+    "releaseDate": "2024-10-31",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 50,
+    "slug": "saros-digital-deluxe-edition",
+    "title": "SAROS Digital Deluxe Edition",
+    "genre": [
+      "Adventure",
+      "RPG"
+    ],
+    "cover": "/assets/games/saros-digital-deluxe-edition.jpg",
+    "releaseDate": "2026-04-28",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 95,
+    "slug": "call-of-duty-modern-warfare-2-campaign-remastered",
+    "title": "Call of Duty®: Modern Warfare 2 Campaign Remastered",
+    "genre": [
+      "Shooter"
+    ],
+    "cover": "/assets/games/call-of-duty-modern-warfare-2-campaign-remastered.jpg",
+    "releaseDate": "2020-03-21",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 37,
+    "slug": "call-of-duty-modern-warfare-remastered",
+    "title": "Call of Duty: Modern Warfare Remastered",
+    "genre": [
+      "Shooter"
+    ],
+    "cover": "/assets/games/call-of-duty-modern-warfare-remastered.jpg",
+    "releaseDate": "2016-11-04",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 146,
+    "slug": "call-of-duty-vanguard",
+    "title": "Call of Duty: Vanguard",
+    "genre": [
+      "Shooter"
+    ],
+    "cover": "/assets/games/call-of-duty-vanguard.webp",
+    "releaseDate": "2020-11-05",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 65,
+    "slug": "call-of-duty-wwii-gold-edition",
+    "title": "Call of Duty®: WWII - Gold Edition",
+    "genre": [
+      "Shooter"
+    ],
+    "cover": "/assets/games/call-of-duty-wwii-gold-edition.jpg",
+    "releaseDate": "2018-05-08",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 23,
+    "slug": "007-first-light",
+    "title": "007 First Light",
+    "genre": [
+      "Shooter"
+    ],
+    "cover": "/assets/games/007-first-light.jpg",
+    "releaseDate": "2026-05-27",
+    "activeRentals": 24,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 111,
+    "slug": "resident-evil-triple-pack",
+    "title": "Resident Evil Triple Pack",
+    "genre": [
+      "Adventure",
+      "RPG"
+    ],
+    "cover": "/assets/games/resident-evil-triple-pack.jpg",
+    "releaseDate": "2019-10-29",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 82,
+    "slug": "life-is-strange-true-colors",
+    "title": "Life Is Strange: True Colors",
+    "genre": [
+      "Adventure"
+    ],
+    "cover": "/assets/games/life-is-strange-true-colors.jpg",
+    "releaseDate": "2021-09-10",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 44,
+    "slug": "little-nightmares-i-ii-bundle",
+    "title": "Little Nightmares I & II Bundle",
+    "genre": [
+      "Adventure",
+      "Horror"
+    ],
+    "cover": "/assets/games/little-nightmares-i-ii-bundle.jpg",
+    "releaseDate": "2021-08-25",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 127,
+    "slug": "assassin-s-creed-mirage-deluxe-edition",
+    "title": "Assassin's Creed Mirage Deluxe Edition",
+    "genre": [
+      "Adventure",
+      "RPG"
+    ],
+    "cover": "/assets/games/assassin-s-creed-mirage-deluxe-edition.jpg",
+    "releaseDate": "2023-05-10",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 61,
+    "slug": "mixtape",
+    "title": "Mixtape",
+    "genre": [
+      "Adventure"
+    ],
+    "cover": "/assets/games/mixtape.jpg",
+    "releaseDate": "2026-05-07",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 36,
+    "slug": "directive-8020",
+    "title": "Directive 8020",
+    "genre": [
+      "Adventure",
+      "Horror"
+    ],
+    "cover": "/assets/games/directive-8020.jpg",
+    "releaseDate": "2026-05-12",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 119,
+    "slug": "lego-batman-legacy-of-the-dark-knight",
+    "title": "LEGO® Batman™: Legacy of The Dark Knight",
+    "genre": [
+      "Adventure"
+    ],
+    "cover": "/assets/games/lego-batman-legacy-of-the-dark-knight.jpg",
+    "releaseDate": "2026-05-22",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 49,
+    "slug": "nier-automata-game-of-the-yorha-edition",
+    "title": "NieR:Automata Game of the YoRHa Edition",
+    "genre": [
+      "Action",
+      "Adventure",
+      "RPG",
+      "Shooter"
+    ],
+    "cover": "/assets/games/nier-automata-game-of-the-yorha-edition.jpg",
+    "releaseDate": "2019-02-27",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 89,
+    "slug": "the-adventures-of-elliot-the-millennium-tales",
+    "title": "The Adventures of Elliot: The Millennium Tales",
+    "genre": [
+      "Adventure",
+      "RPG"
+    ],
+    "cover": "/assets/games/the-adventures-of-elliot-the-millennium-tales.png",
+    "releaseDate": "2026-06-18",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 42,
+    "slug": "ea-sports-ufc-6",
+    "title": "EA SPORTS™ UFC® 6",
+    "genre": [
+      "Fighting",
+      "Sports"
+    ],
+    "cover": "/assets/games/ea-sports-ufc-6.jpg",
+    "releaseDate": "2026-06-19",
+    "activeRentals": 5,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 133,
+    "slug": "assassin-s-creed-black-flag-resynced",
+    "title": "Assassin's Creed Black Flag Resynced",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/assassin-s-creed-black-flag-resynced.jpg",
+    "releaseDate": "2026-07-09",
+    "activeRentals": 20,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 74,
+    "slug": "assassin-s-creed-odyssey-ultimate-edition",
+    "title": "assassin's creed odyssey ultimate edition",
+    "genre": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "cover": "/assets/games/assassin-s-creed-odyssey-ultimate-edition.jpg",
+    "releaseDate": "2018-10-05",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 40,
+    "slug": "batman-arkham-knight",
+    "title": "Batman: Arkham Knight",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Fighting"
+    ],
+    "cover": "/assets/games/batman-arkham-knight.jpg",
+    "releaseDate": "2015-06-23",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 113,
+    "slug": "lego-batman-3-beyond-gotham",
+    "title": "LEGO® Batman™ 3: Beyond Gotham",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/lego-batman-3-beyond-gotham.jpg",
+    "releaseDate": "2014-11-14",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 87,
+    "slug": "lego-marvel-super-heroes",
+    "title": "LEGO® Marvel™ Super Heroes",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/lego-marvel-super-heroes.jpg",
+    "releaseDate": "2013-10-22",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 71,
+    "slug": "lego-the-hobbit",
+    "title": "LEGO® The Hobbit™",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/lego-the-hobbit.jpg",
+    "releaseDate": "2014-04-08",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 130,
+    "slug": "mad-max",
+    "title": "Mad Max",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/mad-max.png",
+    "releaseDate": "2015-09-01",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 93,
+    "slug": "devil-may-cry-5",
+    "title": "Devil May Cry 5",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Fighting"
+    ],
+    "cover": "/assets/games/devil-may-cry-5.jpg",
+    "releaseDate": "2019-03-08",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 78,
+    "slug": "bioshock",
+    "title": "Bioshock",
+    "genre": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "cover": "/assets/games/bioshock.jpg",
+    "releaseDate": "2007-08-07",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 105,
+    "slug": "lego-city-undercover",
+    "title": "Lego City Undercover",
+    "genre": [
+      "Action",
+      "Adventure",
+      "Fighting"
+    ],
+    "cover": "/assets/games/lego-city-undercover.jpg",
+    "releaseDate": "2013-03-13",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 85,
+    "slug": "echoes-of-aincrad",
+    "title": "Echoes of Aincrad",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/echoes-of-aincrad.jpg",
+    "releaseDate": "2026-07-09",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 123,
+    "slug": "call-of-duty-black-ops-i",
+    "title": "Call of Duty®: Black Ops I",
+    "genre": [
+      "Action",
+      "Survival"
+    ],
+    "cover": "/assets/games/call-of-duty-black-ops-i.png",
+    "releaseDate": "2026-07-09",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 98,
+    "slug": "call-of-duty-black-ops-ii",
+    "title": "Call of Duty®: Black Ops II",
+    "genre": [
+      "Action",
+      "Survival"
+    ],
+    "cover": "/assets/games/call-of-duty-black-ops-ii.png",
+    "releaseDate": "2026-07-09",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 249,
+      "monthly": 699,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 0,
+    "slug": "halo-campaign-evolved",
+    "title": "Halo: Campaign Evolved",
+    "genre": [
+      "Shooter",
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/halo-campaign-evolved.png",
+    "releaseDate": "2026-07-28",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 15,
+    "slug": "moving-out-moving-out-2-bundle",
+    "title": "Moving Out + Moving Out 2 Bundle",
+    "genre": [
+      "Strategy",
+      "Co-op"
+    ],
+    "cover": "/assets/games/moving-out-moving-out-2-bundle.jpg",
+    "releaseDate": "2023-08-15",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 19,
+    "slug": "beast-of-reincarnation",
+    "title": "Beast of Reincarnation",
+    "genre": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "cover": "/assets/games/beast-of-reincarnation.png",
+    "releaseDate": "2026-08-04",
+    "activeRentals": 7,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 29,
+    "slug": "marvel-tokon-fighting-souls",
+    "title": "MARVEL Tōkon: Fighting Souls",
+    "genre": [
+      "Fighting"
+    ],
+    "cover": "/assets/games/marvel-tokon-fighting-souls.jpg",
+    "releaseDate": "2026-08-06",
+    "activeRentals": 3,
+    "status": "available",
+    "upcomingOrder": 1,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 39,
+    "slug": "marvel-s-wolverine",
+    "title": "Marvel's Wolverine",
+    "genre": [
+      "Action"
+    ],
+    "cover": "/assets/games/marvel-s-wolverine.jpg",
+    "releaseDate": "2026-09-15",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 7,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "LIMITED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 49,
+    "slug": "grand-theft-auto-vi",
+    "title": "Grand Theft Auto VI",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/grand-theft-auto-vi.jpg",
+    "releaseDate": "2026-11-19",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 13,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 9,
+    "slug": "call-of-duty-modern-warfare-4",
+    "title": "Call of Duty®: Modern Warfare® 4",
+    "genre": [
+      "Action",
+      "Shooter"
+    ],
+    "cover": "/assets/games/call-of-duty-modern-warfare-4.png",
+    "releaseDate": "2026-10-23",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 11,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 59,
+    "slug": "metal-gear-solid-master-collection-vol-2",
+    "title": "METAL GEAR SOLID: MASTER COLLECTION Vol. 2",
+    "genre": [
+      "Action",
+      "Stealth"
+    ],
+    "cover": "/assets/games/metal-gear-solid-master-collection-vol-2.jpg",
+    "releaseDate": "2026-08-27",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 3,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "LIMITED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 5,
+    "slug": "call-of-duty-black-ops-4",
+    "title": "Call of Duty: Black Ops 4",
+    "genre": [
+      "Action",
+      "Shooter"
+    ],
+    "cover": "/assets/games/call-of-duty-black-ops-4.jpg",
+    "releaseDate": "2018-10-12",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 10,
+    "slug": "call-of-duty-black-ops-cold-war",
+    "title": "Call of Duty: Black Ops Cold War",
+    "genre": [
+      "Action",
+      "Shooter"
+    ],
+    "cover": "/assets/games/call-of-duty-black-ops-cold-war.jpg",
+    "releaseDate": "2020-11-13",
+    "activeRentals": 1,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 15,
+    "slug": "call-of-duty-infinite-warfare",
+    "title": "Call of Duty: Infinite Warfare",
+    "genre": [
+      "Action",
+      "Shooter"
+    ],
+    "cover": "/assets/games/call-of-duty-infinite-warfare.jpg",
+    "releaseDate": "2016-11-04",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 20,
+    "slug": "call-of-duty-advanced-warfare",
+    "title": "Call of Duty: Advanced Warfare",
+    "genre": [
+      "Action",
+      "Shooter"
+    ],
+    "cover": "/assets/games/call-of-duty-advanced-warfare.jpg",
+    "releaseDate": "2014-11-04",
+    "activeRentals": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 25,
+    "slug": "call-of-duty-ghosts-gold-edition",
+    "title": "Call of Duty: Ghosts - Gold Edition",
+    "genre": [
+      "Action",
+      "Shooter"
+    ],
+    "cover": "/assets/games/call-of-duty-ghosts-gold-edition.jpg",
+    "releaseDate": "2013-11-05",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    },
+    "nontrophy": {
+      "available": true,
+      "weekly": 199,
+      "monthly": 599,
+      "reservationStatus": "CLOSED"
+    }
+  },
+  {
+    "id": 150,
+    "slug": "mortal-shell-ii",
+    "title": "Mortal Shell II",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/mortal-shell-ii.jpg",
+    "releaseDate": "2026-08-20",
+    "activeRentals": 0,
+    "status": "available",
+    "upcomingOrder": 99999,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 151,
+    "slug": "resonance-a-plague-tale-legacy",
+    "title": "Resonance: A Plague Tale Legacy",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/resonance-a-plague-tale-legacy.jpg",
+    "releaseDate": "2026-08-27",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 2,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 152,
+    "slug": "the-blood-of-dawnwalker",
+    "title": "The Blood of Dawnwalker",
+    "genre": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "cover": "/assets/games/the-blood-of-dawnwalker.jpg",
+    "releaseDate": "2026-09-03",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 4,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 153,
+    "slug": "nba-2k27",
+    "title": "NBA 2K27",
+    "genre": [
+      "Sports"
+    ],
+    "cover": "/assets/games/nba-2k27.jpg",
+    "releaseDate": "2026-09-04",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 5,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 154,
+    "slug": "onimusha-way-of-the-sword",
+    "title": "Onimusha: Way of the Sword",
+    "genre": [
+      "Action",
+      "Adventure"
+    ],
+    "cover": "/assets/games/onimusha-way-of-the-sword.jpg",
+    "releaseDate": "2026-09-04",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 6,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 155,
+    "slug": "control-resonant",
+    "title": "CONTROL Resonant",
+    "genre": [
+      "Action",
+      "Adventure",
+      "RPG"
+    ],
+    "cover": "/assets/games/control-resonant.jpg",
+    "releaseDate": "2026-09-24",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 8,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 156,
+    "slug": "silent-hill-townfall",
+    "title": "SILENT HILL: Townfall",
+    "genre": [
+      "Adventure",
+      "Horror",
+      "Puzzle"
+    ],
+    "cover": "/assets/games/silent-hill-townfall.jpg",
+    "releaseDate": "2026-09-24",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 9,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 157,
+    "slug": "final-fantasy-resonance",
+    "title": "FINAL FANTASY RESONANCE",
+    "genre": [
+      "RPG"
+    ],
+    "cover": "/assets/games/final-fantasy-resonance.jpg",
+    "releaseDate": "2026-10-22",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 10,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  },
+  {
+    "id": 158,
+    "slug": "phantom-blade-zero",
+    "title": "Phantom Blade Zero",
+    "genre": [
+      "Action",
+      "RPG"
+    ],
+    "cover": "/assets/games/phantom-blade-zero.jpg",
+    "releaseDate": "2026-10-29",
+    "activeRentals": 0,
+    "status": "upcoming",
+    "upcomingOrder": 12,
+    "trophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    },
+    "nontrophy": {
+      "available": false,
+      "weekly": 349,
+      "monthly": 899,
+      "reservationStatus": "OPEN"
+    }
+  }
+]
