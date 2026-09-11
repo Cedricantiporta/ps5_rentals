@@ -1,5 +1,7 @@
-/* PS5-inspired dark/blue rental catalog UI. Reuses the site's existing color tokens. */
-.rc-root {
+/* PS5-inspired dark/blue rental catalog UI. Reuses the site's existing color tokens.
+   Variables live on :root (not scoped to .rc-root) because the rent modal is mounted
+   as a sibling of .rc-root, not a descendant of it. */
+:root {
   --rc-bg: var(--_colors-2---bg-primary, #0a0a0f);
   --rc-panel: #12141c;
   --rc-panel-2: #171a24;
@@ -14,6 +16,8 @@
   --rc-red: #ff4d4f;
   --rc-amber: #ffab2e;
   --rc-purple: #a06bff;
+}
+.rc-root {
   color: var(--rc-text);
   font-family: var(--_typography---font-family--body);
 }
@@ -41,14 +45,17 @@
   font-size: 0.88rem; cursor: pointer;
 }
 
-.rc-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
-.rc-chip {
-  padding: 0.5rem 0.95rem; border-radius: 999px; border: 1px solid var(--rc-border-2);
-  background: transparent; color: var(--rc-text-2); font-size: 0.82rem; font-weight: 600;
-  cursor: pointer; transition: all .15s; letter-spacing: .01em;
+.rc-chips {
+  display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem; padding: 0.35rem;
+  background: var(--rc-panel); border: 1px solid var(--rc-border); border-radius: 999px; width: fit-content; max-width: 100%;
 }
-.rc-chip:hover { color: var(--rc-text); border-color: var(--rc-text-3); }
-.rc-chip.is-active { background: var(--rc-blue); border-color: var(--rc-blue); color: #fff; box-shadow: 0 0 0 4px var(--rc-blue-glow); }
+.rc-chip {
+  padding: 0.5rem 1rem; border-radius: 999px; border: none;
+  background: transparent; color: var(--rc-text-2); font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; transition: all .15s; letter-spacing: .01em; white-space: nowrap;
+}
+.rc-chip:hover { color: var(--rc-text); background: var(--rc-panel-2); }
+.rc-chip.is-active { background: var(--rc-blue); color: #fff; box-shadow: 0 4px 14px -4px var(--rc-blue-glow); }
 
 .rc-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .rc-count { color: var(--rc-text-2); font-size: 0.88rem; }
@@ -82,21 +89,22 @@
 
 /* badges */
 .rc-badge {
-  position: absolute; left: 0.5rem; top: 0.5rem; z-index: 2; padding: 0.28rem 0.5rem; border-radius: 999px;
+  position: absolute; left: 0.5rem; top: 0.5rem; z-index: 2; padding: 0.28rem 0.55rem; border-radius: 999px;
   font-size: 0.58rem; font-weight: 900; letter-spacing: .04em; text-transform: uppercase;
-  border: 1px solid rgba(255,255,255,.2); background: rgba(10,10,15,.85); color: #fff; white-space: nowrap;
+  background: rgba(10,10,15,.9); color: #fff; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.35);
 }
-.rc-badge-upcoming { background: rgba(37,98,255,.92); border-color: rgba(168,197,255,.5); }
-.rc-badge-waitlist { background: rgba(143,39,50,.94); border-color: rgba(255,165,174,.5); }
-.rc-badge-trophyfull { background: rgba(172,80,15,.94); border-color: rgba(255,193,132,.5); }
-.rc-badge-limited { background: rgba(182,111,22,.94); border-color: rgba(255,210,138,.5); }
-.rc-badge-demand { background: rgba(187,49,28,.94); border-color: rgba(255,170,148,.5); }
-.rc-badge-popular { background: rgba(25,25,31,.92); border-color: rgba(255,255,255,.18); }
+.rc-badge-upcoming { background: #2562ff; }
+.rc-badge-waitlist { background: #8f2732; }
+.rc-badge-trophyfull { background: #ac500f; }
+.rc-badge-limited { background: #b66f16; }
+.rc-badge-demand { background: #bb311c; }
+.rc-badge-popular { background: #26262e; }
 
 .rc-count-badge {
-  position: absolute; right: 0.5rem; top: 0.5rem; z-index: 2; min-width: 20px; padding: 0.2rem 0.4rem;
-  border-radius: 999px; background: var(--rc-red); color: #fff; font-size: 0.6rem; font-weight: 900;
-  text-align: center; border: 2px solid rgba(10,10,15,.8);
+  position: absolute; right: 0.5rem; top: 0.5rem; z-index: 2; width: 22px; height: 22px;
+  border-radius: 50%; background: var(--rc-red); color: #fff; font-size: 0.6rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
 }
 
 /* main grid */
@@ -112,6 +120,7 @@
 .rc-card-body { padding: 0.75rem 0.8rem 0.85rem; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
 .rc-card-title { font-size: 0.88rem; font-weight: 700; line-height: 1.25; margin: 0; }
 .rc-card-genre { font-size: 0.68rem; color: var(--rc-text-3); text-transform: uppercase; letter-spacing: .04em; }
+.rc-platform { font-family: Playstation, Arial, sans-serif; font-size: 0.72rem; color: var(--rc-text-2); letter-spacing: .02em; }
 
 .rc-slot-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.7rem; gap: 0.4rem; }
 .rc-slot-label { display: flex; align-items: center; gap: 0.3rem; color: var(--rc-text-2); }
@@ -152,7 +161,11 @@
   align-items: center; justify-content: center; cursor: pointer;
 }
 .rc-modal-cover { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #1c1e28; }
-.rc-modal-body { padding: 1.25rem 1.4rem 1.5rem; }
+.rc-modal-body {
+  position: relative; margin-top: -3rem; padding: 2.5rem 1.4rem 1.5rem; border-radius: 1.1rem 1.1rem 0 0;
+  background: linear-gradient(180deg, rgba(8,9,14,0) 0%, rgba(8,9,14,.75) 28%, rgba(8,9,14,.94) 100%);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+}
 .rc-modal-title { font-family: var(--_typography---font-family--headers); font-size: 1.6rem; font-weight: 400; margin: 0 0 0.2rem; }
 .rc-modal-genre { color: var(--rc-text-2); font-size: 0.82rem; margin-bottom: 1rem; }
 
@@ -161,7 +174,7 @@
   flex: 1; padding: 0.6rem; border-radius: 0.7rem; border: 1px solid var(--rc-border-2); background: var(--rc-panel);
   color: var(--rc-text-2); font-weight: 700; font-size: 0.82rem; cursor: pointer; text-align: center;
 }
-.rc-plan-tab.is-active { border-color: var(--rc-blue); color: #fff; background: rgba(37,98,255,.16); }
+.rc-plan-tab.is-active { border-color: var(--rc-blue); color: #fff; background: var(--rc-blue); box-shadow: 0 4px 14px -4px var(--rc-blue-glow); }
 
 .rc-slot-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.1rem; }
 .rc-slot-option {

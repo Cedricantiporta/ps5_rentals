@@ -112,6 +112,7 @@
           '</div>' +
           '<div class="rc-soon-body">' +
             '<p class="rc-soon-title">' + g.title + '</p>' +
+            '<p class="rc-platform">' + (g.platform || 'PS5') + '</p>' +
             '<p class="rc-soon-date">Release: ' + releaseDateLabel(g.releaseDate) + '</p>' +
             '<div class="rc-soon-prices"><span>Wk <b>' + peso(g.trophy.weekly) + '</b></span><span>Mo <b>' + peso(g.trophy.monthly) + '</b></span></div>' +
             '<div class="rc-slot-row"><span class="rc-slot-label">Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
@@ -148,7 +149,8 @@
           '</div>' +
           '<div class="rc-card-body">' +
             '<p class="rc-card-title">' + g.title + '</p>' +
-            '<p class="rc-card-genre">' + (g.genre[0] || 'PS5') + '</p>' +
+            '<p class="rc-card-genre">' + (g.genre[0] || '') + '</p>' +
+            '<p class="rc-platform">' + (g.platform || 'PS5') + '</p>' +
             '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('trophy') + ' Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
             '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('user') + ' Non-Trophy</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
             '<div class="rc-price-row">' +
@@ -211,6 +213,7 @@
 
     body.innerHTML = '' +
       '<h2 class="rc-modal-title">' + g.title + '</h2>' +
+      '<p class="rc-platform">' + (g.platform || 'PS5') + '</p>' +
       '<p class="rc-modal-genre">' + g.genre.join(' · ') + (g.releaseDate ? ' · Release ' + releaseDateLabel(g.releaseDate) : '') + '</p>' +
       '<div class="rc-plan-tabs">' +
         '<button type="button" class="rc-plan-tab" data-plan="weekly">Weekly</button>' +
