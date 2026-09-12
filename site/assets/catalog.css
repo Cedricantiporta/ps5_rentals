@@ -75,6 +75,8 @@
 }
 .rc-guide-section-accordion > summary::-webkit-details-marker { display: none; }
 .rc-guide-section-accordion > summary::marker { content: ''; }
+.rc-guide-section-accordion > summary:focus,
+.rc-guide-section-accordion > summary:focus-visible { outline: none; }
 .rc-guide-section-accordion > summary .rc-guide-title { margin: 0; }
 .rc-accordion-chevron { flex: none; color: var(--rc-text-2); font-size: 1.5rem; line-height: 1; transition: transform 0.2s ease; }
 .rc-guide-section-accordion[open] .rc-accordion-chevron { transform: rotate(180deg); }
