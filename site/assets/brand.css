@@ -15,6 +15,13 @@
    stop them from being forced to uppercase (frog's .text-sm default) */
 .nav_wrap { flex: 1 1 auto; justify-content: flex-end !important; margin-right: 1.5rem; }
 .navbar_list .text-sm { text-transform: none !important; }
+
+/* white underline under the nav link matching the current page */
+.navbar_list a.link { position: relative; }
+.navbar_list a.link.is-current-page::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -4px;
+  height: 2px; background: #fff; border-radius: 999px;
+}
 .footer .text-sm { text-transform: none !important; }
 
 .button_left,

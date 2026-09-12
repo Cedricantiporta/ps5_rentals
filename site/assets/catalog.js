@@ -450,9 +450,21 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
   }
 
+  function wireNavCurrentPage() {
+    var path = window.location.pathname;
+    var links = document.querySelectorAll('.navbar_list a.link');
+    Array.prototype.forEach.call(links, function (a) {
+      var href = a.getAttribute('href');
+      if (!href) return;
+      var isCurrent = href === '/' ? path === '/' : path.indexOf(href) === 0;
+      a.classList.toggle('is-current-page', isCurrent);
+    });
+  }
+
   function init() {
     wireNavSolidOnScroll();
     wireRulesModal();
+    wireNavCurrentPage();
     fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (games) {
       state.games = games;
       populateGenres();
