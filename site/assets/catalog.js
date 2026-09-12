@@ -488,6 +488,202 @@
     });
   }
 
+  function roundRectPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function drawCoverFit(ctx, img, x, y, w, h) {
+    var ir = img.naturalWidth / img.naturalHeight;
+    var dr = w / h;
+    var sx, sy, sw, sh;
+    if (ir > dr) { sh = img.naturalHeight; sw = sh * dr; sx = (img.naturalWidth - sw) / 2; sy = 0; }
+    else { sw = img.naturalWidth; sh = sw / dr; sx = 0; sy = (img.naturalHeight - sh) / 2; }
+    ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+  }
+
+  function shareLink(g) { return window.location.origin + '/?game=' + g.slug; }
+
+  function drawShareCard(g, onReady) {
+    var canvas = document.getElementById('rcShareCanvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height, coverH = 620;
+
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, W, H);
+
+    var img = new Image();
+    img.onload = function () {
+      drawCoverFit(ctx, img, 0, 0, W, coverH);
+
+      var grad = ctx.createLinearGradient(0, coverH - 260, 0, coverH);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(1, 'rgba(0,0,0,.88)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, coverH - 260, W, 260);
+
+      roundRectPath(ctx, 22, 22, 232, 58, 14);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+      ctx.fillStyle = '#0a0a0a';
+      ctx.font = '800 18px Arial, sans-serif';
+      ctx.fillText('June Digitals', 38, 50);
+      ctx.fillStyle = '#6b6b6b';
+      ctx.font = '700 10px Arial, sans-serif';
+      ctx.fillText('PS5 DIGITAL GAME RENTAL', 38, 68);
+
+      ctx.fillStyle = '#fff';
+      ctx.font = '800 38px Arial, sans-serif';
+      wrapFillText(ctx, g.title, 26, coverH - 34, W - 52, 42);
+
+      ctx.fillStyle = '#111218';
+      ctx.fillRect(0, coverH, W, H - coverH);
+
+      var boxY = coverH + 28, boxH = 100, gap = 18, boxW = (W - 52 - gap) / 2;
+      drawPriceBox(ctx, 26, boxY, boxW, boxH, 'WEEKLY', peso(g.trophy.weekly));
+      drawPriceBox(ctx, 26 + boxW + gap, boxY, boxW, boxH, 'MONTHLY', peso(g.trophy.monthly));
+
+      ctx.fillStyle = '#2f6bff';
+      ctx.font = '800 15px Arial, sans-serif';
+      ctx.fillText('CHECK LIVE SLOT AVAILABILITY', 26, boxY + boxH + 38);
+      ctx.fillStyle = '#fff';
+      ctx.font = '700 17px Arial, sans-serif';
+      ctx.fillText('junedigitals.net', 26, boxY + boxH + 62);
+
+      if (onReady) onReady();
+    };
+    img.onerror = function () { if (onReady) onReady(); };
+    img.src = g.cover || '';
+  }
+
+  function wrapFillText(ctx, text, x, y, maxWidth, lineHeight) {
+    var words = text.split(' ');
+    var lines = [];
+    var line = '';
+    for (var i = 0; i < words.length; i++) {
+      var test = line ? line + ' ' + words[i] : words[i];
+      if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = words[i]; }
+      else line = test;
+    }
+    if (line) lines.push(line);
+    lines = lines.slice(-2);
+    var startY = y - (lines.length - 1) * lineHeight;
+    lines.forEach(function (l, i) { ctx.fillText(l, x, startY + i * lineHeight); });
+  }
+
+  function drawPriceBox(ctx, x, y, w, h, label, value) {
+    roundRectPath(ctx, x, y, w, h, 14);
+    ctx.fillStyle = '#1c1d20';
+    ctx.fill();
+    ctx.fillStyle = '#9a9aa2';
+    ctx.font = '800 12px Arial, sans-serif';
+    ctx.fillText(label, x + 18, y + 30);
+    ctx.fillStyle = '#fff';
+    ctx.font = '800 26px Arial, sans-serif';
+    ctx.fillText(value, x + 18, y + 66);
+  }
+
+  function openShareModal(g) {
+    if (!g) return;
+    var overlay = document.getElementById('rcShareOverlay');
+    var body = document.getElementById('rcShareBody');
+    if (!overlay || !body) return;
+
+    var link = shareLink(g);
+    var text = 'Hi! I\'d like to check "' + g.title + '" — Weekly ' + peso(g.trophy.weekly) + ' / Monthly ' + peso(g.trophy.monthly) + '.';
+    var summaryText = g.title + '\nWeekly: ' + peso(g.trophy.weekly) + '\nMonthly: ' + peso(g.trophy.monthly) +
+      '\n\nCheck live Trophy and Non-Trophy availability on June Digitals:\n' + link;
+
+    body.innerHTML = '' +
+      '<h2 class="rc-modal-title">Share this game</h2>' +
+      '<p class="rc-share-sub">A ready-to-post June Digitals game card with the cover, title, prices, and direct game link.</p>' +
+      '<div class="rc-share-preview"><canvas id="rcShareCanvas" width="640" height="820"></canvas></div>' +
+      '<div class="rc-share-summary">' + icon('gamepad-2') + ' <strong>' + g.title + '</strong><br>' +
+        'Weekly: ' + peso(g.trophy.weekly) + '<br>Monthly: ' + peso(g.trophy.monthly) +
+        '<p>Check live Trophy and Non-Trophy availability on June Digitals:<br><a href="' + link + '" target="_blank" rel="noopener">' + link + '</a></p>' +
+      '</div>' +
+      '<button type="button" class="rc-modal-cta rc-share-main-btn" id="rcShareGameBtn" disabled>' + icon('gamepad-2') + ' Share Game</button>' +
+      '<div class="rc-share-btn-row">' +
+        '<button type="button" class="rc-share-btn" id="rcShareCopyBtn">Copy Link</button>' +
+        '<button type="button" class="rc-share-btn" id="rcShareDownloadBtn" disabled>Download Card</button>' +
+      '</div>' +
+      '<p class="rc-share-status" id="rcShareStatus"></p>' +
+      '<p class="rc-modal-note">Supported phones will open the native share menu with the image and game details. If an app removes the clickable link, use Copy Link and paste it with the post.</p>';
+
+    overlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+
+    drawShareCard(g, function () {
+      var shareBtn = document.getElementById('rcShareGameBtn');
+      var downloadBtn = document.getElementById('rcShareDownloadBtn');
+      if (shareBtn) shareBtn.removeAttribute('disabled');
+      if (downloadBtn) downloadBtn.removeAttribute('disabled');
+    });
+
+    var statusEl = document.getElementById('rcShareStatus');
+    var flash = function (msg) {
+      if (!statusEl) return;
+      statusEl.textContent = msg;
+      setTimeout(function () { statusEl.textContent = ''; }, 2400);
+    };
+
+    var copyBtn = document.getElementById('rcShareCopyBtn');
+    if (copyBtn) copyBtn.addEventListener('click', function () {
+      navigator.clipboard.writeText(link).then(function () { flash('Link copied!'); }, function () { flash('Could not copy — copy the link above manually.'); });
+    });
+
+    var downloadBtn2 = document.getElementById('rcShareDownloadBtn');
+    if (downloadBtn2) downloadBtn2.addEventListener('click', function () {
+      var canvas = document.getElementById('rcShareCanvas');
+      canvas.toBlob(function (blob) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = g.slug + '-june-digitals.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }, 'image/png');
+    });
+
+    var shareBtn2 = document.getElementById('rcShareGameBtn');
+    if (shareBtn2) shareBtn2.addEventListener('click', function () {
+      var canvas = document.getElementById('rcShareCanvas');
+      canvas.toBlob(function (blob) {
+        var shareData = { title: g.title, text: summaryText, url: link };
+        var file = blob ? new File([blob], g.slug + '-june-digitals.png', { type: 'image/png' }) : null;
+        if (file && navigator.canShare && navigator.canShare({ files: [file] })) shareData.files = [file];
+        if (navigator.share) {
+          navigator.share(shareData).catch(function () {});
+        } else {
+          navigator.clipboard.writeText(summaryText);
+          flash('Share not supported here — details copied instead.');
+        }
+      }, 'image/png');
+    });
+  }
+
+  function closeShareModal() {
+    var overlay = document.getElementById('rcShareOverlay');
+    if (overlay) overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  function wireShareModal() {
+    var openBtn = document.getElementById('rcModalShare');
+    var closeBtn = document.getElementById('rcShareClose');
+    var overlay = document.getElementById('rcShareOverlay');
+    if (openBtn) openBtn.addEventListener('click', function () { openShareModal(state.modalGame); });
+    if (closeBtn) closeBtn.addEventListener('click', closeShareModal);
+    if (overlay) overlay.addEventListener('click', function (e) { if (e.target === overlay) closeShareModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeShareModal(); });
+  }
+
   function wireToolbar() {
     var searchInput = document.getElementById('rcSearch');
     var searchWrap = searchInput.closest('.rc-search');
@@ -598,7 +794,7 @@
 
   function wireNavCurrentPage() {
     var path = window.location.pathname;
-    var links = document.querySelectorAll('.navbar_list a.link');
+    var links = document.querySelectorAll('.navbar_list a.link, .rc-drawer-link');
     Array.prototype.forEach.call(links, function (a) {
       var href = a.getAttribute('href');
       if (!href) return;
@@ -607,9 +803,45 @@
     });
   }
 
+  function wireDrawer() {
+    var btn = document.getElementById('rcMenuBtn');
+    var overlay = document.getElementById('rcDrawerOverlay');
+    var closeBtn = document.getElementById('rcDrawerClose');
+    var rulesLink = document.getElementById('rcDrawerRulesBtn');
+    if (!btn || !overlay) return;
+
+    var open = function () {
+      overlay.classList.add('is-open');
+      btn.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    };
+    var close = function () {
+      overlay.classList.remove('is-open');
+      btn.classList.remove('is-open');
+      document.body.style.overflow = '';
+    };
+
+    btn.addEventListener('click', function () {
+      if (overlay.classList.contains('is-open')) close(); else open();
+    });
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    if (rulesLink) rulesLink.addEventListener('click', function () {
+      close();
+      var rb = document.getElementById('rcRulesBtn');
+      if (rb) rb.click();
+    });
+    Array.prototype.forEach.call(overlay.querySelectorAll('.rc-drawer-link'), function (a) {
+      a.addEventListener('click', close);
+    });
+  }
+
   function init() {
     wireNavSolidOnScroll();
     wireRulesModal();
+    wireShareModal();
+    wireDrawer();
     wireNavCurrentPage();
     fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (games) {
       state.games = games;
