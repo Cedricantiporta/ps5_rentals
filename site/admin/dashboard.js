@@ -239,14 +239,20 @@
       if (res.error) { alert(res.error.message); return; }
       // Slot frees up the day after the rental's end date -- shown on the
       // public site as a "Xd left" countdown instead of a flat FULL.
-      return setGameSlotAvailable(rental.game_id, rental.slot, false, addDaysISO(end, 1)).then(loadAll);
+      return setGameSlotAvailable(rental.game_id, rental.slot, false, addDaysISO(end, 1)).then(function (res2) {
+        if (res2.error) { alert(res2.error.message); return; }
+        loadAll();
+      });
     });
   }
 
   function setRentalStatus(rental, status, freeSlot) {
     supabase.from('rentals').update({ status: status }).eq('id', rental.id).then(function (res) {
       if (res.error) { alert(res.error.message); return; }
-      if (freeSlot) return setGameSlotAvailable(rental.game_id, rental.slot, true).then(loadAll);
+      if (freeSlot) return setGameSlotAvailable(rental.game_id, rental.slot, true).then(function (res2) {
+        if (res2.error) { alert(res2.error.message); return; }
+        loadAll();
+      });
       return loadAll();
     });
   }
