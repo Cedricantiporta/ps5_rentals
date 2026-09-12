@@ -18,20 +18,67 @@
 
   <div class="a-wrap">
     <div class="a-tabs">
-      <button class="a-tab is-active" data-tab="rentals">Rentals</button>
+      <button class="a-tab is-active" data-tab="overview">Overview</button>
+      <button class="a-tab" data-tab="requests">Incoming Requests <span id="requestsBadge"></span></button>
+      <button class="a-tab" data-tab="rentals">Rentals</button>
       <button class="a-tab" data-tab="new-rental">New Rental</button>
       <button class="a-tab" data-tab="renters">Renters</button>
       <button class="a-tab" data-tab="games">Games</button>
     </div>
 
-    <div class="a-panel is-active" id="panel-rentals">
+    <div class="a-panel is-active" id="panel-overview">
+      <div class="a-stat-grid">
+        <div class="a-stat-card">
+          <span class="a-stat-label">Confirmed Revenue</span>
+          <span class="a-stat-value" id="statRevenuePaid">₱0</span>
+          <span class="a-stat-sub">from paid, active + past rentals</span>
+        </div>
+        <div class="a-stat-card">
+          <span class="a-stat-label">Awaiting Payment</span>
+          <span class="a-stat-value" id="statRevenuePending">₱0</span>
+          <span class="a-stat-sub" id="statPendingCount">0 pending rentals</span>
+        </div>
+        <div class="a-stat-card">
+          <span class="a-stat-label">Active Rentals</span>
+          <span class="a-stat-value" id="statActiveCount">0</span>
+          <span class="a-stat-sub" id="statEndingSoon">0 ending in 2 days</span>
+        </div>
+        <div class="a-stat-card">
+          <span class="a-stat-label">Renters</span>
+          <span class="a-stat-value" id="statRenterCount">0</span>
+          <span class="a-stat-sub" id="statRequestCount">0 new requests</span>
+        </div>
+      </div>
+      <div class="a-card">
+        <h2>Ending soon</h2>
+        <table class="a-table" id="endingSoonTable">
+          <thead><tr><th>Game</th><th>Renter</th><th>Slot</th><th>Time Left</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p class="a-empty" id="endingSoonEmpty" hidden>Nothing ending in the next few days.</p>
+      </div>
+    </div>
+
+    <div class="a-panel" id="panel-requests">
+      <div class="a-card">
+        <h2>Requests from the site</h2>
+        <p class="a-hint">Someone clicked through the rental wizard on the public site. Match it to their Messenger message, then hit "Use this" to jump into New Rental with the game/slot/plan already filled in.</p>
+        <table class="a-table" id="requestsTable">
+          <thead><tr><th>Game</th><th>Slot</th><th>Plan</th><th>Amount</th><th>When</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p class="a-empty" id="requestsEmpty" hidden>No incoming requests yet.</p>
+      </div>
+    </div>
+
+    <div class="a-panel" id="panel-rentals">
       <div class="a-card">
         <h2>All rentals</h2>
         <table class="a-table" id="rentalsTable">
           <thead>
             <tr>
               <th>Game</th><th>Renter</th><th>Slot</th><th>Plan</th>
-              <th>Status</th><th>Payment</th><th>Start</th><th>End</th><th></th>
+              <th>Status</th><th>Payment</th><th>Start</th><th>End</th><th>Time Left</th><th></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -123,7 +170,7 @@
       <div class="a-card">
         <h2>All renters</h2>
         <table class="a-table" id="rentersTable">
-          <thead><tr><th>Name</th><th>Messenger</th><th>Note</th><th>Added</th></tr></thead>
+          <thead><tr><th>Name</th><th>Messenger</th><th>Note</th><th>Added</th><th>Total Paid</th><th>Rentals</th><th>Active Now</th></tr></thead>
           <tbody></tbody>
         </table>
         <p class="a-empty" id="rentersEmpty" hidden>No renters yet.</p>
