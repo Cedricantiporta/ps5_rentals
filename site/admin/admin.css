@@ -134,6 +134,8 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
 .a-menu-item:disabled { color: var(--a-text-3); cursor: not-allowed; }
 .a-menu-item-danger { color: var(--a-red); }
 
+.a-msg-icon { color: var(--a-blue); vertical-align: -2px; }
+
 .a-login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; background: var(--a-bg); }
 .a-login-box { background: var(--a-panel); border: 1px solid var(--a-border); border-radius: 1.4rem; padding: 2.25rem; width: 100%; max-width: 360px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
 .a-login-box h1 { font-size: 1.3rem; margin: 0 0 1.5rem; font-weight: 600; letter-spacing: -.01em; }

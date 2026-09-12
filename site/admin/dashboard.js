@@ -5,6 +5,8 @@
   var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null, amountManuallyEdited: false };
 
   function $(id) { return document.getElementById(id); }
+  var MESSENGER_ICON = '<svg class="a-msg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Has a Messenger link"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
+  function messengerIcon(url) { return url ? MESSENGER_ICON : ''; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function todayISO() { return new Date().toISOString().slice(0, 10); }
   function addDaysISO(iso, days) {
@@ -101,7 +103,10 @@
   function renderOverview() {
     var paid = 0, pending = 0, pendingCount = 0, activeCount = 0, endingSoon = [];
     state.rentals.forEach(function (r) {
-      if (r.payment_status === 'paid' && (r.status === 'active' || r.status === 'ended')) paid += r.amount || 0;
+      // A rental ended by a swap isn't a separate payment -- its successor
+      // rental carries the same paid period forward, so only count the
+      // latest link in a swap chain to avoid double-counting revenue.
+      if (r.payment_status === 'paid' && (r.status === 'active' || r.status === 'ended') && !wasSwapped(r.id)) paid += r.amount || 0;
       if (r.status === 'pending') { pending += r.amount || 0; pendingCount++; }
       if (r.status === 'active') {
         activeCount++;
@@ -207,6 +212,7 @@
       var tr = document.createElement('tr');
       var game = r.games || {};
       var renter = r.renters || {};
+      var renterObj = state.renters.filter(function (x) { return x.id === r.renter_id; })[0];
       var actions = '';
       var timeLeftCell = '—';
       if (r.status === 'pending') {
@@ -229,14 +235,13 @@
         } else {
           actions += '<button type="button" class="a-menu-item" data-action="swap" data-id="' + r.id + '">Swap Game</button>';
         }
-        var renterObj = state.renters.filter(function (x) { return x.id === r.renter_id; })[0];
         if (renterObj && renterObj.messenger_url) {
           actions += '<a class="a-menu-item" href="' + esc(renterObj.messenger_url) + '" target="_blank" rel="noopener">Open Messenger</a>';
         }
       }
       tr.innerHTML =
         '<td>' + esc(game.title) + '</td>' +
-        '<td>' + esc(renter.name) + '</td>' +
+        '<td>' + esc(renter.name) + ' ' + messengerIcon(renterObj && renterObj.messenger_url) + '</td>' +
         '<td>' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + '</td>' +
         '<td>' + (r.plan === 'weekly' ? 'Weekly' : 'Monthly') + ' (₱<span data-amount-display>' + r.amount + '</span>' +
           ' <button type="button" class="a-edit-amount" data-action="edit-amount" data-id="' + r.id + '" title="Edit amount">✎</button>)</td>' +
@@ -483,14 +488,14 @@
     $('rentersEmpty').hidden = state.renters.length > 0;
     state.renters.forEach(function (r) {
       var theirRentals = state.rentals.filter(function (x) { return x.renter_id === r.id; });
-      var totalPaid = theirRentals.reduce(function (sum, x) { return sum + (x.payment_status === 'paid' ? (x.amount || 0) : 0); }, 0);
+      var totalPaid = theirRentals.reduce(function (sum, x) { return sum + (x.payment_status === 'paid' && !wasSwapped(x.id) ? (x.amount || 0) : 0); }, 0);
       var activeNow = theirRentals.filter(function (x) { return x.status === 'active'; }).length;
       var tr = document.createElement('tr');
       var menuItems = '';
       if (r.messenger_url) menuItems += '<a class="a-menu-item" href="' + esc(r.messenger_url) + '" target="_blank" rel="noopener">Open Messenger</a>';
       menuItems += '<button type="button" class="a-menu-item" data-action="edit-messenger-link" data-id="' + r.id + '">' +
         (r.messenger_url ? 'Edit Messenger link' : 'Add Messenger link') + '</button>';
-      tr.innerHTML = '<td>' + esc(r.name) + '</td><td>' + esc(r.messenger_name) + '</td>' +
+      tr.innerHTML = '<td>' + esc(r.name) + ' ' + messengerIcon(r.messenger_url) + '</td><td>' + esc(r.messenger_name) + '</td>' +
         '<td>' + esc(r.contact_note) + '</td><td>' + fmtDate((r.created_at || '').slice(0, 10)) + '</td>' +
         '<td>₱' + totalPaid.toLocaleString() + '</td>' +
         '<td>' + theirRentals.length + '</td>' +
