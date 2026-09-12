@@ -289,12 +289,12 @@
 /* modal */
 .rc-modal-overlay {
   position: fixed; inset: 0; background: rgba(5,5,8,.72); backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center; z-index: 10050; padding: 1.25rem;
+  display: flex; align-items: center; justify-content: center; z-index: 10050; padding: 0.75rem;
   opacity: 0; pointer-events: none; transition: opacity .18s;
 }
 .rc-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
 .rc-modal {
-  width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; background: var(--rc-bg);
+  width: 100%; max-width: 560px; max-height: 95vh; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; background: var(--rc-bg);
   border: 1px solid var(--rc-border-2); border-radius: 1.25rem; position: relative;
   box-shadow: 0 30px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(37,98,255,.08);
   transform: translateY(12px); transition: transform .18s;
@@ -368,15 +368,9 @@
    blurred, darkened version of it sitting behind the whole modal, so
    the step content fits without the page needing to scroll. */
 .rc-modal-compact .rc-modal-cover { display: none; }
-.rc-modal-compact { background: #0a0a0d; }
-.rc-modal-compact::before {
-  content: ''; position: absolute; inset: -20px; z-index: 0; pointer-events: none;
-  background-image: var(--rc-modal-bg); background-size: cover; background-position: center;
-  filter: blur(28px) brightness(.32); transform: scale(1.15);
-}
+.rc-modal-compact { background: linear-gradient(165deg, #131a2e 0%, #0a0b10 55%, #050506 100%); }
 .rc-modal-compact .rc-modal-body {
-  position: relative; z-index: 1; margin-top: 0; padding: 1.5rem 1.4rem 1.1rem; border-radius: 1.25rem;
-  background: rgba(8,9,14,.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  position: relative; z-index: 1; margin-top: 0; padding: 1.15rem 1.3rem 0.95rem; border-radius: 1.25rem;
 }
 .rc-modal-title { font-family: var(--_typography---font-family--headers); font-size: 1.6rem; font-weight: 400; margin: 0 0 0.2rem; }
 .rc-modal-genre { color: var(--rc-text-2); font-size: 0.82rem; margin-bottom: 1rem; }
@@ -418,9 +412,9 @@
 .rc-wizard-back:hover { color: #fff; }
 .rc-wizard-back .rc-icon { width: 14px; height: 14px; }
 .rc-wizard-eyebrow { display: block; color: var(--rc-blue); font-size: 0.72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 0.4rem; }
-.rc-wizard-heading { font-family: var(--_typography---font-family--headers); font-size: 1.3rem; font-weight: 400; margin: 0 0 0.3rem; }
-.rc-wizard-heading-sm { font-size: 1.05rem; margin-top: 0.9rem; }
-.rc-wizard-sub { color: var(--rc-text-2); font-size: 0.85rem; margin: 0 0 0.8rem; line-height: 1.45; }
+.rc-wizard-heading { font-family: var(--_typography---font-family--headers); font-size: 1.2rem; font-weight: 400; margin: 0 0 0.25rem; }
+.rc-wizard-heading-sm { font-size: 1rem; margin-top: 0.7rem; }
+.rc-wizard-sub { color: var(--rc-text-2); font-size: 0.82rem; margin: 0 0 0.7rem; line-height: 1.4; }
 
 .rc-wizard-steps { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
 .rc-wizard-step-chip {
@@ -447,8 +441,8 @@
 /* step 2: plan */
 .rc-plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .rc-plan-card {
-  background: var(--rc-panel); border: none; border-radius: 1rem; padding: 1.25rem 1.1rem; text-align: left;
-  cursor: pointer; display: flex; flex-direction: column; gap: 0.3rem; color: var(--rc-text);
+  background: var(--rc-panel); border: none; border-radius: 1rem; padding: 1rem 1rem; text-align: left;
+  cursor: pointer; display: flex; flex-direction: column; gap: 0.25rem; color: var(--rc-text);
 }
 .rc-plan-card:hover { background: var(--rc-panel-2); }
 .rc-plan-name { font-weight: 800; font-size: 0.95rem; }
