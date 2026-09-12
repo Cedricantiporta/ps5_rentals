@@ -248,17 +248,17 @@
 
 .rc-soon-card {
   position: relative; flex: 0 0 280px; border-radius: 1rem;
-  overflow: hidden; background: linear-gradient(180deg, #0a0a0a 0%, #1a233f 100%); border: 1px solid var(--rc-border);
-  cursor: pointer; transition: transform .18s, border-color .18s;
+  overflow: hidden; background: linear-gradient(180deg, #0a0a0a 0%, #1a233f 100%); border: none;
+  cursor: pointer; transition: transform .18s, box-shadow .18s;
   display: flex; flex-direction: column;
   /* card art is always dark navy regardless of page theme -- pin its own text tokens so titles/prices stay readable in light mode. */
   --rc-text: #fff; --rc-text-2: #ffffff80; --rc-text-3: #ffffff4d;
 }
 [data-theme="light"] .rc-soon-card {
-  background: #fff; border-color: #0000001a;
+  background: #fff;
   --rc-text: #0a0a0f; --rc-text-2: #55555f; --rc-text-3: #8b8b95;
 }
-.rc-soon-card:hover { transform: translateY(-3px); border-color: var(--rc-blue); }
+.rc-soon-card:hover { transform: translateY(-3px); box-shadow: 0 0 0 2px var(--rc-blue); }
 .rc-soon-cover { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #1c1e28; }
 .rc-soon-card .rc-card-cover-wrap::before {
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: 40%; z-index: 1;
@@ -372,16 +372,16 @@
 .rc-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
 .rc-modal {
   width: 100%; max-width: 560px; max-height: 95vh; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
-  /* the rent/swap modal is always a dark panel over the game's cover art --
-     independent of the page's light/dark theme -- so pin its own text
-     tokens (brighter than the sitewide dark-mode defaults, per feedback
-     that the genre line / sub-copy read too greyish) instead of following
-     --rc-bg / --rc-text, which would wash the panel out in light mode. */
+  /* the rent/swap modal panel is dark navy in dark mode, and a light grey
+     panel with dark text in light mode -- pinned locally (not following
+     --rc-bg/--rc-text directly) so the genre line/sub-copy can be tuned
+     brighter than the sitewide dark-mode secondary-text opacity, per
+     feedback that they read too greyish against the cover-art gradient. */
   background: linear-gradient(165deg, #131a2e 0%, #0a0b10 55%, #050506 100%);
   --rc-text: #fff; --rc-text-2: rgba(255,255,255,.82); --rc-text-3: rgba(255,255,255,.6);
-  /* also pin the panel/border tokens -- anything inside the modal that still
-     reads var(--rc-panel) etc (share-card summary, buttons) should stay the
-     original dark secondary-panel look, not flip white in light mode. */
+  /* also pin the panel/border tokens -- inner choice/plan/access cards use
+     var(--rc-panel) for their own dark-mode-default styling, distinct from
+     this outer panel's background (see the plan/choice card rules below). */
   --rc-panel: #1c1d20; --rc-panel-2: #232427; --rc-border: #ffffff2b; --rc-border-2: #ffffff1f;
   color: var(--rc-text);
   border: 1px solid var(--rc-border-2); border-radius: 1.25rem; position: relative;
@@ -393,6 +393,14 @@
 .rc-modal::-webkit-scrollbar-track { background: transparent; }
 .rc-modal::-webkit-scrollbar-thumb { background: #fff; border-radius: 999px; }
 .rc-modal::-webkit-scrollbar-thumb:hover { background: #e2e2e2; }
+[data-theme="light"] .rc-modal {
+  background: #eef0f3;
+  --rc-text: #0a0a0f; --rc-text-2: #55555f; --rc-text-3: #8b8b95;
+  --rc-panel: #fff; --rc-panel-2: #f5f6f8; --rc-border: #0000001f; --rc-border-2: #00000016;
+  scrollbar-color: #b7b9c0 transparent;
+}
+[data-theme="light"] .rc-modal::-webkit-scrollbar-thumb { background: #b7b9c0; }
+[data-theme="light"] .rc-modal::-webkit-scrollbar-thumb:hover { background: #9a9ca4; }
 .rc-modal-overlay.is-open .rc-modal { transform: translateY(0); }
 .rc-modal-close {
   position: absolute; right: 0.9rem; top: 0.9rem; z-index: 3; width: 34px; height: 34px; border-radius: 50%;
@@ -434,6 +442,9 @@
     margin-top: -2.5rem; padding-top: 3.5rem;
     background: linear-gradient(180deg, rgba(10,11,16,0) 0%, rgba(10,11,16,.9) 45%, #0a0b10 75%);
   }
+  [data-theme="light"] .rc-modal-compact .rc-modal-body {
+    background: linear-gradient(180deg, rgba(238,240,243,0) 0%, rgba(238,240,243,.9) 45%, #eef0f3 75%);
+  }
 }
 
 /* share card modal */
@@ -464,6 +475,9 @@
   background: linear-gradient(180deg, rgba(8,9,14,0) 0%, rgba(8,9,14,.75) 28%, rgba(8,9,14,.94) 100%);
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
 }
+[data-theme="light"] .rc-modal-body {
+  background: linear-gradient(180deg, rgba(238,240,243,0) 0%, rgba(238,240,243,.8) 28%, rgba(238,240,243,.96) 100%);
+}
 
 /* compact wizard steps (plan/access): a short header cover (not the
    full hero-height cover) fading into the blue-black gradient body,
@@ -474,30 +488,40 @@
   position: relative; z-index: 1; margin-top: -2.25rem; padding: 3.25rem 1.3rem 0.95rem; border-radius: 1.25rem;
   background: linear-gradient(180deg, rgba(19,26,46,0) 0%, rgba(15,20,35,.92) 45%, rgba(10,11,16,.98) 75%);
 }
+[data-theme="light"] .rc-modal-compact { background: #eef0f3; }
+[data-theme="light"] .rc-modal-compact .rc-modal-body {
+  background: linear-gradient(180deg, rgba(238,240,243,0) 0%, rgba(238,240,243,.92) 45%, rgba(238,240,243,.98) 75%);
+}
 .rc-modal-title { color: var(--rc-text); font-family: var(--_typography---font-family--headers); font-size: 1.6rem; font-weight: 400; margin: 0 0 0.2rem; }
 .rc-modal-genre { color: var(--rc-text-2); font-size: 0.82rem; margin-bottom: 1rem; }
 
-/* plan-tab/slot-option/choice cards are always plain white cards with dark
-   text, independent of page theme -- they sit inside the always-dark modal
-   panel (see .rc-modal), same convention as the site's other white pills. */
+/* plan-tab/slot-option/choice cards: original dark-grey panel look in dark
+   mode (using the modal's own pinned --rc-panel/--rc-text, see .rc-modal),
+   switched to plain white cards with dark text in light mode -- otherwise
+   they'd stay dark-on-dark against the light page (or, if left following
+   the page theme directly, white-on-white against the always-dark modal). */
 .rc-plan-tabs { display: flex; gap: 0.5rem; margin-bottom: 0.85rem; }
 .rc-plan-tab {
-  flex: 1; padding: 0.6rem; border-radius: 999px; border: none; background: #fff;
-  color: #55555f; font-weight: 700; font-size: 0.82rem; cursor: pointer; text-align: center;
+  flex: 1; padding: 0.6rem; border-radius: 999px; border: none; background: var(--rc-panel);
+  color: var(--rc-text-2); font-weight: 700; font-size: 0.82rem; cursor: pointer; text-align: center;
 }
 .rc-plan-tab.is-active { box-shadow: 0 4px 14px -4px rgba(0,0,0,.5); }
+[data-theme="light"] .rc-plan-tab { background: #fff; color: #55555f; }
 
 .rc-slot-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.1rem; }
 .rc-slot-option {
-  border: none; border-radius: 0.8rem; padding: 0.7rem 0.75rem; background: #fff;
-  cursor: pointer; text-align: left; color: #0a0a0f;
+  border: none; border-radius: 0.8rem; padding: 0.7rem 0.75rem; background: var(--rc-panel);
+  cursor: pointer; text-align: left; color: var(--rc-text);
 }
 .rc-slot-option.is-active { box-shadow: 0 4px 14px -4px rgba(0,0,0,.5); }
 .rc-slot-option.is-disabled { opacity: .45; cursor: not-allowed; }
 .rc-slot-option-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.3rem; }
 .rc-slot-option-name { display: flex; align-items: center; gap: 0.35rem; font-weight: 700; font-size: 0.85rem; }
-.rc-slot-option-price { font-size: 0.72rem; color: #55555f; }
-.rc-slot-option-amount { font-size: 1rem; font-weight: 800; color: #0a0a0f; }
+.rc-slot-option-price { font-size: 0.72rem; color: var(--rc-text-2); }
+.rc-slot-option-amount { font-size: 1rem; font-weight: 800; color: var(--rc-text); }
+[data-theme="light"] .rc-slot-option { background: #fff; color: #0a0a0f; }
+[data-theme="light"] .rc-slot-option-price { color: #55555f; }
+[data-theme="light"] .rc-slot-option-amount { color: #0a0a0f; }
 
 .rc-modal-cta {
   display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%;
@@ -515,16 +539,17 @@
 }
 .rc-wizard-back:hover { filter: brightness(.92); }
 .rc-wizard-back .rc-icon { width: 14px; height: 14px; }
-.rc-wizard-eyebrow { display: block; color: var(--rc-blue); font-size: 0.72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 0.4rem; }
+.rc-wizard-eyebrow { display: block; color: var(--rc-text); font-size: 0.72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 0.4rem; }
 .rc-wizard-heading { color: var(--rc-text); font-family: var(--_typography---font-family--headers); font-size: 1.2rem; font-weight: 400; margin: 0 0 0.25rem; }
 .rc-wizard-heading-sm { font-size: 1rem; margin-top: 0.7rem; }
 .rc-wizard-sub { color: var(--rc-text-2); font-size: 0.82rem; margin: 0 0 0.7rem; line-height: 1.4; }
 
 .rc-wizard-steps { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
 .rc-wizard-step-chip {
-  display: flex; align-items: center; gap: 0.4rem; background: #fff; border-radius: 999px;
-  padding: 0.4rem 0.85rem 0.4rem 0.4rem; font-size: 0.75rem; font-weight: 700; color: #55555f;
+  display: flex; align-items: center; gap: 0.4rem; background: var(--rc-panel); border-radius: 999px;
+  padding: 0.4rem 0.85rem 0.4rem 0.4rem; font-size: 0.75rem; font-weight: 700; color: var(--rc-text-2);
 }
+[data-theme="light"] .rc-wizard-step-chip { background: #fff; color: #55555f; }
 .rc-wizard-step-num {
   width: 1.35rem; height: 1.35rem; border-radius: 50%; background: var(--rc-blue); color: #fff;
   display: flex; align-items: center; justify-content: center; font-size: 0.72rem;
@@ -533,48 +558,60 @@
 /* step 1: intent */
 .rc-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .rc-choice-card {
-  background: #fff; border: none; border-radius: 1rem; padding: 1.25rem 1.1rem; text-align: left;
-  cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; color: #0a0a0f;
+  background: var(--rc-panel); border: none; border-radius: 1rem; padding: 1.25rem 1.1rem; text-align: left;
+  cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; color: var(--rc-text);
 }
-.rc-choice-card:hover { background: #f0f1f4; }
-.rc-choice-icon { width: 2.2rem; height: 2.2rem; border-radius: 50%; background: #0a0a0f14; display: flex; align-items: center; justify-content: center; }
+.rc-choice-card:hover { background: var(--rc-panel-2); }
+.rc-choice-icon { width: 2.2rem; height: 2.2rem; border-radius: 50%; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; }
 .rc-choice-icon .rc-icon { width: 18px; height: 18px; }
 .rc-choice-name { font-weight: 800; font-size: 0.95rem; }
-.rc-choice-desc { font-size: 0.78rem; color: #55555f; line-height: 1.4; }
+.rc-choice-desc { font-size: 0.78rem; color: var(--rc-text-2); line-height: 1.4; }
+[data-theme="light"] .rc-choice-card { background: #fff; color: #0a0a0f; }
+[data-theme="light"] .rc-choice-card:hover { background: #f0f1f4; }
+[data-theme="light"] .rc-choice-icon { background: #0a0a0f14; }
+[data-theme="light"] .rc-choice-desc { color: #55555f; }
 
 /* step 2: plan */
 .rc-plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .rc-plan-card {
-  background: #fff; border: none; border-radius: 1rem; padding: 1rem 1rem; text-align: left;
-  cursor: pointer; display: flex; flex-direction: column; gap: 0.25rem; color: #0a0a0f;
+  background: var(--rc-panel); border: none; border-radius: 1rem; padding: 1rem 1rem; text-align: left;
+  cursor: pointer; display: flex; flex-direction: column; gap: 0.25rem; color: var(--rc-text);
 }
-.rc-plan-card:hover { background: #f0f1f4; }
+.rc-plan-card:hover { background: var(--rc-panel-2); }
 .rc-plan-name { font-weight: 800; font-size: 0.95rem; }
-.rc-plan-price { font-size: 1.4rem; font-weight: 800; color: #0a0a0f; }
-.rc-plan-desc { font-size: 0.72rem; color: #55555f; line-height: 1.4; margin-bottom: 0.4rem; }
+.rc-plan-price { font-size: 1.4rem; font-weight: 800; color: var(--rc-text); }
+.rc-plan-desc { font-size: 0.72rem; color: var(--rc-text-2); line-height: 1.4; margin-bottom: 0.4rem; }
 .rc-plan-tap { font-size: 0.68rem; font-weight: 800; color: var(--rc-blue); text-transform: uppercase; letter-spacing: .04em; }
+[data-theme="light"] .rc-plan-card { background: #fff; color: #0a0a0f; }
+[data-theme="light"] .rc-plan-card:hover { background: #f0f1f4; }
+[data-theme="light"] .rc-plan-price { color: #0a0a0f; }
+[data-theme="light"] .rc-plan-desc { color: #55555f; }
 
 /* step 3: access */
 .rc-access-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 0.7rem; }
 .rc-access-grid-simple { grid-template-columns: 1fr 1fr; }
-/* access cards are the same always-white-card convention as choice/plan
-   cards (they sit inside the always-dark .rc-modal panel) -- hardcode
-   colors instead of following --rc-panel/--rc-text, which pick up the
-   modal's own bright/dark-panel tokens and make the text invisible. */
+/* access cards: original dark-grey panel in dark mode (via the modal's own
+   pinned --rc-panel/--rc-text), plain white card with dark text in light
+   mode -- see the plan/choice card comment above for why this can't just
+   follow the page theme directly. */
 .rc-access-card {
-  background: #fff; color: #0a0a0f; border-radius: 1rem; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;
+  background: var(--rc-panel); color: var(--rc-text); border-radius: 1rem; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;
 }
 .rc-access-card.is-disabled { opacity: .5; }
-.rc-access-top { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; flex-wrap: wrap; }
+.rc-access-top { display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; }
 .rc-access-name { display: flex; align-items: center; gap: 0.35rem; font-weight: 800; font-size: 0.85rem; }
-.rc-access-desc { font-size: 0.75rem; color: #55555f; line-height: 1.4; margin: 0; }
-.rc-access-note { font-size: 0.7rem; color: #8b8b95; line-height: 1.4; margin: 0; }
-.rc-access-price { font-size: 0.95rem; font-weight: 800; color: #0a0a0f; }
+.rc-access-desc { font-size: 0.75rem; color: var(--rc-text-2); line-height: 1.4; margin: 0; }
+.rc-access-note { font-size: 0.7rem; color: var(--rc-text-3); line-height: 1.4; margin: 0; }
+.rc-access-price { font-size: 0.95rem; font-weight: 800; color: var(--rc-text); }
+[data-theme="light"] .rc-access-card { background: #fff; color: #0a0a0f; }
+[data-theme="light"] .rc-access-desc { color: #55555f; }
+[data-theme="light"] .rc-access-note { color: #8b8b95; }
+[data-theme="light"] .rc-access-price { color: #0a0a0f; }
 .rc-access-choose {
-  margin-top: auto; background: #fff; color: #0a0a0a; border: none; border-radius: 999px; padding: 0.6rem 0.75rem;
+  margin-top: auto; background: var(--rc-blue); color: #fff; border: none; border-radius: 999px; padding: 0.6rem 0.75rem;
   font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .03em; cursor: pointer; text-align: center;
 }
-.rc-access-choose:hover:not(:disabled) { filter: brightness(.92); }
+.rc-access-choose:hover:not(:disabled) { filter: brightness(1.1); }
 .rc-access-choose:disabled { opacity: .4; cursor: not-allowed; }
 
 .rc-access-checklist { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; font-size: 0.7rem; color: var(--rc-text-2); margin-bottom: 0.4rem; }
