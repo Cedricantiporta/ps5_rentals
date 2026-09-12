@@ -122,6 +122,16 @@
   border: none;
   color: #0a0a0a;
 }
+/* in light mode a white "selected" pill would vanish against the page --
+   use the brand blue instead so the active state stays visible. */
+[data-theme="light"] .rc-chip.is-active,
+[data-theme="light"] .rc-plan-tab.is-active,
+[data-theme="light"] .rc-slot-option.is-active {
+  background: var(--rc-blue);
+  color: #fff;
+}
+[data-theme="light"] .rc-slot-option.is-active .rc-slot-option-price,
+[data-theme="light"] .rc-slot-option.is-active .rc-slot-option-amount { color: #fff; }
 .rc-frame-btn:hover,
 .rc-modal-cta:hover {
   filter: brightness(.92);
@@ -189,7 +199,8 @@
   border-radius: 0; padding: 1.5rem 1.75rem 2.25rem; margin-top: 1.25rem; margin-bottom: 2.5rem;
 }
 #rcComingSoonSection .rc-section-label { margin-top: 0; }
-#rcComingSoonSection .rc-eyebrow { color: #fff; }
+#rcComingSoonSection .rc-eyebrow,
+#rcComingSoonSection .rc-section-label h3 { color: #fff; }
 #rcComingSoonSection .rc-section-sub { color: rgba(255,255,255,.75); }
 
 #rcTestimonials {
@@ -197,7 +208,8 @@
   border-radius: 1.5rem; padding: 2rem 1.75rem 1.5rem; margin-top: 1.75rem; margin-bottom: 2.5rem;
 }
 #rcTestimonials .rc-section-label { margin-top: 0; }
-#rcTestimonials .rc-eyebrow { color: #fff; }
+#rcTestimonials .rc-eyebrow,
+#rcTestimonials .rc-section-label h3 { color: #fff; }
 #rcTestimonials .rc-section-sub { color: rgba(255,255,255,.75); }
 #rcTestimonials .rc-testi-grid + .rc-guide-cta { margin-bottom: 0; }
 
@@ -235,6 +247,8 @@
   overflow: hidden; background: linear-gradient(180deg, #0a0a0a 0%, #1a233f 100%); border: 1px solid var(--rc-border);
   cursor: pointer; transition: transform .18s, border-color .18s;
   display: flex; flex-direction: column;
+  /* card art is always dark navy regardless of page theme -- pin its own text tokens so titles/prices stay readable in light mode. */
+  --rc-text: #fff; --rc-text-2: #ffffff80; --rc-text-3: #ffffff4d;
 }
 .rc-soon-card:hover { transform: translateY(-3px); border-color: var(--rc-blue); }
 .rc-soon-cover { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #1c1e28; }
@@ -243,7 +257,7 @@
   background: linear-gradient(180deg, rgba(0,0,0,.65) 0%, rgba(0,0,0,0) 100%); pointer-events: none;
 }
 .rc-soon-body { padding: 0.75rem 0.85rem 0.9rem; display: flex; flex-direction: column; flex: 1; }
-.rc-soon-title { font-size: 0.92rem; font-weight: 700; line-height: 1.25; margin: 0 0 0.3rem; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.rc-soon-title { color: var(--rc-text); font-size: 0.92rem; font-weight: 700; line-height: 1.25; margin: 0 0 0.3rem; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .rc-soon-date { font-size: 0.76rem; font-weight: 600; color: var(--rc-text-2); margin: 0.3rem 0 0; }
 .rc-soon-prices { display: flex; gap: 0.4rem; font-size: 0.72rem; color: var(--rc-text-2); }
 .rc-soon-prices b { color: var(--rc-text); }
@@ -275,6 +289,8 @@
   background: linear-gradient(180deg, #0a0a0a 0%, #1a233f 100%);
   border: none; cursor: pointer; transition: transform .18s, box-shadow .18s;
   display: flex; flex-direction: column;
+  /* card art is always dark navy regardless of page theme -- pin its own text tokens so titles/prices stay readable in light mode. */
+  --rc-text: #fff; --rc-text-2: #ffffff80; --rc-text-3: #ffffff4d;
 }
 .rc-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px -12px var(--rc-blue-glow); }
 .rc-card-cover-wrap { position: relative; overflow: hidden; border-radius: inherit; }
@@ -290,7 +306,7 @@
 .rc-card-body { padding: 0.75rem 0.8rem 0.85rem; display: flex; flex-direction: column; flex: 1; }
 .rc-card-top { display: flex; flex-direction: column; gap: 0.3rem; }
 .rc-card-bottom { margin-top: auto; padding-top: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; }
-.rc-card-title { font-size: 0.88rem; font-weight: 700; line-height: 1.25; margin: 0; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.rc-card-title { color: var(--rc-text); font-size: 0.88rem; font-weight: 700; line-height: 1.25; margin: 0; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .rc-card-genre { font-size: 0.68rem; color: var(--rc-text-3); text-transform: uppercase; letter-spacing: .04em; }
 .rc-plat-badge {
   display: inline-flex; align-items: stretch; border-radius: 999px; overflow: hidden;
@@ -611,7 +627,7 @@
 .rc-lib-item.is-hidden { display: none; }
 .rc-lib-item { display: flex; align-items: center; gap: 0.8rem; break-inside: avoid; margin-bottom: 1rem; }
 .rc-lib-thumb { width: 42px; height: 56px; object-fit: cover; border-radius: 0.4rem; background: #1c1e28; flex: none; }
-.rc-lib-item a { color: #fff; font-weight: 600; text-decoration: none; font-size: 0.95rem; }
+.rc-lib-item a { color: var(--rc-text); font-weight: 600; text-decoration: none; font-size: 0.95rem; }
 .rc-lib-item a:hover { color: var(--rc-blue); }
 .rc-lib-meta { font-size: 0.74rem; color: var(--rc-text-3); margin-top: 0.15rem; }
 @media (max-width: 900px) { .rc-lib-list { column-count: 2; } }
