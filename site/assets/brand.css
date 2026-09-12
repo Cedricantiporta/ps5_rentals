@@ -14,6 +14,11 @@
    show as a stray gap/horizontal scrollbar. */
 html, body { overflow-x: hidden; }
 
+/* use the Coming Soon panel's own side margin (1.75rem) as the page's
+   one consistent side margin everywhere, instead of Webflow's own
+   responsive padding-global values. */
+.padding-global { padding-left: 1.75rem !important; padding-right: 1.75rem !important; }
+
 .navbar { background-color: #000 !important; }
 .navbar_list { background-color: #0a0a0a !important; }
 

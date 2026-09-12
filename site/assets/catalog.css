@@ -169,8 +169,9 @@
 
 .rc-strip-wrap { position: relative; }
 .rc-strip {
-  display: flex; gap: 1rem; overflow-x: auto; padding: 0 0 0.75rem; scroll-snap-type: none;
+  display: flex; gap: 1rem; overflow-x: auto; padding: 0 0 0.75rem; scroll-snap-type: none; cursor: grab;
 }
+.rc-strip.is-dragging { cursor: grabbing; user-select: none; scroll-behavior: auto; }
 .rc-strip::-webkit-scrollbar { height: 6px; }
 .rc-strip::-webkit-scrollbar-thumb { background: var(--rc-border-2); border-radius: 999px; }
 
@@ -232,7 +233,7 @@
 .rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1.1rem; }
 .rc-card {
   position: relative; border-radius: 1rem; overflow: hidden;
-  background: #1a233f;
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a233f 100%);
   border: none; cursor: pointer; transition: transform .18s, box-shadow .18s;
   display: flex; flex-direction: column;
 }

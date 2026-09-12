@@ -782,12 +782,34 @@
     if (track && prevBtn && nextBtn) {
       var scrollByAmount = function (dir) {
         var cardWidth = track.firstElementChild ? track.firstElementChild.getBoundingClientRect().width + 16 : 220;
-        track.scrollBy({ left: dir * cardWidth * 2, behavior: 'smooth' });
+        track.scrollBy({ left: dir * cardWidth, behavior: 'smooth' });
       };
       prevBtn.addEventListener('click', function () { scrollByAmount(-1); });
       nextBtn.addEventListener('click', function () { scrollByAmount(1); });
       track.addEventListener('scroll', updateStripEdges, { passive: true });
       window.addEventListener('resize', updateStripEdges);
+
+      // mouse users have no touch/trackpad gesture to scroll a horizontal
+      // strip with -- let them click-and-drag it like a native carousel.
+      var isDown = false, dragged = false, startX = 0, startScroll = 0;
+      track.addEventListener('mousedown', function (e) {
+        isDown = true; dragged = false;
+        startX = e.pageX; startScroll = track.scrollLeft;
+        track.classList.add('is-dragging');
+      });
+      window.addEventListener('mouseup', function () {
+        isDown = false;
+        track.classList.remove('is-dragging');
+      });
+      window.addEventListener('mousemove', function (e) {
+        if (!isDown) return;
+        var delta = e.pageX - startX;
+        if (Math.abs(delta) > 4) dragged = true;
+        track.scrollLeft = startScroll - delta;
+      });
+      track.addEventListener('click', function (e) {
+        if (dragged) { e.preventDefault(); e.stopPropagation(); }
+      }, true);
     }
   }
 
