@@ -376,13 +376,14 @@
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
 }
 
-/* compact wizard steps (plan/access): swap the tall cover photo for a
-   blurred, darkened version of it sitting behind the whole modal, so
-   the step content fits without the page needing to scroll. */
-.rc-modal-compact .rc-modal-cover { display: none; }
+/* compact wizard steps (plan/access): a short header cover (not the
+   full hero-height cover) fading into the blue-black gradient body,
+   so there's still a visual anchor without the step needing to scroll. */
+.rc-modal-compact .rc-modal-cover { display: block; height: 130px; aspect-ratio: auto; object-fit: cover; }
 .rc-modal-compact { background: linear-gradient(165deg, #131a2e 0%, #0a0b10 55%, #050506 100%); }
 .rc-modal-compact .rc-modal-body {
-  position: relative; z-index: 1; margin-top: 0; padding: 1.15rem 1.3rem 0.95rem; border-radius: 1.25rem;
+  position: relative; z-index: 1; margin-top: -2.25rem; padding: 3.25rem 1.3rem 0.95rem; border-radius: 1.25rem;
+  background: linear-gradient(180deg, rgba(19,26,46,0) 0%, rgba(15,20,35,.92) 45%, rgba(10,11,16,.98) 75%);
 }
 .rc-modal-title { font-family: var(--_typography---font-family--headers); font-size: 1.6rem; font-weight: 400; margin: 0 0 0.2rem; }
 .rc-modal-genre { color: var(--rc-text-2); font-size: 0.82rem; margin-bottom: 1rem; }
