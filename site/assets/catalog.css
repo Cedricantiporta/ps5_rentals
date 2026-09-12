@@ -127,12 +127,11 @@
 .rc-filter-select option { background: #12141c; color: #fff; }
 
 .rc-chips {
-  display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem; padding: 0.35rem;
-  background: var(--rc-panel); border: 1px solid var(--rc-border); border-radius: 999px; width: fit-content; max-width: 100%;
+  display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; max-width: 100%;
 }
 .rc-chip {
   padding: 0.5rem 1rem; border-radius: 999px; border: none;
-  background: transparent; color: var(--rc-text-2); font-size: 0.8rem; font-weight: 700;
+  background: var(--rc-panel); color: var(--rc-text-2); font-size: 0.8rem; font-weight: 700;
   cursor: pointer; transition: all .15s; letter-spacing: .01em; white-space: nowrap;
 }
 .rc-chip:hover:not(.is-active) { color: var(--rc-text); background: var(--rc-panel-2); }
@@ -170,7 +169,7 @@
 
 .rc-strip-wrap { position: relative; }
 .rc-strip {
-  display: flex; gap: 1rem; overflow-x: auto; padding: 0 2.75rem 0.75rem; scroll-snap-type: x proximity;
+  display: flex; gap: 1rem; overflow-x: auto; padding: 0 2.75rem 0.75rem; scroll-snap-type: none;
   /* mask-image is set dynamically in JS based on scroll position (updateStripEdges) */
 }
 .rc-strip::-webkit-scrollbar { height: 6px; }
@@ -193,7 +192,7 @@
 }
 
 .rc-soon-card {
-  position: relative; flex: 0 0 280px; scroll-snap-align: start; border-radius: 1rem;
+  position: relative; flex: 0 0 280px; border-radius: 1rem;
   overflow: hidden; background: var(--rc-panel); border: 1px solid var(--rc-border);
   cursor: pointer; transition: transform .18s, border-color .18s;
   display: flex; flex-direction: column;
@@ -311,8 +310,10 @@
   align-items: center; justify-content: center; cursor: pointer;
 }
 .rc-modal-share {
+  /* hidden for now -- feature stays wired, just not exposed in the UI yet */
+  display: none;
   position: absolute; right: 3.4rem; top: 0.9rem; z-index: 3; width: 34px; height: 34px; border-radius: 50%;
-  background: rgba(10,10,15,.7); border: 1px solid var(--rc-border-2); color: #fff; display: flex;
+  background: rgba(10,10,15,.7); border: 1px solid var(--rc-border-2); color: #fff;
   align-items: center; justify-content: center; cursor: pointer;
 }
 .rc-modal-share:hover, .rc-modal-close:hover { background: rgba(10,10,15,.9); }
@@ -332,7 +333,17 @@
   .rc-modal-close { right: 0.85rem; }
   .rc-modal-share { right: 3.35rem; }
   .rc-modal-body, .rc-popup-modal-body { padding-top: 3.6rem; }
-  .rc-modal-compact .rc-modal-body { padding-top: 3.6rem; }
+
+  /* wizard steps (plan/access) hide the cover on desktop, but on a
+     full-screen mobile sheet a bare gradient looks too empty -- bring
+     back a short header cover, faded into the gradient below it. */
+  .rc-modal-compact .rc-modal-cover {
+    display: block !important; height: 150px; aspect-ratio: auto; object-fit: cover;
+  }
+  .rc-modal-compact .rc-modal-body {
+    margin-top: -2.5rem; padding-top: 3.5rem;
+    background: linear-gradient(180deg, rgba(10,11,16,0) 0%, rgba(10,11,16,.9) 45%, #0a0b10 75%);
+  }
 }
 
 /* share card modal */
