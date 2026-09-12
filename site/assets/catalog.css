@@ -220,8 +220,8 @@
 .rc-badge-popular { background: #26262e; }
 
 .rc-count-badge {
-  position: absolute; right: 0.5rem; top: 0.5rem; z-index: 2; width: 22px; height: 22px;
-  border-radius: 50%; background: #fff; color: #0a0a0a; font-size: 0.6rem; font-weight: 900;
+  position: absolute; right: 0.5rem; top: 0.5rem; z-index: 2; width: 26px; height: 26px;
+  border-radius: 50%; background: #fff; color: #0a0a0a; font-size: 0.78rem; font-weight: 900;
   display: flex; align-items: center; justify-content: center; line-height: 1;
   box-shadow: 0 2px 8px rgba(0,0,0,.35);
 }
@@ -240,7 +240,7 @@
   content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 45%; z-index: 1;
   background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.75) 100%); pointer-events: none;
 }
-.rc-card-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #1c1e28; }
+.rc-card-cover { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; background: #1c1e28; }
 .rc-card-body { padding: 0.75rem 0.8rem 0.85rem; display: flex; flex-direction: column; flex: 1; }
 .rc-card-top { display: flex; flex-direction: column; gap: 0.3rem; }
 .rc-card-bottom { margin-top: auto; padding-top: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; }
@@ -310,6 +310,21 @@
   position: relative; margin-top: -3rem; padding: 2.5rem 1.4rem 1.5rem; border-radius: 1.1rem 1.1rem 0 0;
   background: linear-gradient(180deg, rgba(8,9,14,0) 0%, rgba(8,9,14,.75) 28%, rgba(8,9,14,.94) 100%);
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+}
+
+/* compact wizard steps (plan/access): swap the tall cover photo for a
+   blurred, darkened version of it sitting behind the whole modal, so
+   the step content fits without the page needing to scroll. */
+.rc-modal-compact .rc-modal-cover { display: none; }
+.rc-modal-compact { background: #0a0a0d; }
+.rc-modal-compact::before {
+  content: ''; position: absolute; inset: -20px; z-index: 0; pointer-events: none;
+  background-image: var(--rc-modal-bg); background-size: cover; background-position: center;
+  filter: blur(28px) brightness(.32); transform: scale(1.15);
+}
+.rc-modal-compact .rc-modal-body {
+  position: relative; z-index: 1; margin-top: 0; padding-top: 1.9rem; border-radius: 1.25rem;
+  background: rgba(8,9,14,.6); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
 }
 .rc-modal-title { font-family: var(--_typography---font-family--headers); font-size: 1.6rem; font-weight: 400; margin: 0 0 0.2rem; }
 .rc-modal-genre { color: var(--rc-text-2); font-size: 0.82rem; margin-bottom: 1rem; }

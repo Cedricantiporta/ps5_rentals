@@ -336,6 +336,11 @@
     var cover = document.getElementById('rcModalCover');
     cover.src = g.cover || '';
     cover.alt = g.title;
+
+    var modalEl = document.querySelector('.rc-modal');
+    var isCompact = state.step !== 'intent';
+    modalEl.classList.toggle('rc-modal-compact', isCompact);
+    if (isCompact) modalEl.style.setProperty('--rc-modal-bg', 'url(' + (g.cover || '') + ')');
   }
 
   function renderIntentStep(g) {
