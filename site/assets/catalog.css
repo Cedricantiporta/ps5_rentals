@@ -267,8 +267,8 @@
 .rc-soon-body { padding: 0.75rem 0.85rem 0.9rem; display: flex; flex-direction: column; flex: 1; }
 .rc-soon-title { color: var(--rc-text); font-size: 0.92rem; font-weight: 700; line-height: 1.25; margin: 0 0 0.3rem; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .rc-soon-date { font-size: 0.76rem; font-weight: 600; color: var(--rc-text-2); margin: 0.3rem 0 0; }
-.rc-soon-prices { display: flex; gap: 0.4rem; font-size: 0.72rem; color: var(--rc-text-2); }
-.rc-soon-prices b { color: var(--rc-text); }
+.rc-soon-prices { display: flex; gap: 0.5rem; font-size: 0.88rem; color: var(--rc-text-2); }
+.rc-soon-prices b { color: var(--rc-text); font-size: 1rem; }
 
 /* badges */
 .rc-badge {
@@ -327,6 +327,8 @@
 }
 .rc-plat-seg { padding: 0.3rem 0.55rem; display: flex; align-items: center; white-space: nowrap; }
 .rc-plat-primary { background: #fff; color: #0a0a0a; }
+[data-theme="light"] .rc-plat-badge { border-color: rgba(10,10,15,.35); }
+[data-theme="light"] .rc-plat-primary { background: #0a0a0f; color: #fff; }
 .rc-plat-secondary { background: #0a0a0a; color: #fff; }
 .rc-plat-primary:not(.rc-plat-solo) { clip-path: polygon(0 0, 100% 0, 82% 100%, 0% 100%); padding-right: 0.85rem; margin-right: -0.35rem; }
 
@@ -345,7 +347,7 @@
 .rc-price-box { flex: 1; text-align: center; padding: 0.4rem 0.2rem; border-radius: 0.5rem; background: #0a0a0a; }
 [data-theme="light"] .rc-price-box { background: #eef0f3; }
 .rc-price-box .rc-price-label { display: block; font-size: 0.6rem; font-weight: 700; color: var(--rc-text-2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 0.1rem; }
-.rc-price-box .rc-price-value { font-size: 0.88rem; font-weight: 800; color: var(--rc-text); }
+.rc-price-box .rc-price-value { font-size: 1.02rem; font-weight: 800; color: var(--rc-text); }
 
 .rc-empty { text-align: center; padding: 3rem 1rem; color: var(--rc-text-2); }
 .rc-empty .rc-icon-lg { margin-bottom: 0.5rem; color: var(--rc-text-3); }
@@ -377,6 +379,10 @@
      --rc-bg / --rc-text, which would wash the panel out in light mode. */
   background: linear-gradient(165deg, #131a2e 0%, #0a0b10 55%, #050506 100%);
   --rc-text: #fff; --rc-text-2: rgba(255,255,255,.82); --rc-text-3: rgba(255,255,255,.6);
+  /* also pin the panel/border tokens -- anything inside the modal that still
+     reads var(--rc-panel) etc (share-card summary, buttons) should stay the
+     original dark secondary-panel look, not flip white in light mode. */
+  --rc-panel: #1c1d20; --rc-panel-2: #232427; --rc-border: #ffffff2b; --rc-border-2: #ffffff1f;
   color: var(--rc-text);
   border: 1px solid var(--rc-border-2); border-radius: 1.25rem; position: relative;
   box-shadow: 0 30px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(37,98,255,.08);
@@ -516,8 +522,8 @@
 
 .rc-wizard-steps { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
 .rc-wizard-step-chip {
-  display: flex; align-items: center; gap: 0.4rem; background: var(--rc-panel); border-radius: 999px;
-  padding: 0.4rem 0.85rem 0.4rem 0.4rem; font-size: 0.75rem; font-weight: 700; color: var(--rc-text-2);
+  display: flex; align-items: center; gap: 0.4rem; background: #fff; border-radius: 999px;
+  padding: 0.4rem 0.85rem 0.4rem 0.4rem; font-size: 0.75rem; font-weight: 700; color: #55555f;
 }
 .rc-wizard-step-num {
   width: 1.35rem; height: 1.35rem; border-radius: 50%; background: var(--rc-blue); color: #fff;
@@ -551,15 +557,19 @@
 /* step 3: access */
 .rc-access-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 0.7rem; }
 .rc-access-grid-simple { grid-template-columns: 1fr 1fr; }
+/* access cards are the same always-white-card convention as choice/plan
+   cards (they sit inside the always-dark .rc-modal panel) -- hardcode
+   colors instead of following --rc-panel/--rc-text, which pick up the
+   modal's own bright/dark-panel tokens and make the text invisible. */
 .rc-access-card {
-  background: var(--rc-panel); border-radius: 1rem; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;
+  background: #fff; color: #0a0a0f; border-radius: 1rem; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;
 }
 .rc-access-card.is-disabled { opacity: .5; }
 .rc-access-top { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; flex-wrap: wrap; }
 .rc-access-name { display: flex; align-items: center; gap: 0.35rem; font-weight: 800; font-size: 0.85rem; }
-.rc-access-desc { font-size: 0.75rem; color: var(--rc-text-2); line-height: 1.4; margin: 0; }
-.rc-access-note { font-size: 0.7rem; color: var(--rc-text-3); line-height: 1.4; margin: 0; }
-.rc-access-price { font-size: 0.95rem; font-weight: 800; color: #fff; }
+.rc-access-desc { font-size: 0.75rem; color: #55555f; line-height: 1.4; margin: 0; }
+.rc-access-note { font-size: 0.7rem; color: #8b8b95; line-height: 1.4; margin: 0; }
+.rc-access-price { font-size: 0.95rem; font-weight: 800; color: #0a0a0f; }
 .rc-access-choose {
   margin-top: auto; background: #fff; color: #0a0a0a; border: none; border-radius: 999px; padding: 0.6rem 0.75rem;
   font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .03em; cursor: pointer; text-align: center;
@@ -576,12 +586,10 @@
 /* the site nav is transparent by design (meant to sit over a hero image); once the
    catalog grid scrolls under it, give it a solid backdrop so text doesn't show through */
 .navbar.rc-nav-solid {
-  background: rgba(10, 10, 15, 0.86) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: #0a0a0f !important;
   transition: background-color .2s;
 }
-[data-theme="light"] .navbar.rc-nav-solid { background: rgba(255, 255, 255, 0.92) !important; }
+[data-theme="light"] .navbar.rc-nav-solid { background: #fff !important; }
 
 @media (max-width: 640px) {
   .rc-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
