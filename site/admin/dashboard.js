@@ -2,7 +2,7 @@
   'use strict';
 
   var supabase = window.rcSupabase;
-  var state = { games: [], renters: [], rentals: [], requests: [] };
+  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null };
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -181,6 +181,7 @@
         } else {
           actions += '<button class="a-btn a-btn-red" data-action="end" data-id="' + r.id + '">End Rental</button>';
         }
+        actions += '<button class="a-btn" data-action="swap" data-id="' + r.id + '">Swap Game</button>';
       }
       tr.innerHTML =
         '<td>' + esc(game.title) + '</td>' +
@@ -224,6 +225,8 @@
         if (res.error) { alert(res.error.message); return; }
         loadAll();
       });
+    } else if (action === 'swap') {
+      startSwap(rental);
     }
   });
 
@@ -303,11 +306,78 @@
       ' Price on file: ₱' + (price || 0) + '.';
   }
 
+  // ---- swap game (ends the old rental, starts a new one on the same
+  // renter/end-date so the remaining paid time carries over) ----
+  function startSwap(rental) {
+    var renter = state.renters.filter(function (r) { return r.id === rental.renter_id; })[0];
+    var game = state.games.filter(function (g) { return g.id === rental.game_id; })[0];
+    state.swapFromRental = rental;
+    populateRenterSelect();
+    $('renterSelect').value = String(rental.renter_id);
+    $('renterSelect').disabled = true;
+    toggleNewRenterFields();
+    $('gameSearch').value = '';
+    $('gameSelect').value = '';
+    $('slotSelect').value = 'trophy';
+    $('planSelect').value = rental.plan;
+    $('amountInput').value = '';
+    $('rentalNotes').value = '';
+    $('slotHint').textContent = '';
+    $('newRentalError').textContent = '';
+    $('swapBanner').hidden = false;
+    $('swapBannerText').textContent = 'Swapping ' + (renter ? renter.name : 'this renter') + '’s rental of "' +
+      (game ? game.title : 'this game') + '" — pick the new game below. Ends the old rental, frees its slot, ' +
+      'and keeps the same end date (' + fmtDate(rental.end_date) + ').';
+    $('newRentalHeading').textContent = 'Swap game';
+    $('createRentalBtn').textContent = 'Swap to this game';
+    document.querySelector('.a-tab[data-tab="new-rental"]').click();
+  }
+
+  function cancelSwap() {
+    state.swapFromRental = null;
+    $('swapBanner').hidden = true;
+    $('renterSelect').disabled = false;
+    $('newRentalHeading').textContent = 'New rental';
+    $('createRentalBtn').textContent = 'Create rental (pending payment)';
+    $('newRentalForm').reset();
+    toggleNewRenterFields();
+  }
+  $('cancelSwapBtn').addEventListener('click', cancelSwap);
+
+  function doSwap(newGame) {
+    var oldRental = state.swapFromRental;
+    var slot = $('slotSelect').value;
+    var plan = $('planSelect').value;
+    var amount = Number($('amountInput').value) || 0;
+    var notes = $('rentalNotes').value.trim() || null;
+    var endDate = oldRental.end_date;
+    var btn = $('createRentalBtn');
+    btn.disabled = true;
+
+    supabase.from('rentals').update({ status: 'ended' }).eq('id', oldRental.id)
+      .then(function (res) { if (res.error) throw res.error; return setGameSlotAvailable(oldRental.game_id, oldRental.slot, true); })
+      .then(function (res) {
+        if (res && res.error) throw res.error;
+        return supabase.from('rentals').insert({
+          game_id: newGame.id, renter_id: oldRental.renter_id, slot: slot, plan: plan,
+          amount: amount, status: 'active', payment_status: 'paid',
+          start_date: todayISO(), end_date: endDate, notes: notes,
+          swapped_from_rental_id: oldRental.id
+        });
+      })
+      .then(function (res) { if (res.error) throw res.error; return setGameSlotAvailable(newGame.id, slot, false, addDaysISO(endDate, 1)); })
+      .then(function (res) { if (res && res.error) throw res.error; cancelSwap(); loadAll(); })
+      .catch(function (err) { $('newRentalError').textContent = (err && err.message) || 'Swap failed.'; })
+      .then(function () { btn.disabled = false; });
+  }
+
   $('newRentalForm').addEventListener('submit', function (e) {
     e.preventDefault();
     $('newRentalError').textContent = '';
     var g = selectedGame();
     if (!g) { $('newRentalError').textContent = 'Pick a game first.'; return; }
+
+    if (state.swapFromRental) { doSwap(g); return; }
 
     var renterSel = $('renterSelect').value;
     if (renterSel === '__new' && !$('newRenterName').value.trim()) {
