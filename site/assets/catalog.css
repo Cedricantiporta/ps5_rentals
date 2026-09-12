@@ -3,8 +3,8 @@
    as a sibling of .rc-root, not a descendant of it. */
 :root {
   --rc-bg: var(--_colors-2---bg-primary, #0a0a0f);
-  --rc-panel: #1a233f;
-  --rc-panel-2: #232f52;
+  --rc-panel: #1c1d20;
+  --rc-panel-2: #232427;
   --rc-border: #ffffff2b;
   --rc-border-2: var(--_colors-2---border-subtle, #ffffff1f);
   --rc-text: var(--_colors-2---text-primary, #fff);
@@ -193,7 +193,7 @@
 
 .rc-soon-card {
   position: relative; flex: 0 0 280px; border-radius: 1rem;
-  overflow: hidden; background: var(--rc-panel); border: 1px solid var(--rc-border);
+  overflow: hidden; background: linear-gradient(180deg, #0a0a0a 0%, #1a233f 100%); border: 1px solid var(--rc-border);
   cursor: pointer; transition: transform .18s, border-color .18s;
   display: flex; flex-direction: column;
 }
