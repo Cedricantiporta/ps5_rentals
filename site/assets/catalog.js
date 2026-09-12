@@ -376,6 +376,27 @@
     });
     return publicSupabase;
   }
+  function mapGameRow(row) {
+    return {
+      id: row.id, slug: row.slug, title: row.title, genre: row.genre || [],
+      cover: row.cover, releaseDate: row.release_date, activeRentals: 0,
+      status: row.status, upcomingOrder: row.upcoming_order,
+      trophy: { available: row.trophy_available, weekly: row.trophy_weekly, monthly: row.trophy_monthly, reservationStatus: row.trophy_reservation_status },
+      nontrophy: { available: row.nontrophy_available, weekly: row.nontrophy_weekly, monthly: row.nontrophy_monthly, reservationStatus: row.nontrophy_reservation_status },
+      platform: row.platform
+    };
+  }
+  // Live catalog data comes straight from Supabase so admin overrides
+  // (activate/end a rental, manual slot toggle) show up immediately --
+  // falls back to the static JSON snapshot if Supabase is unreachable.
+  function loadGames() {
+    var sb = getPublicSupabase();
+    if (!sb) return fetch(DATA_URL).then(function (r) { return r.json(); });
+    return sb.from('games').select('*').then(function (res) {
+      if (res.error) throw res.error;
+      return res.data.map(mapGameRow);
+    });
+  }
   // Drops a note in the admin app's "Incoming Requests" inbox with the
   // game/slot/plan the customer already picked, so the admin doesn't have
   // to re-enter it by hand after reading the Messenger message. Best-effort
@@ -961,7 +982,7 @@
     wireDrawer();
     wireThemeToggle();
     wireNavCurrentPage();
-    fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (games) {
+    loadGames().then(function (games) {
       state.games = games;
       populateGenres();
       wireToolbar();
