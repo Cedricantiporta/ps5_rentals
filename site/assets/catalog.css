@@ -343,6 +343,77 @@
 }
 .rc-modal-note { font-size: 0.72rem; color: var(--rc-text-3); text-align: center; margin-top: 0.7rem; line-height: 1.4; }
 
+/* rental wizard: intent -> plan -> access */
+.rc-wizard-back {
+  display: inline-flex; align-items: center; gap: 0.2rem; background: none; border: none; color: var(--rc-text-2);
+  font-size: 0.78rem; font-weight: 700; cursor: pointer; padding: 0 0 0.9rem; text-transform: uppercase; letter-spacing: .03em;
+}
+.rc-wizard-back:hover { color: #fff; }
+.rc-wizard-back .rc-icon { width: 14px; height: 14px; }
+.rc-wizard-eyebrow { display: block; color: var(--rc-blue); font-size: 0.72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 0.4rem; }
+.rc-wizard-heading { font-family: var(--_typography---font-family--headers); font-size: 1.3rem; font-weight: 400; margin: 0 0 0.3rem; }
+.rc-wizard-heading-sm { font-size: 1.05rem; margin-top: 1.4rem; }
+.rc-wizard-sub { color: var(--rc-text-2); font-size: 0.85rem; margin: 0 0 1.1rem; line-height: 1.5; }
+
+.rc-wizard-steps { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+.rc-wizard-step-chip {
+  display: flex; align-items: center; gap: 0.4rem; background: var(--rc-panel); border-radius: 999px;
+  padding: 0.4rem 0.85rem 0.4rem 0.4rem; font-size: 0.75rem; font-weight: 700; color: var(--rc-text-2);
+}
+.rc-wizard-step-num {
+  width: 1.35rem; height: 1.35rem; border-radius: 50%; background: var(--rc-blue); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 0.72rem;
+}
+
+/* step 1: intent */
+.rc-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.rc-choice-card {
+  background: var(--rc-panel); border: none; border-radius: 1rem; padding: 1.25rem 1.1rem; text-align: left;
+  cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; color: var(--rc-text);
+}
+.rc-choice-card:hover { background: var(--rc-panel-2); }
+.rc-choice-icon { width: 2.2rem; height: 2.2rem; border-radius: 50%; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; }
+.rc-choice-icon .rc-icon { width: 18px; height: 18px; }
+.rc-choice-name { font-weight: 800; font-size: 0.95rem; }
+.rc-choice-desc { font-size: 0.78rem; color: var(--rc-text-2); line-height: 1.4; }
+
+/* step 2: plan */
+.rc-plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.rc-plan-card {
+  background: var(--rc-panel); border: none; border-radius: 1rem; padding: 1.25rem 1.1rem; text-align: left;
+  cursor: pointer; display: flex; flex-direction: column; gap: 0.3rem; color: var(--rc-text);
+}
+.rc-plan-card:hover { background: var(--rc-panel-2); }
+.rc-plan-name { font-weight: 800; font-size: 0.95rem; }
+.rc-plan-price { font-size: 1.4rem; font-weight: 800; color: #fff; }
+.rc-plan-desc { font-size: 0.72rem; color: var(--rc-text-2); line-height: 1.4; margin-bottom: 0.4rem; }
+.rc-plan-tap { font-size: 0.68rem; font-weight: 800; color: var(--rc-blue); text-transform: uppercase; letter-spacing: .04em; }
+
+/* step 3: access */
+.rc-access-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 0.9rem; }
+.rc-access-grid-simple { grid-template-columns: 1fr 1fr; }
+.rc-access-card {
+  background: var(--rc-panel); border-radius: 1rem; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem;
+}
+.rc-access-card.is-disabled { opacity: .5; }
+.rc-access-top { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem; flex-wrap: wrap; }
+.rc-access-name { display: flex; align-items: center; gap: 0.35rem; font-weight: 800; font-size: 0.85rem; }
+.rc-access-desc { font-size: 0.75rem; color: var(--rc-text-2); line-height: 1.4; margin: 0; }
+.rc-access-note { font-size: 0.7rem; color: var(--rc-text-3); line-height: 1.4; margin: 0; }
+.rc-access-price { font-size: 0.95rem; font-weight: 800; color: #fff; }
+.rc-access-choose {
+  margin-top: auto; background: #fff; color: #0a0a0a; border: none; border-radius: 999px; padding: 0.6rem 0.75rem;
+  font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .03em; cursor: pointer; text-align: center;
+}
+.rc-access-choose:hover:not(:disabled) { filter: brightness(.92); }
+.rc-access-choose:disabled { opacity: .4; cursor: not-allowed; }
+
+.rc-access-checklist { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.7rem; color: var(--rc-text-2); margin-bottom: 0.6rem; }
+
+@media (max-width: 560px) {
+  .rc-choice-grid, .rc-plan-grid, .rc-access-grid, .rc-access-grid-simple { grid-template-columns: 1fr; }
+}
+
 /* the site nav is transparent by design (meant to sit over a hero image); once the
    catalog grid scrolls under it, give it a solid backdrop so text doesn't show through */
 .navbar.rc-nav-solid {
