@@ -9,6 +9,11 @@
   --base--blue: #0137e2;
 }
 
+/* full-bleed sections use 100vw, which is wider than the visible page
+   by the scrollbar's width -- clip that sliver instead of letting it
+   show as a stray gap/horizontal scrollbar. */
+html, body { overflow-x: hidden; }
+
 .navbar { background-color: #000 !important; }
 .navbar_list { background-color: #0a0a0a !important; }
 
