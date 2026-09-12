@@ -153,6 +153,9 @@
     var map = { pending: 'a-pill-pending', active: 'a-pill-active', ended: 'a-pill-ended', cancelled: 'a-pill-cancelled' };
     return '<span class="a-pill ' + (map[status] || 'a-pill-ended') + '">' + esc(status) + '</span>';
   }
+  function wasSwapped(rentalId) {
+    return state.rentals.some(function (x) { return x.swapped_from_rental_id === rentalId; });
+  }
   function paymentPill(p) {
     return '<span class="a-pill ' + (p === 'paid' ? 'a-pill-paid' : 'a-pill-pending') + '">' + esc(p) + '</span>';
   }
@@ -189,7 +192,7 @@
         '<td>' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + '</td>' +
         '<td>' + (r.plan === 'weekly' ? 'Weekly' : 'Monthly') + ' (₱<span data-amount-display>' + r.amount + '</span>' +
           ' <button type="button" class="a-edit-amount" data-action="edit-amount" data-id="' + r.id + '" title="Edit amount">✎</button>)</td>' +
-        '<td>' + statusPill(r.status) + '</td>' +
+        '<td>' + (r.status === 'ended' && wasSwapped(r.id) ? '<span class="a-pill a-pill-swap">SWAPPED</span>' : statusPill(r.status)) + '</td>' +
         '<td>' + paymentPill(r.payment_status) + '</td>' +
         '<td>' + fmtDate(r.start_date) + '</td>' +
         '<td>' + fmtDate(r.end_date) + '</td>' +

@@ -65,10 +65,12 @@
       <div class="a-card">
         <h2>Requests from the site</h2>
         <p class="a-hint">Someone clicked through the rental wizard on the public site. Match it to their Messenger message, then hit "Use this" to jump into New Rental with the game/slot/plan already filled in.</p>
+        <div class="a-table-wrap">
         <table class="a-table" id="requestsTable">
           <thead><tr><th>Game</th><th>Slot</th><th>Plan</th><th>Amount</th><th>When</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
+        </div>
         <p class="a-empty" id="requestsEmpty" hidden>No incoming requests yet.</p>
       </div>
     </div>
@@ -76,6 +78,7 @@
     <div class="a-panel" id="panel-rentals">
       <div class="a-card">
         <h2>All rentals</h2>
+        <div class="a-table-wrap">
         <table class="a-table" id="rentalsTable">
           <thead>
             <tr>
@@ -85,6 +88,7 @@
           </thead>
           <tbody></tbody>
         </table>
+        </div>
         <p class="a-empty" id="rentalsEmpty" hidden>No rentals yet.</p>
       </div>
     </div>
@@ -175,10 +179,12 @@
       </div>
       <div class="a-card">
         <h2>All renters</h2>
+        <div class="a-table-wrap">
         <table class="a-table" id="rentersTable">
           <thead><tr><th>Name</th><th>Messenger</th><th>Note</th><th>Added</th><th>Total Paid</th><th>Rentals</th><th>Active Now</th></tr></thead>
           <tbody></tbody>
         </table>
+        </div>
         <p class="a-empty" id="rentersEmpty" hidden>No renters yet.</p>
       </div>
     </div>
@@ -188,10 +194,12 @@
         <h2>Games (live catalog status)</h2>
         <p class="a-hint">Changing these here updates the public site immediately -- use this only for manual overrides outside the normal rental flow.</p>
         <div class="a-field" style="max-width:280px;margin-bottom:1rem;"><input id="gamesSearch" type="text" placeholder="Search games..."></div>
+        <div class="a-table-wrap">
         <table class="a-table" id="gamesTable">
           <thead><tr><th>Title</th><th>Type</th><th>Trophy</th><th>Non-Trophy</th></tr></thead>
           <tbody></tbody>
         </table>
+        </div>
       </div>
     </div>
 
