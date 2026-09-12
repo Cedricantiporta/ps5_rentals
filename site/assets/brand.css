@@ -39,7 +39,7 @@
 }
 
 .footer {
-  background: var(--base--blue);
+  background: linear-gradient(135deg, #123b8f 0%, var(--base--blue, #2562ff) 100%);
 }
 
 /* Kill the navy gradient panel + white-bordered "segmented pill" tabs

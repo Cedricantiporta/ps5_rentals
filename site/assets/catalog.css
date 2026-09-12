@@ -147,7 +147,8 @@
 /* coming soon strip */
 #rcComingSoonSection {
   background: linear-gradient(135deg, #123b8f 0%, var(--rc-blue) 100%);
-  border-radius: 1.5rem; padding: 2rem 1.75rem 2.25rem; margin-bottom: 2.5rem;
+  border-radius: 0; padding: 2rem 1.75rem 2.25rem; margin-bottom: 2.5rem;
+  width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
 }
 #rcComingSoonSection .rc-section-label { margin-top: 0; }
 #rcComingSoonSection .rc-eyebrow { color: #fff; }
