@@ -2,7 +2,7 @@
   'use strict';
 
   var supabase = window.rcSupabase;
-  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null };
+  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null, amountManuallyEdited: false };
 
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -15,7 +15,10 @@
   function fmtDate(iso) {
     if (!iso) return '';
     var d = new Date(iso + 'T00:00:00');
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    var yy = String(d.getFullYear()).slice(-2);
+    return mm + '/' + dd + '/' + yy;
   }
   function daysLeft(endIso) {
     var end = new Date(endIso + 'T00:00:00');
@@ -24,11 +27,40 @@
   }
   function timeLeftLabel(endIso) {
     var n = daysLeft(endIso);
-    if (n > 1) return n + ' days left';
-    if (n === 1) return '1 day left';
-    if (n === 0) return 'Ends today';
-    return 'Overdue ' + Math.abs(n) + 'd';
+    return n < 0 ? '-' + Math.abs(n) : String(n);
   }
+
+  // ---- action dropdown menus (3-dot button -> popup list) ----
+  function actionsMenu(itemsHtml) {
+    if (!itemsHtml) return '';
+    return '<div class="a-menu"><button type="button" class="a-menu-btn" aria-label="Actions">⋮</button>' +
+      '<div class="a-menu-list" hidden>' + itemsHtml + '</div></div>';
+  }
+  function closeAllMenus() {
+    Array.prototype.forEach.call(document.querySelectorAll('.a-menu-list'), function (list) { list.hidden = true; });
+  }
+  document.addEventListener('click', function (e) {
+    var toggle = e.target.closest('.a-menu-btn');
+    if (!toggle) { closeAllMenus(); return; }
+    var list = toggle.parentElement.querySelector('.a-menu-list');
+    var wasHidden = list.hidden;
+    closeAllMenus();
+    if (wasHidden) {
+      var rect = toggle.getBoundingClientRect();
+      list.hidden = false;
+      var menuWidth = list.offsetWidth || 190;
+      var left = Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8);
+      list.style.left = Math.max(8, left) + 'px';
+      list.style.top = Math.min(rect.bottom + 4, window.innerHeight - list.offsetHeight - 8) + 'px';
+    }
+    e.stopPropagation();
+  });
+  // Any click inside a menu (running an action, or an Open Messenger link)
+  // closes the menu -- action buttons re-render the table anyway, but the
+  // plain link doesn't trigger a re-render so needs this explicitly.
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('.a-menu-item')) closeAllMenus();
+  }, true);
 
   // ---- tabs ----
   Array.prototype.forEach.call(document.querySelectorAll('.a-tab'), function (tab) {
@@ -114,10 +146,10 @@
         '<td>' + esc(req.plan || '—') + '</td>' +
         '<td>' + (req.amount != null ? '₱' + req.amount : '—') + '</td>' +
         '<td>' + when.toLocaleString() + '</td>' +
-        '<td class="a-actions-cell">' +
-          '<button class="a-btn a-btn-primary" data-action="use" data-id="' + req.id + '">Use this</button>' +
-          '<button class="a-btn" data-action="dismiss" data-id="' + req.id + '">Dismiss</button>' +
-        '</td>';
+        '<td class="a-actions-cell">' + actionsMenu(
+          '<button type="button" class="a-menu-item" data-action="use" data-id="' + req.id + '">Use this</button>' +
+          '<button type="button" class="a-menu-item" data-action="dismiss" data-id="' + req.id + '">Dismiss</button>'
+        ) + '</td>';
       tbody.appendChild(tr);
     });
   }
@@ -178,8 +210,8 @@
       var actions = '';
       var timeLeftCell = '—';
       if (r.status === 'pending') {
-        actions += '<button class="a-btn a-btn-green" data-action="activate" data-id="' + r.id + '">Confirm Payment &amp; Activate</button>';
-        actions += '<button class="a-btn" data-action="cancel" data-id="' + r.id + '">Cancel</button>';
+        actions += '<button type="button" class="a-menu-item" data-action="activate" data-id="' + r.id + '">Confirm Payment &amp; Activate</button>';
+        actions += '<button type="button" class="a-menu-item" data-action="cancel" data-id="' + r.id + '">Cancel</button>';
       } else if (r.status === 'active') {
         var left = daysLeft(r.end_date);
         timeLeftCell = timeLeftLabel(r.end_date);
@@ -187,15 +219,19 @@
           // Timer hasn't run out -- ending requires an explicit override
           // (confirm dialog) instead of a plain one-click button, so it
           // can't happen by accident.
-          actions += '<button class="a-btn" data-action="end-override" data-id="' + r.id + '">Override: End Early</button>';
+          actions += '<button type="button" class="a-menu-item" data-action="end-override" data-id="' + r.id + '">Override: End Early</button>';
         } else {
-          actions += '<button class="a-btn a-btn-red" data-action="end" data-id="' + r.id + '">End Rental</button>';
+          actions += '<button type="button" class="a-menu-item a-menu-item-danger" data-action="end" data-id="' + r.id + '">End Rental</button>';
         }
         var cooldownHours = swapCooldownHoursLeft(r);
         if (cooldownHours > 0) {
-          actions += '<button class="a-btn" disabled title="This rental started less than 24h ago">Swap in ' + cooldownHours + 'h</button>';
+          actions += '<button type="button" class="a-menu-item" disabled title="This rental started less than 24h ago">Swap in ' + cooldownHours + 'h</button>';
         } else {
-          actions += '<button class="a-btn" data-action="swap" data-id="' + r.id + '">Swap Game</button>';
+          actions += '<button type="button" class="a-menu-item" data-action="swap" data-id="' + r.id + '">Swap Game</button>';
+        }
+        var renterObj = state.renters.filter(function (x) { return x.id === r.renter_id; })[0];
+        if (renterObj && renterObj.messenger_url) {
+          actions += '<a class="a-menu-item" href="' + esc(renterObj.messenger_url) + '" target="_blank" rel="noopener">Open Messenger</a>';
         }
       }
       tr.innerHTML =
@@ -209,7 +245,7 @@
         '<td>' + fmtDate(r.start_date) + '</td>' +
         '<td>' + fmtDate(r.end_date) + '</td>' +
         '<td>' + timeLeftCell + '</td>' +
-        '<td class="a-actions-cell">' + actions + '</td>';
+        '<td class="a-actions-cell">' + actionsMenu(actions) + '</td>';
       tbody.appendChild(tr);
     });
   }
@@ -227,8 +263,7 @@
     else if (action === 'end-override') {
       var left = daysLeft(rental.end_date);
       var ok = window.confirm(
-        'This rental still has ' + timeLeftLabel(rental.end_date).toLowerCase() +
-        ' (' + left + ' day' + (left === 1 ? '' : 's') + ' remaining). End it early anyway?'
+        'This rental still has ' + left + ' day' + (left === 1 ? '' : 's') + ' remaining. End it early anyway?'
       );
       if (ok) setRentalStatus(rental, 'ended', true);
     } else if (action === 'edit-amount') {
@@ -298,16 +333,19 @@
   function populateGameOptions() {
     var dl = $('gameList');
     var sel = $('gameSelect');
+    var current = sel.value;
     dl.innerHTML = state.games.map(function (g) { return '<option value="' + esc(g.title) + '">'; }).join('');
     sel.innerHTML = state.games.map(function (g) { return '<option value="' + g.id + '">' + esc(g.title) + '</option>'; }).join('');
+    sel.value = current;
   }
   $('gameSearch').addEventListener('input', function () {
     var title = this.value;
     var match = state.games.filter(function (g) { return g.title === title; })[0];
-    if (match) { $('gameSelect').value = match.id; updateSlotHintAndAmount(); }
+    if (match) { $('gameSelect').value = match.id; state.amountManuallyEdited = false; updateSlotHintAndAmount(); }
   });
-  $('slotSelect').addEventListener('change', updateSlotHintAndAmount);
-  $('planSelect').addEventListener('change', updateSlotHintAndAmount);
+  $('slotSelect').addEventListener('change', function () { state.amountManuallyEdited = false; updateSlotHintAndAmount(); });
+  $('planSelect').addEventListener('change', function () { state.amountManuallyEdited = false; updateSlotHintAndAmount(); });
+  $('amountInput').addEventListener('input', function () { state.amountManuallyEdited = true; });
 
   function selectedGame() {
     var id = Number($('gameSelect').value);
@@ -322,7 +360,7 @@
     var plan = $('planSelect').value;
     var available = g[slot + '_available'];
     var price = g[slot + '_' + plan];
-    $('amountInput').value = price || 0;
+    if (!state.amountManuallyEdited) $('amountInput').value = price || 0;
     hint.textContent = (available ? 'Slot currently open.' : 'Heads up: this slot is currently marked FULL.') +
       ' Price on file: ₱' + (price || 0) + '.';
   }
@@ -347,6 +385,7 @@
     $('slotSelect').value = 'trophy';
     $('planSelect').value = rental.plan;
     $('amountInput').value = '';
+    state.amountManuallyEdited = false;
     $('rentalNotes').value = '';
     $('slotHint').textContent = '';
     $('newRentalError').textContent = '';
@@ -366,6 +405,7 @@
     $('newRentalHeading').textContent = 'New rental';
     $('createRentalBtn').textContent = 'Create rental (pending payment)';
     $('newRentalForm').reset();
+    state.amountManuallyEdited = false;
     toggleNewRenterFields();
   }
   $('cancelSwapBtn').addEventListener('click', cancelSwap);
@@ -430,6 +470,7 @@
       }).then(function (res2) {
         if (res2.error) { $('newRentalError').textContent = res2.error.message; return; }
         $('newRentalForm').reset();
+        state.amountManuallyEdited = false;
         loadAll();
       });
     });
@@ -445,14 +486,36 @@
       var totalPaid = theirRentals.reduce(function (sum, x) { return sum + (x.payment_status === 'paid' ? (x.amount || 0) : 0); }, 0);
       var activeNow = theirRentals.filter(function (x) { return x.status === 'active'; }).length;
       var tr = document.createElement('tr');
+      var menuItems = '';
+      if (r.messenger_url) menuItems += '<a class="a-menu-item" href="' + esc(r.messenger_url) + '" target="_blank" rel="noopener">Open Messenger</a>';
+      menuItems += '<button type="button" class="a-menu-item" data-action="edit-messenger-link" data-id="' + r.id + '">' +
+        (r.messenger_url ? 'Edit Messenger link' : 'Add Messenger link') + '</button>';
       tr.innerHTML = '<td>' + esc(r.name) + '</td><td>' + esc(r.messenger_name) + '</td>' +
         '<td>' + esc(r.contact_note) + '</td><td>' + fmtDate((r.created_at || '').slice(0, 10)) + '</td>' +
         '<td>₱' + totalPaid.toLocaleString() + '</td>' +
         '<td>' + theirRentals.length + '</td>' +
-        '<td>' + (activeNow ? '<span class="a-pill a-pill-active">' + activeNow + '</span>' : '—') + '</td>';
+        '<td>' + (activeNow ? '<span class="a-pill a-pill-active">' + activeNow + '</span>' : '—') + '</td>' +
+        '<td class="a-actions-cell">' + actionsMenu(menuItems) + '</td>';
       tbody.appendChild(tr);
     });
   }
+
+  document.querySelector('#rentersTable tbody').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-action="edit-messenger-link"]');
+    if (!btn) return;
+    var id = Number(btn.getAttribute('data-id'));
+    var renter = state.renters.filter(function (r) { return r.id === id; })[0];
+    if (!renter) return;
+    var input = window.prompt(
+      'Messenger conversation link for ' + renter.name + ' (paste the URL from your address bar while viewing their thread in Messenger/Business Suite):',
+      renter.messenger_url || 'https://www.facebook.com/messages/t/'
+    );
+    if (input === null) return;
+    supabase.from('renters').update({ messenger_url: input.trim() || null }).eq('id', id).then(function (res) {
+      if (res.error) { alert(res.error.message); return; }
+      loadAll();
+    });
+  });
 
   $('addRenterForm').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -460,7 +523,8 @@
     var name = $('renterNameInput').value.trim();
     if (!name) { $('addRenterError').textContent = 'Name is required.'; return; }
     supabase.from('renters').insert({
-      name: name, messenger_name: $('renterMsgInput').value.trim() || null, contact_note: $('renterNoteInput').value.trim() || null
+      name: name, messenger_name: $('renterMsgInput').value.trim() || null, contact_note: $('renterNoteInput').value.trim() || null,
+      messenger_url: $('renterMsgLinkInput').value.trim() || null
     }).then(function (res) {
       if (res.error) { $('addRenterError').textContent = res.error.message; return; }
       $('addRenterForm').reset();
@@ -580,6 +644,11 @@
   window.rcRequireAuth().then(function (session) {
     if (!session) return;
     $('whoami').textContent = session.user.email;
+    $('userAvatar').textContent = session.user.email.charAt(0).toUpperCase();
     loadAll();
+    // Incoming requests (and everything else) come from customers using the
+    // public site in real time -- poll instead of requiring a manual refresh
+    // to notice a new one.
+    setInterval(loadAll, 20000);
   });
 })();

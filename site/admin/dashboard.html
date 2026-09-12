@@ -10,7 +10,7 @@
 <body>
   <div class="a-shell">
     <aside class="a-sidebar">
-      <h1 class="a-sidebar-title">June Digitals<br>Admin</h1>
+      <h1 class="a-sidebar-title"><img src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals" class="a-sidebar-logo"></h1>
       <nav class="a-nav">
         <button class="a-tab is-active" data-tab="overview">Overview</button>
         <button class="a-tab" data-tab="requests">Incoming Requests <span id="requestsBadge"></span></button>
@@ -21,7 +21,13 @@
         <button class="a-tab" data-tab="add-game">Add Game</button>
       </nav>
       <div class="a-sidebar-bottom">
-        <span id="whoami"></span>
+        <div class="a-user-row">
+          <div class="a-avatar" id="userAvatar">A</div>
+          <div class="a-user-info">
+            <span class="a-user-role">Admin</span>
+            <span id="whoami"></span>
+          </div>
+        </div>
         <button class="a-btn" id="signOutBtn">Sign Out</button>
       </div>
     </aside>
@@ -173,6 +179,9 @@
             <div class="a-field"><label>Messenger name</label><input id="renterMsgInput" type="text"></div>
             <div class="a-field"><label>Note</label><input id="renterNoteInput" type="text"></div>
           </div>
+          <div class="a-form-row">
+            <div class="a-field"><label>Messenger conversation link (optional)</label><input id="renterMsgLinkInput" type="url" placeholder="https://www.facebook.com/messages/t/..."></div>
+          </div>
           <button type="submit" class="a-btn a-btn-primary">Add renter</button>
           <p class="a-error" id="addRenterError"></p>
         </form>
@@ -181,7 +190,7 @@
         <h2>All renters</h2>
         <div class="a-table-wrap">
         <table class="a-table" id="rentersTable">
-          <thead><tr><th>Name</th><th>Messenger</th><th>Note</th><th>Added</th><th>Total Paid</th><th>Rentals</th><th>Active Now</th></tr></thead>
+          <thead><tr><th>Name</th><th>Messenger</th><th>Note</th><th>Added</th><th>Total Paid</th><th>Rentals</th><th>Active Now</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
         </div>
