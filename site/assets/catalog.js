@@ -106,9 +106,8 @@
   function badgeFor(g) {
     if (g.status === 'upcoming') return { label: 'PRE-RESERVE', cls: 'rc-badge-upcoming' };
     var t = g.trophy.available, n = g.nontrophy.available;
-    if (!t && !n) return { label: 'WAITLIST', cls: 'rc-badge-waitlist' };
-    if (!t && n) return { label: 'TROPHY FULL', cls: 'rc-badge-trophyfull' };
-    if (t && !n) return { label: 'LIMITED', cls: 'rc-badge-limited' };
+    if (!t && !n) return { label: 'FULLY RENTED', cls: 'rc-badge-waitlist' };
+    if (!t || !n) return { label: 'RENTED', cls: 'rc-badge-trophyfull' };
     if (g.activeRentals >= HIGH_DEMAND_MIN) return { label: 'HIGH DEMAND', cls: 'rc-badge-demand' };
     if (g.activeRentals >= POPULAR_MIN) return { label: 'POPULAR', cls: 'rc-badge-popular' };
     return null;
@@ -123,8 +122,21 @@
     }
   }
 
-  function availInfo(available) {
-    return available ? { label: 'AVAILABLE', cls: 'rc-status-available' } : { label: 'FULL', cls: 'rc-status-full' };
+  function daysUntilDate(iso) {
+    if (!iso) return null;
+    var target = new Date(iso + 'T00:00:00');
+    if (isNaN(target.getTime())) return null;
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.round((target - today) / 86400000);
+  }
+
+  function availInfo(available, availableAt) {
+    if (available) return { label: 'AVAILABLE', cls: 'rc-status-available' };
+    var days = daysUntilDate(availableAt);
+    if (days === null) return { label: 'FULL', cls: 'rc-status-full' };
+    if (days <= 0) return { label: 'FREE SOON', cls: 'rc-status-full' };
+    return { label: days + 'D LEFT', cls: 'rc-status-full' };
   }
 
   function releaseDateLabel(iso) {
@@ -243,8 +255,8 @@
 
     grid.innerHTML = games.map(function (g) {
       var badge = badgeFor(g);
-      var t = availInfo(g.trophy.available);
-      var n = availInfo(g.nontrophy.available);
+      var t = availInfo(g.trophy.available, g.trophy.availableAt);
+      var n = availInfo(g.nontrophy.available, g.nontrophy.availableAt);
       return '' +
         '<div class="rc-card" data-slug="' + g.slug + '">' +
           '<div class="rc-card-cover-wrap">' +
@@ -360,7 +372,7 @@
   }
 
   function slotLabel(g, slotKey) {
-    return g.status === 'upcoming' ? reservationInfo(g[slotKey].reservationStatus) : availInfo(g[slotKey].available);
+    return g.status === 'upcoming' ? reservationInfo(g[slotKey].reservationStatus) : availInfo(g[slotKey].available, g[slotKey].availableAt);
   }
 
   function messengerLink(g, text) {
@@ -381,8 +393,8 @@
       id: row.id, slug: row.slug, title: row.title, genre: row.genre || [],
       cover: row.cover, releaseDate: row.release_date, activeRentals: 0,
       status: row.status, upcomingOrder: row.upcoming_order,
-      trophy: { available: row.trophy_available, weekly: row.trophy_weekly, monthly: row.trophy_monthly, reservationStatus: row.trophy_reservation_status },
-      nontrophy: { available: row.nontrophy_available, weekly: row.nontrophy_weekly, monthly: row.nontrophy_monthly, reservationStatus: row.nontrophy_reservation_status },
+      trophy: { available: row.trophy_available, availableAt: row.trophy_available_at, weekly: row.trophy_weekly, monthly: row.trophy_monthly, reservationStatus: row.trophy_reservation_status },
+      nontrophy: { available: row.nontrophy_available, availableAt: row.nontrophy_available_at, weekly: row.nontrophy_weekly, monthly: row.nontrophy_monthly, reservationStatus: row.nontrophy_reservation_status },
       platform: row.platform
     };
   }

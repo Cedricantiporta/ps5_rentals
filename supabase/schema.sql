@@ -19,11 +19,13 @@ create table if not exists games (
   -- *_available is unused there. Both columns exist on every row so
   -- switching a game between available/upcoming never loses data.
   trophy_available boolean not null default true,
+  trophy_available_at date,
   trophy_weekly int,
   trophy_monthly int,
   trophy_reservation_status text not null default 'CLOSED' check (trophy_reservation_status in ('OPEN', 'LIMITED', 'PRIORITY_LIST', 'CLOSED')),
 
   nontrophy_available boolean not null default true,
+  nontrophy_available_at date,
   nontrophy_weekly int,
   nontrophy_monthly int,
   nontrophy_reservation_status text not null default 'CLOSED' check (nontrophy_reservation_status in ('OPEN', 'LIMITED', 'PRIORITY_LIST', 'CLOSED')),
@@ -123,3 +125,17 @@ create policy "admin can update rental requests" on rental_requests
   for update using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy "admin can delete rental requests" on rental_requests
   for delete using (auth.role() = 'authenticated');
+
+-- Storage bucket for game cover uploads from the admin "Add Game" form.
+insert into storage.buckets (id, name, public)
+values ('game-covers', 'game-covers', true)
+on conflict (id) do nothing;
+
+create policy "public can view game covers" on storage.objects
+  for select using (bucket_id = 'game-covers');
+create policy "admin can upload game covers" on storage.objects
+  for insert to authenticated with check (bucket_id = 'game-covers');
+create policy "admin can update game covers" on storage.objects
+  for update to authenticated using (bucket_id = 'game-covers');
+create policy "admin can delete game covers" on storage.objects
+  for delete to authenticated using (bucket_id = 'game-covers');

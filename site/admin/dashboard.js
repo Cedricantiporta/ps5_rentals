@@ -234,7 +234,9 @@
       status: 'active', payment_status: 'paid', start_date: start, end_date: end
     }).eq('id', rental.id).then(function (res) {
       if (res.error) { alert(res.error.message); return; }
-      return setGameSlotAvailable(rental.game_id, rental.slot, false).then(loadAll);
+      // Slot frees up the day after the rental's end date -- shown on the
+      // public site as a "Xd left" countdown instead of a flat FULL.
+      return setGameSlotAvailable(rental.game_id, rental.slot, false, addDaysISO(end, 1)).then(loadAll);
     });
   }
 
@@ -246,9 +248,10 @@
     });
   }
 
-  function setGameSlotAvailable(gameId, slot, available) {
+  function setGameSlotAvailable(gameId, slot, available, availableAt) {
     var patch = {};
     patch[slot + '_available'] = available;
+    patch[slot + '_available_at'] = available ? null : (availableAt || null);
     return supabase.from('games').update(patch).eq('id', gameId);
   }
 
@@ -387,8 +390,10 @@
 
   function renderGames() {
     var tbody = document.querySelector('#gamesTable tbody');
+    var q = ($('gamesSearch') && $('gamesSearch').value || '').trim().toLowerCase();
+    var games = q ? state.games.filter(function (g) { return g.title.toLowerCase().indexOf(q) !== -1; }) : state.games;
     tbody.innerHTML = '';
-    state.games.forEach(function (g) {
+    games.forEach(function (g) {
       var tr = document.createElement('tr');
       tr.innerHTML = '<td>' + esc(g.title) + '</td><td>' + (g.status === 'upcoming' ? 'Pre-Reserve' : 'Available') + '</td>' +
         '<td>' + slotControlHtml(g, 'trophy') + '</td>' +
@@ -396,6 +401,7 @@
       tbody.appendChild(tr);
     });
   }
+  if ($('gamesSearch')) $('gamesSearch').addEventListener('input', renderGames);
 
   document.querySelector('#gamesTable tbody').addEventListener('change', function (e) {
     var sel = e.target.closest('select[data-game]');
@@ -404,13 +410,75 @@
     var slot = sel.getAttribute('data-slot');
     var field = sel.getAttribute('data-field');
     var patch = {};
-    if (field === 'available') patch[slot + '_available'] = sel.value === 'true';
-    else patch[slot + '_reservation_status'] = sel.value;
+    if (field === 'available') {
+      patch[slot + '_available'] = sel.value === 'true';
+      if (sel.value === 'true') patch[slot + '_available_at'] = null;
+    } else patch[slot + '_reservation_status'] = sel.value;
     supabase.from('games').update(patch).eq('id', gameId).then(function (res) {
       if (res.error) alert(res.error.message);
       loadAll();
     });
   });
+
+  // ---- add game ----
+  function slugify(s) {
+    return String(s).toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  if ($('gStatus')) {
+    $('gStatus').addEventListener('change', function () {
+      $('gReservationRow').hidden = $('gStatus').value !== 'upcoming';
+    });
+  }
+
+  function uploadCover(file, slug) {
+    var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    var path = slug + '-' + Date.now() + '.' + ext;
+    return supabase.storage.from('game-covers').upload(path, file, { upsert: true }).then(function (res) {
+      if (res.error) throw res.error;
+      return supabase.storage.from('game-covers').getPublicUrl(path).data.publicUrl;
+    });
+  }
+
+  if ($('addGameForm')) {
+    $('addGameForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      $('addGameError').textContent = '';
+      var title = $('gTitle').value.trim();
+      if (!title) { $('addGameError').textContent = 'Title is required.'; return; }
+      var slug = slugify($('gSlug').value.trim() || title);
+      var status = $('gStatus').value;
+      var genre = $('gGenre').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+      var file = $('gCover').files[0];
+      var btn = $('addGameBtn');
+      btn.disabled = true;
+
+      Promise.resolve(file ? uploadCover(file, slug) : null).then(function (coverUrl) {
+        return supabase.from('games').insert({
+          slug: slug, title: title, genre: genre, platform: $('gPlatform').value.trim() || 'PS5',
+          cover: coverUrl || null, release_date: $('gReleaseDate').value || null, status: status,
+          upcoming_order: Number($('gUpcomingOrder').value) || 99999,
+          trophy_available: $('gTrophyAvailable').value === 'true',
+          trophy_weekly: Number($('gTrophyWeekly').value) || null,
+          trophy_monthly: Number($('gTrophyMonthly').value) || null,
+          trophy_reservation_status: $('gTrophyReservation').value,
+          nontrophy_available: $('gNontrophyAvailable').value === 'true',
+          nontrophy_weekly: Number($('gNontrophyWeekly').value) || null,
+          nontrophy_monthly: Number($('gNontrophyMonthly').value) || null,
+          nontrophy_reservation_status: $('gNontrophyReservation').value
+        });
+      }).then(function (res) {
+        if (res.error) throw res.error;
+        $('addGameForm').reset();
+        $('gReservationRow').hidden = true;
+        loadAll();
+      }).catch(function (err) {
+        $('addGameError').textContent = err.message || 'Failed to add game.';
+      }).then(function () { btn.disabled = false; });
+    });
+  }
 
   // ---- boot ----
   window.rcRequireAuth().then(function (session) {

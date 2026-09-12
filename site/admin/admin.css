@@ -90,6 +90,7 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
 .a-edit-amount:hover { color: var(--a-blue); }
 
 .a-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.a-form-row[hidden] { display: none; }
 .a-form-row.a-form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
 .a-field { display: flex; flex-direction: column; gap: 0.35rem; }
 .a-field label { font-size: 0.78rem; color: var(--a-text-2); font-weight: 600; }
