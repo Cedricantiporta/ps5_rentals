@@ -61,6 +61,7 @@
       renderOverview();
       populateRenterSelect();
       populateGameOptions();
+      updateSlotHintAndAmount();
     });
   }
 

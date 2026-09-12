@@ -367,6 +367,28 @@
     return MESSENGER_URL + '?text=' + encodeURIComponent(text);
   }
 
+  var publicSupabase = null;
+  function getPublicSupabase() {
+    if (publicSupabase) return publicSupabase;
+    if (!window.supabase || !window.RC_PUBLIC_CONFIG || !window.RC_PUBLIC_CONFIG.SUPABASE_URL) return null;
+    publicSupabase = window.supabase.createClient(window.RC_PUBLIC_CONFIG.SUPABASE_URL, window.RC_PUBLIC_CONFIG.SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
+    return publicSupabase;
+  }
+  // Drops a note in the admin app's "Incoming Requests" inbox with the
+  // game/slot/plan the customer already picked, so the admin doesn't have
+  // to re-enter it by hand after reading the Messenger message. Best-effort
+  // only -- never blocks or delays opening Messenger.
+  function submitRentalRequest(g, slotKey) {
+    var sb = getPublicSupabase();
+    if (!sb) return;
+    sb.from('rental_requests').insert({
+      game_slug: g.slug, game_title: g.title, slot: slotKey,
+      plan: state.plan || null, amount: g[slotKey] ? (g[slotKey][state.plan] || null) : null
+    }).then(function () {}, function () {});
+  }
+
   function finalizeRental(slotKey) {
     var g = state.modalGame;
     state.slot = slotKey;
@@ -379,6 +401,7 @@
       var planName = state.plan === 'weekly' ? 'Weekly' : 'Monthly';
       var price = peso(g[slotKey][state.plan]);
       text = 'Hi! I\'d like to ' + (upcoming ? 'pre-reserve' : 'rent') + ' "' + g.title + '" — ' + slotName + ' access, ' + planName + ' plan (' + price + ').';
+      submitRentalRequest(g, slotKey);
     }
     window.open(messengerLink(g, text), '_blank', 'noopener');
   }

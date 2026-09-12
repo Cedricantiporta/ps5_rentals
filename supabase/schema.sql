@@ -100,3 +100,26 @@ create trigger games_set_updated_at before update on games
   for each row execute function set_updated_at();
 create trigger rentals_set_updated_at before update on rentals
   for each row execute function set_updated_at();
+
+-- Inbox for requests submitted straight from the public site's rental
+-- wizard (see migration_2_requests.sql for the standalone version of this
+-- if you're adding it to an existing database rather than a fresh one).
+create table if not exists rental_requests (
+  id bigint generated always as identity primary key,
+  game_slug text not null,
+  game_title text not null,
+  slot text not null check (slot in ('trophy', 'nontrophy')),
+  plan text check (plan in ('weekly', 'monthly')),
+  amount int,
+  handled boolean not null default false,
+  created_at timestamptz not null default now()
+);
+alter table rental_requests enable row level security;
+create policy "anyone can submit a rental request" on rental_requests
+  for insert to anon with check (true);
+create policy "admin can read rental requests" on rental_requests
+  for select using (auth.role() = 'authenticated');
+create policy "admin can update rental requests" on rental_requests
+  for update using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "admin can delete rental requests" on rental_requests
+  for delete using (auth.role() = 'authenticated');

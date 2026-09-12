@@ -8,24 +8,25 @@
 <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
-  <div class="a-topbar">
-    <h1>June Digitals Admin</h1>
-    <div class="a-topbar-right">
-      <span id="whoami"></span>
-      <button class="a-btn" id="signOutBtn">Sign Out</button>
-    </div>
-  </div>
+  <div class="a-shell">
+    <aside class="a-sidebar">
+      <h1 class="a-sidebar-title">June Digitals<br>Admin</h1>
+      <nav class="a-nav">
+        <button class="a-tab is-active" data-tab="overview">Overview</button>
+        <button class="a-tab" data-tab="requests">Incoming Requests <span id="requestsBadge"></span></button>
+        <button class="a-tab" data-tab="rentals">Rentals</button>
+        <button class="a-tab" data-tab="new-rental">New Rental</button>
+        <button class="a-tab" data-tab="renters">Renters</button>
+        <button class="a-tab" data-tab="games">Games</button>
+      </nav>
+      <div class="a-sidebar-bottom">
+        <span id="whoami"></span>
+        <button class="a-btn" id="signOutBtn">Sign Out</button>
+      </div>
+    </aside>
 
-  <div class="a-wrap">
-    <div class="a-tabs">
-      <button class="a-tab is-active" data-tab="overview">Overview</button>
-      <button class="a-tab" data-tab="requests">Incoming Requests <span id="requestsBadge"></span></button>
-      <button class="a-tab" data-tab="rentals">Rentals</button>
-      <button class="a-tab" data-tab="new-rental">New Rental</button>
-      <button class="a-tab" data-tab="renters">Renters</button>
-      <button class="a-tab" data-tab="games">Games</button>
-    </div>
-
+    <main class="a-main">
+    <div class="a-wrap">
     <div class="a-panel is-active" id="panel-overview">
       <div class="a-stat-grid">
         <div class="a-stat-card">
@@ -187,6 +188,8 @@
         </table>
       </div>
     </div>
+    </div>
+    </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
