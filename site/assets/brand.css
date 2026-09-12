@@ -9,11 +9,6 @@
   --base--blue: #0137e2;
 }
 
-/* full-bleed sections use 100vw, which is wider than the visible page
-   by the scrollbar's width -- clip that sliver instead of letting it
-   show as a stray gap/horizontal scrollbar. */
-html, body { overflow-x: hidden; }
-
 /* use the Coming Soon panel's own side margin (1.75rem) as the page's
    one consistent side margin everywhere, instead of Webflow's own
    responsive padding-global values. */
