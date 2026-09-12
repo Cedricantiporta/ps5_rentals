@@ -216,6 +216,7 @@
       var actions = '';
       var timeLeftCell = '—';
       if (r.status === 'pending') {
+        if (r.queue_position != null) timeLeftCell = 'Queue #' + r.queue_position;
         actions += '<button type="button" class="a-menu-item" data-action="activate" data-id="' + r.id + '">Confirm Payment &amp; Activate</button>';
         actions += '<button type="button" class="a-menu-item" data-action="cancel" data-id="' + r.id + '">Cancel</button>';
       } else if (r.status === 'active') {
@@ -296,7 +297,7 @@
       // public site as a "Xd left" countdown instead of a flat FULL.
       return setGameSlotAvailable(rental.game_id, rental.slot, false, addDaysISO(end, 1)).then(function (res2) {
         if (res2.error) { alert(res2.error.message); return; }
-        loadAll();
+        return resolveQueueSlot(rental).then(loadAll);
       });
     });
   }
@@ -306,9 +307,9 @@
       if (res.error) { alert(res.error.message); return; }
       if (freeSlot) return setGameSlotAvailable(rental.game_id, rental.slot, true).then(function (res2) {
         if (res2.error) { alert(res2.error.message); return; }
-        loadAll();
+        return resolveQueueSlot(rental).then(loadAll);
       });
-      return loadAll();
+      return resolveQueueSlot(rental).then(loadAll);
     });
   }
 
@@ -317,6 +318,46 @@
     patch[slot + '_available'] = available;
     patch[slot + '_available_at'] = available ? null : (availableAt || null);
     return supabase.from('games').update(patch).eq('id', gameId);
+  }
+
+  // ---- pre-reserve queue (multiple people can want the same upcoming
+  // game's slot before it's released -- only one gets it, the rest hold a
+  // place in line) ----
+  function pendingQueue(gameId, slot) {
+    return state.rentals
+      .filter(function (r) { return r.game_id === gameId && r.slot === slot && r.status === 'pending' && r.queue_position != null; })
+      .sort(function (a, b) { return a.queue_position - b.queue_position; });
+  }
+  function nextQueuePosition(gameId, slot) {
+    var q = pendingQueue(gameId, slot);
+    return q.length ? q[q.length - 1].queue_position + 1 : 1;
+  }
+  // Reservation status reflects the real queue depth (OPEN/LIMITED/
+  // PRIORITY_LIST) unless the admin has manually CLOSED it -- that
+  // override always wins until they reopen it themselves.
+  function syncReservationStatus(gameId, slot) {
+    var game = state.games.filter(function (g) { return g.id === gameId; })[0];
+    if (!game || game.status !== 'upcoming') return Promise.resolve();
+    var current = game[slot + '_reservation_status'];
+    if (current === 'CLOSED') return Promise.resolve();
+    var count = pendingQueue(gameId, slot).length;
+    var next = count === 0 ? 'OPEN' : (count === 1 ? 'LIMITED' : 'PRIORITY_LIST');
+    if (next === current) return Promise.resolve();
+    var patch = {};
+    patch[slot + '_reservation_status'] = next;
+    return supabase.from('games').update(patch).eq('id', gameId);
+  }
+  // Called after a queued reservation leaves the queue (activated,
+  // cancelled, or ended) -- closes the gap so remaining places stay 1,2,3...
+  function resolveQueueSlot(rental) {
+    if (rental.queue_position == null) return Promise.resolve();
+    var behind = state.rentals.filter(function (r) {
+      return r.game_id === rental.game_id && r.slot === rental.slot && r.status === 'pending' &&
+        r.queue_position != null && r.queue_position > rental.queue_position;
+    });
+    return Promise.all(behind.map(function (r) {
+      return supabase.from('rentals').update({ queue_position: r.queue_position - 1 }).eq('id', r.id);
+    })).then(function () { return syncReservationStatus(rental.game_id, rental.slot); });
   }
 
   // ---- new rental tab ----
@@ -363,9 +404,15 @@
     if (!g) { hint.textContent = ''; return; }
     var slot = $('slotSelect').value;
     var plan = $('planSelect').value;
-    var available = g[slot + '_available'];
     var price = g[slot + '_' + plan];
     if (!state.amountManuallyEdited) $('amountInput').value = price || 0;
+    if (g.status === 'upcoming') {
+      var position = nextQueuePosition(g.id, slot);
+      hint.textContent = 'Not released yet -- this will be reservation #' + position + ' for the ' +
+        (slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ' slot. Price on file: ₱' + (price || 0) + '.';
+      return;
+    }
+    var available = g[slot + '_available'];
     hint.textContent = (available ? 'Slot currently open.' : 'Heads up: this slot is currently marked FULL.') +
       ' Price on file: ₱' + (price || 0) + '.';
   }
@@ -465,17 +512,21 @@
     ensureRenter.then(function (res) {
       if (res.error) { $('newRentalError').textContent = res.error.message; return; }
       var renterId = res.data.id;
+      var slot = $('slotSelect').value;
       var plan = $('planSelect').value;
       var start = todayISO();
       var end = addDaysISO(start, plan === 'weekly' ? 7 : 30);
+      var isReservation = g.status === 'upcoming';
       return supabase.from('rentals').insert({
-        game_id: g.id, renter_id: renterId, slot: $('slotSelect').value, plan: plan,
+        game_id: g.id, renter_id: renterId, slot: slot, plan: plan,
         amount: Number($('amountInput').value) || 0, status: 'pending', payment_status: 'pending',
-        start_date: start, end_date: end, notes: $('rentalNotes').value.trim() || null
+        start_date: start, end_date: end, notes: $('rentalNotes').value.trim() || null,
+        queue_position: isReservation ? nextQueuePosition(g.id, slot) : null
       }).then(function (res2) {
         if (res2.error) { $('newRentalError').textContent = res2.error.message; return; }
         $('newRentalForm').reset();
         state.amountManuallyEdited = false;
+        if (isReservation) return syncReservationStatus(g.id, slot).then(loadAll);
         loadAll();
       });
     });
