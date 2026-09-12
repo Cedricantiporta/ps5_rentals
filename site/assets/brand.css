@@ -108,6 +108,16 @@
   transition: none !important;
   animation: none !important;
 }
+/* Light mode -- navbar/footer stay dark "chrome"; the page body and content
+   sections (which carry all visible text via .rc-root's own --rc-text token)
+   flip to a light background. Toggled by #rcThemeToggle in catalog.js, which
+   sets data-theme="light"|"dark" on <html> and persists it in localStorage. */
+[data-theme="light"] body,
+[data-theme="light"] .section_pricing2,
+[data-theme="light"] .section-2 {
+  background-color: #f4f5f7 !important;
+}
+
 /* Webflow's native menu-button toggle rotates/morphs the 3 lines into an X via
    inline JS styles (not CSS transitions), so transition:none above can't stop
    it -- pin the lines' transform with !important instead, which does win over

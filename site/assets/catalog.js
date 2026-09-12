@@ -9,6 +9,18 @@
 
   var state = { games: [], query: '', quickFilter: 'all', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1, step: 'intent', intent: 'new', overlayStack: [] };
 
+  var THEME_KEY = 'rc-theme';
+  function getSavedTheme() {
+    try { return localStorage.getItem(THEME_KEY) || 'dark'; } catch (e) { return 'dark'; }
+  }
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+    var btn = document.getElementById('rcThemeToggle');
+    if (btn) btn.classList.toggle('is-light', theme === 'light');
+  }
+  applyTheme(getSavedTheme());
+
   var OVERLAY_CLOSERS = {};
 
   // Every overlay (rental modal, share card, rental rules, mobile drawer)
@@ -909,12 +921,22 @@
     });
   }
 
+  function wireThemeToggle() {
+    var btn = document.getElementById('rcThemeToggle');
+    if (!btn) return;
+    btn.classList.toggle('is-light', getSavedTheme() === 'light');
+    btn.addEventListener('click', function () {
+      applyTheme(getSavedTheme() === 'light' ? 'dark' : 'light');
+    });
+  }
+
   function init() {
     wireNavSolidOnScroll();
     wireOverlayHistory();
     wireRulesModal();
     wireShareModal();
     wireDrawer();
+    wireThemeToggle();
     wireNavCurrentPage();
     fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (games) {
       state.games = games;
