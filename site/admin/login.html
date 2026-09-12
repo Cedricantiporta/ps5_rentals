@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Login | June Digitals</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="a-login-wrap">
+    <div class="a-login-box">
+      <h1>June Digitals Admin</h1>
+      <form id="loginForm">
+        <div class="a-field">
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="username" required>
+        </div>
+        <div class="a-field">
+          <label for="password">Password</label>
+          <input id="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="a-btn a-btn-primary" id="signInBtn">Sign In</button>
+        <p class="a-error" id="loginError"></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/admin/config.js"></script>
+  <script src="/admin/admin.js"></script>
+  <script>
+    (function () {
+      if (!window.rcSupabase) return;
+      window.rcSupabase.auth.getSession().then(function (res) {
+        if (res.data && res.data.session) window.location.href = '/admin/dashboard.html';
+      });
+
+      var form = document.getElementById('loginForm');
+      var btn = document.getElementById('signInBtn');
+      var errEl = document.getElementById('loginError');
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        errEl.textContent = '';
+        btn.disabled = true;
+        btn.textContent = 'Signing in...';
+        window.rcSupabase.auth.signInWithPassword({
+          email: document.getElementById('email').value,
+          password: document.getElementById('password').value
+        }).then(function (res) {
+          if (res.error) {
+            errEl.textContent = res.error.message;
+            btn.disabled = false;
+            btn.textContent = 'Sign In';
+            return;
+          }
+          window.location.href = '/admin/dashboard.html';
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

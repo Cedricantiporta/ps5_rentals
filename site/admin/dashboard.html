@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin | June Digitals</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+  <div class="a-topbar">
+    <h1>June Digitals Admin</h1>
+    <div class="a-topbar-right">
+      <span id="whoami"></span>
+      <button class="a-btn" id="signOutBtn">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="a-wrap">
+    <div class="a-tabs">
+      <button class="a-tab is-active" data-tab="rentals">Rentals</button>
+      <button class="a-tab" data-tab="new-rental">New Rental</button>
+      <button class="a-tab" data-tab="renters">Renters</button>
+      <button class="a-tab" data-tab="games">Games</button>
+    </div>
+
+    <div class="a-panel is-active" id="panel-rentals">
+      <div class="a-card">
+        <h2>All rentals</h2>
+        <table class="a-table" id="rentalsTable">
+          <thead>
+            <tr>
+              <th>Game</th><th>Renter</th><th>Slot</th><th>Plan</th>
+              <th>Status</th><th>Payment</th><th>Start</th><th>End</th><th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p class="a-empty" id="rentalsEmpty" hidden>No rentals yet.</p>
+      </div>
+    </div>
+
+    <div class="a-panel" id="panel-new-rental">
+      <div class="a-card">
+        <h2>New rental</h2>
+        <form id="newRentalForm">
+          <div class="a-form-row">
+            <div class="a-field">
+              <label for="renterSelect">Renter</label>
+              <select id="renterSelect"><option value="__new">+ New renter</option></select>
+            </div>
+            <div class="a-field" id="newRenterNameField">
+              <label for="newRenterName">Renter name</label>
+              <input id="newRenterName" type="text" placeholder="e.g. Juan Dela Cruz">
+            </div>
+          </div>
+          <div class="a-form-row" id="newRenterExtraRow">
+            <div class="a-field">
+              <label for="newRenterMessenger">Messenger name (optional)</label>
+              <input id="newRenterMessenger" type="text">
+            </div>
+            <div class="a-field">
+              <label for="newRenterNote">Note (optional)</label>
+              <input id="newRenterNote" type="text">
+            </div>
+          </div>
+
+          <div class="a-form-row">
+            <div class="a-field">
+              <label for="gameSelect">Game</label>
+              <input id="gameSearch" list="gameList" placeholder="Search game...">
+              <datalist id="gameList"></datalist>
+              <select id="gameSelect" style="display:none"></select>
+            </div>
+            <div class="a-field">
+              <label>Slot</label>
+              <select id="slotSelect">
+                <option value="trophy">Trophy</option>
+                <option value="nontrophy">Non-Trophy</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="a-form-row">
+            <div class="a-field">
+              <label>Plan</label>
+              <select id="planSelect">
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+            <div class="a-field">
+              <label>Amount (PHP)</label>
+              <input id="amountInput" type="number" min="0">
+            </div>
+          </div>
+          <p class="a-hint" id="slotHint"></p>
+
+          <div class="a-field">
+            <label for="rentalNotes">Notes (optional)</label>
+            <textarea id="rentalNotes" rows="2"></textarea>
+          </div>
+
+          <button type="submit" class="a-btn a-btn-primary" id="createRentalBtn">Create rental (pending payment)</button>
+          <p class="a-error" id="newRentalError"></p>
+        </form>
+      </div>
+    </div>
+
+    <div class="a-panel" id="panel-renters">
+      <div class="a-card">
+        <h2>Add renter</h2>
+        <form id="addRenterForm">
+          <div class="a-form-row a-form-row-3">
+            <div class="a-field"><label>Name</label><input id="renterNameInput" type="text" required></div>
+            <div class="a-field"><label>Messenger name</label><input id="renterMsgInput" type="text"></div>
+            <div class="a-field"><label>Note</label><input id="renterNoteInput" type="text"></div>
+          </div>
+          <button type="submit" class="a-btn a-btn-primary">Add renter</button>
+          <p class="a-error" id="addRenterError"></p>
+        </form>
+      </div>
+      <div class="a-card">
+        <h2>All renters</h2>
+        <table class="a-table" id="rentersTable">
+          <thead><tr><th>Name</th><th>Messenger</th><th>Note</th><th>Added</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p class="a-empty" id="rentersEmpty" hidden>No renters yet.</p>
+      </div>
+    </div>
+
+    <div class="a-panel" id="panel-games">
+      <div class="a-card">
+        <h2>Games (live catalog status)</h2>
+        <p class="a-hint">Changing these here updates the public site immediately -- use this only for manual overrides outside the normal rental flow.</p>
+        <table class="a-table" id="gamesTable">
+          <thead><tr><th>Title</th><th>Type</th><th>Trophy</th><th>Non-Trophy</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/admin/config.js"></script>
+  <script src="/admin/admin.js"></script>
+  <script src="/admin/dashboard.js"></script>
+</body>
+</html>
