@@ -14,6 +14,10 @@
    responsive padding-global values. */
 .padding-global { padding-left: 1.75rem !important; padding-right: 1.75rem !important; }
 
+/* logo sits too far from the edge relative to the rest of the navbar -- pull
+   it in on the left only, leave the hamburger/buttons side untouched. */
+.navbar .padding-global.is-navbar { padding-left: 1rem !important; }
+
 .navbar { background-color: #000 !important; }
 .navbar_list { background-color: #0a0a0a !important; }
 
