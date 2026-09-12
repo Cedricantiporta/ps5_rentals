@@ -250,6 +250,7 @@
   /* card art is always dark navy regardless of page theme -- pin its own text tokens so titles/prices stay readable in light mode. */
   --rc-text: #fff; --rc-text-2: #ffffff80; --rc-text-3: #ffffff4d;
 }
+[data-theme="light"] .rc-soon-card { background: linear-gradient(180deg, #fff 0%, var(--rc-blue) 100%); }
 .rc-soon-card:hover { transform: translateY(-3px); border-color: var(--rc-blue); }
 .rc-soon-cover { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #1c1e28; }
 .rc-soon-card .rc-card-cover-wrap::before {
@@ -292,6 +293,7 @@
   /* card art is always dark navy regardless of page theme -- pin its own text tokens so titles/prices stay readable in light mode. */
   --rc-text: #fff; --rc-text-2: #ffffff80; --rc-text-3: #ffffff4d;
 }
+[data-theme="light"] .rc-card { background: linear-gradient(180deg, #fff 0%, var(--rc-blue) 100%); }
 .rc-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px -12px var(--rc-blue-glow); }
 .rc-card-cover-wrap { position: relative; overflow: hidden; border-radius: inherit; }
 .rc-card-cover-wrap::before {
@@ -559,6 +561,7 @@
   -webkit-backdrop-filter: blur(10px);
   transition: background-color .2s;
 }
+[data-theme="light"] .navbar.rc-nav-solid { background: rgba(255, 255, 255, 0.92) !important; }
 
 @media (max-width: 640px) {
   .rc-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
