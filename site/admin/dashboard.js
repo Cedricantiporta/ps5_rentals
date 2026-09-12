@@ -156,6 +156,13 @@
   function wasSwapped(rentalId) {
     return state.rentals.some(function (x) { return x.swapped_from_rental_id === rentalId; });
   }
+  // 24h cooldown since this rental began (whether by activation or a
+  // previous swap) before it can be swapped again -- stops same-day
+  // back-to-back swapping.
+  function swapCooldownHoursLeft(rental) {
+    var hoursSince = (Date.now() - new Date(rental.created_at).getTime()) / 3600000;
+    return Math.max(0, Math.ceil(24 - hoursSince));
+  }
   function paymentPill(p) {
     return '<span class="a-pill ' + (p === 'paid' ? 'a-pill-paid' : 'a-pill-pending') + '">' + esc(p) + '</span>';
   }
@@ -184,7 +191,12 @@
         } else {
           actions += '<button class="a-btn a-btn-red" data-action="end" data-id="' + r.id + '">End Rental</button>';
         }
-        actions += '<button class="a-btn" data-action="swap" data-id="' + r.id + '">Swap Game</button>';
+        var cooldownHours = swapCooldownHoursLeft(r);
+        if (cooldownHours > 0) {
+          actions += '<button class="a-btn" disabled title="This rental started less than 24h ago">Swap in ' + cooldownHours + 'h</button>';
+        } else {
+          actions += '<button class="a-btn" data-action="swap" data-id="' + r.id + '">Swap Game</button>';
+        }
       }
       tr.innerHTML =
         '<td>' + esc(game.title) + '</td>' +
@@ -318,6 +330,11 @@
   // ---- swap game (ends the old rental, starts a new one on the same
   // renter/end-date so the remaining paid time carries over) ----
   function startSwap(rental) {
+    var cooldownHours = swapCooldownHoursLeft(rental);
+    if (cooldownHours > 0) {
+      alert('This rental started less than 24 hours ago. Swap available in ' + cooldownHours + ' more hour' + (cooldownHours === 1 ? '' : 's') + '.');
+      return;
+    }
     var renter = state.renters.filter(function (r) { return r.id === rental.renter_id; })[0];
     var game = state.games.filter(function (g) { return g.id === rental.game_id; })[0];
     state.swapFromRental = rental;
