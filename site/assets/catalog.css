@@ -115,23 +115,27 @@
 /* solid white, no border -- the site's buttons/selected states all share this look. */
 .rc-frame-btn,
 .rc-chip.is-active,
-.rc-plan-tab.is-active,
-.rc-slot-option.is-active,
 .rc-modal-cta {
   background: #fff;
   border: none;
   color: #0a0a0a;
 }
-/* in light mode a white "selected" pill would vanish against the page --
+/* in light mode a white "selected" filter chip would vanish against the page --
    use the brand blue instead so the active state stays visible. */
-[data-theme="light"] .rc-chip.is-active,
-[data-theme="light"] .rc-plan-tab.is-active,
-[data-theme="light"] .rc-slot-option.is-active {
+[data-theme="light"] .rc-chip.is-active {
   background: var(--rc-blue);
   color: #fff;
 }
-[data-theme="light"] .rc-slot-option.is-active .rc-slot-option-price,
-[data-theme="light"] .rc-slot-option.is-active .rc-slot-option-amount { color: #fff; }
+/* plan-tab/slot-option cards live inside modals, which are always a dark
+   panel regardless of page theme (see .rc-modal) -- so their "selected"
+   state is always blue-on-white, never theme-conditional. */
+.rc-plan-tab.is-active,
+.rc-slot-option.is-active {
+  background: var(--rc-blue);
+  color: #fff;
+}
+.rc-slot-option.is-active .rc-slot-option-price,
+.rc-slot-option.is-active .rc-slot-option-amount { color: #fff; }
 .rc-frame-btn:hover,
 .rc-modal-cta:hover {
   filter: brightness(.92);
@@ -358,7 +362,15 @@
 }
 .rc-modal-overlay.is-open { opacity: 1; pointer-events: auto; }
 .rc-modal {
-  width: 100%; max-width: 560px; max-height: 95vh; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; background: var(--rc-bg);
+  width: 100%; max-width: 560px; max-height: 95vh; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+  /* the rent/swap modal is always a dark panel over the game's cover art --
+     independent of the page's light/dark theme -- so pin its own text
+     tokens (brighter than the sitewide dark-mode defaults, per feedback
+     that the genre line / sub-copy read too greyish) instead of following
+     --rc-bg / --rc-text, which would wash the panel out in light mode. */
+  background: linear-gradient(165deg, #131a2e 0%, #0a0b10 55%, #050506 100%);
+  --rc-text: #fff; --rc-text-2: rgba(255,255,255,.82); --rc-text-3: rgba(255,255,255,.6);
+  color: var(--rc-text);
   border: 1px solid var(--rc-border-2); border-radius: 1.25rem; position: relative;
   box-shadow: 0 30px 80px -20px rgba(0,0,0,.6), 0 0 0 1px rgba(37,98,255,.08);
   transform: translateY(12px); transition: transform .18s;
@@ -449,29 +461,30 @@
   position: relative; z-index: 1; margin-top: -2.25rem; padding: 3.25rem 1.3rem 0.95rem; border-radius: 1.25rem;
   background: linear-gradient(180deg, rgba(19,26,46,0) 0%, rgba(15,20,35,.92) 45%, rgba(10,11,16,.98) 75%);
 }
-.rc-modal-title { font-family: var(--_typography---font-family--headers); font-size: 1.6rem; font-weight: 400; margin: 0 0 0.2rem; }
+.rc-modal-title { color: var(--rc-text); font-family: var(--_typography---font-family--headers); font-size: 1.6rem; font-weight: 400; margin: 0 0 0.2rem; }
 .rc-modal-genre { color: var(--rc-text-2); font-size: 0.82rem; margin-bottom: 1rem; }
 
+/* plan-tab/slot-option/choice cards are always plain white cards with dark
+   text, independent of page theme -- they sit inside the always-dark modal
+   panel (see .rc-modal), same convention as the site's other white pills. */
 .rc-plan-tabs { display: flex; gap: 0.5rem; margin-bottom: 0.85rem; }
 .rc-plan-tab {
-  flex: 1; padding: 0.6rem; border-radius: 999px; border: 1px solid var(--rc-border-2); background: var(--rc-panel);
-  color: var(--rc-text-2); font-weight: 700; font-size: 0.82rem; cursor: pointer; text-align: center;
+  flex: 1; padding: 0.6rem; border-radius: 999px; border: none; background: #fff;
+  color: #55555f; font-weight: 700; font-size: 0.82rem; cursor: pointer; text-align: center;
 }
 .rc-plan-tab.is-active { box-shadow: 0 4px 14px -4px rgba(0,0,0,.5); }
 
 .rc-slot-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1.1rem; }
 .rc-slot-option {
-  border: 1px solid var(--rc-border-2); border-radius: 0.8rem; padding: 0.7rem 0.75rem; background: var(--rc-panel);
-  cursor: pointer; text-align: left;
+  border: none; border-radius: 0.8rem; padding: 0.7rem 0.75rem; background: #fff;
+  cursor: pointer; text-align: left; color: #0a0a0f;
 }
 .rc-slot-option.is-active { box-shadow: 0 4px 14px -4px rgba(0,0,0,.5); }
 .rc-slot-option.is-disabled { opacity: .45; cursor: not-allowed; }
 .rc-slot-option-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.3rem; }
 .rc-slot-option-name { display: flex; align-items: center; gap: 0.35rem; font-weight: 700; font-size: 0.85rem; }
-.rc-slot-option-price { font-size: 0.72rem; color: var(--rc-text-2); }
-.rc-slot-option-amount { font-size: 1rem; font-weight: 800; color: #fff; }
-.rc-slot-option.is-active .rc-slot-option-price,
-.rc-slot-option.is-active .rc-slot-option-amount { color: #0a0a0a; }
+.rc-slot-option-price { font-size: 0.72rem; color: #55555f; }
+.rc-slot-option-amount { font-size: 1rem; font-weight: 800; color: #0a0a0f; }
 
 .rc-modal-cta {
   display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%;
@@ -490,7 +503,7 @@
 .rc-wizard-back:hover { filter: brightness(.92); }
 .rc-wizard-back .rc-icon { width: 14px; height: 14px; }
 .rc-wizard-eyebrow { display: block; color: var(--rc-blue); font-size: 0.72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 0.4rem; }
-.rc-wizard-heading { font-family: var(--_typography---font-family--headers); font-size: 1.2rem; font-weight: 400; margin: 0 0 0.25rem; }
+.rc-wizard-heading { color: var(--rc-text); font-family: var(--_typography---font-family--headers); font-size: 1.2rem; font-weight: 400; margin: 0 0 0.25rem; }
 .rc-wizard-heading-sm { font-size: 1rem; margin-top: 0.7rem; }
 .rc-wizard-sub { color: var(--rc-text-2); font-size: 0.82rem; margin: 0 0 0.7rem; line-height: 1.4; }
 
@@ -507,25 +520,25 @@
 /* step 1: intent */
 .rc-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .rc-choice-card {
-  background: var(--rc-panel); border: none; border-radius: 1rem; padding: 1.25rem 1.1rem; text-align: left;
-  cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; color: var(--rc-text);
+  background: #fff; border: none; border-radius: 1rem; padding: 1.25rem 1.1rem; text-align: left;
+  cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; color: #0a0a0f;
 }
-.rc-choice-card:hover { background: var(--rc-panel-2); }
-.rc-choice-icon { width: 2.2rem; height: 2.2rem; border-radius: 50%; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; }
+.rc-choice-card:hover { background: #f0f1f4; }
+.rc-choice-icon { width: 2.2rem; height: 2.2rem; border-radius: 50%; background: #0a0a0f14; display: flex; align-items: center; justify-content: center; }
 .rc-choice-icon .rc-icon { width: 18px; height: 18px; }
 .rc-choice-name { font-weight: 800; font-size: 0.95rem; }
-.rc-choice-desc { font-size: 0.78rem; color: var(--rc-text-2); line-height: 1.4; }
+.rc-choice-desc { font-size: 0.78rem; color: #55555f; line-height: 1.4; }
 
 /* step 2: plan */
 .rc-plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .rc-plan-card {
-  background: var(--rc-panel); border: none; border-radius: 1rem; padding: 1rem 1rem; text-align: left;
-  cursor: pointer; display: flex; flex-direction: column; gap: 0.25rem; color: var(--rc-text);
+  background: #fff; border: none; border-radius: 1rem; padding: 1rem 1rem; text-align: left;
+  cursor: pointer; display: flex; flex-direction: column; gap: 0.25rem; color: #0a0a0f;
 }
-.rc-plan-card:hover { background: var(--rc-panel-2); }
+.rc-plan-card:hover { background: #f0f1f4; }
 .rc-plan-name { font-weight: 800; font-size: 0.95rem; }
-.rc-plan-price { font-size: 1.4rem; font-weight: 800; color: #fff; }
-.rc-plan-desc { font-size: 0.72rem; color: var(--rc-text-2); line-height: 1.4; margin-bottom: 0.4rem; }
+.rc-plan-price { font-size: 1.4rem; font-weight: 800; color: #0a0a0f; }
+.rc-plan-desc { font-size: 0.72rem; color: #55555f; line-height: 1.4; margin-bottom: 0.4rem; }
 .rc-plan-tap { font-size: 0.68rem; font-weight: 800; color: var(--rc-blue); text-transform: uppercase; letter-spacing: .04em; }
 
 /* step 3: access */
