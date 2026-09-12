@@ -406,22 +406,53 @@
     update();
   }
 
-  function wireContactModal() {
-    var btn = document.getElementById('rcContactBtn');
-    var overlay = document.getElementById('rcContactOverlay');
-    var closeBtn = document.getElementById('rcContactClose');
-    if (!btn || !overlay) return;
+  var RENTAL_RULES = [
+    ['Use the correct profile', 'Trophy Slot is played on your personal PSN profile. Non-Trophy Slot is played on the rented game profile.'],
+    ['Follow the provided instructions', 'Please follow all setup, game-sharing, return, disabling, and video-proof steps correctly.'],
+    ['Rental and swap rules', 'Weekly is valid for 7 days with 1 game swap. Monthly is valid for 30 days with multiple swaps. Every completed swap has a 24-hour cooldown. All swaps are subject to availability. Higher-priced swaps require an add-on; lower-priced swaps have no refund or credit.'],
+    ['Wait for confirmation before disabling', 'For swaps, do not disable or remove your current game until June Digitals confirms that your requested slot is ready.'],
+    ['Security deposit', 'The ₱150 security deposit is refundable when the rental is returned correctly and on time by following the provided steps. Failure to follow the return instructions may affect the refund or rental access.'],
+    ['Please allow us time to reply', 'Requests are handled in order, and we’ll assist you as soon as possible based on staff availability and current request volume.'],
+    ['Final availability', 'Availability is rechecked before an available RENT request is handed to Messenger. Do not send payment for waitlist, pre-reserve, or unverified-availability requests unless June Digitals confirms payment is due.']
+  ];
+
+  function wireRulesModal() {
+    var btn = document.getElementById('rcRulesBtn');
+    if (!btn) return;
+
+    var itemsHtml = RENTAL_RULES.map(function (r, i) {
+      return '<div class="rc-rules-item">' +
+        '<span class="rc-guide-step-num">' + (i + 1) + '</span>' +
+        '<div class="rc-rules-item-body"><h4>' + r[0] + '</h4><p>' + r[1] + '</p></div>' +
+      '</div>';
+    }).join('');
+
+    var overlay = document.createElement('div');
+    overlay.className = 'rc-modal-overlay rc-rules-modal';
+    overlay.id = 'rcRulesOverlay';
+    overlay.innerHTML =
+      '<div class="rc-modal">' +
+        '<button type="button" class="rc-modal-close" id="rcRulesClose" aria-label="Close"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>' +
+        '<div class="rc-popup-modal-body">' +
+          '<h3 class="rc-modal-title">Rental Rules</h3>' +
+          '<p class="rc-modal-genre">Please review these rules before requesting a rental on Messenger.</p>' +
+          '<div class="rc-rules-list">' + itemsHtml + '</div>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+
+    var closeBtn = document.getElementById('rcRulesClose');
     var open = function () { overlay.classList.add('is-open'); };
     var close = function () { overlay.classList.remove('is-open'); };
     btn.addEventListener('click', open);
-    if (closeBtn) closeBtn.addEventListener('click', close);
+    closeBtn.addEventListener('click', close);
     overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
   }
 
   function init() {
     wireNavSolidOnScroll();
-    wireContactModal();
+    wireRulesModal();
     fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (games) {
       state.games = games;
       populateGenres();
