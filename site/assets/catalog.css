@@ -178,6 +178,7 @@
 }
 .rc-filter-select:focus { outline: none; }
 .rc-filter-select option { background: #12141c; color: #fff; }
+[data-theme="light"] .rc-filter-select option { background: #fff; color: #0a0a0f; }
 
 .rc-chips {
   display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; max-width: 100%;
