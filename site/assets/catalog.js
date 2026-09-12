@@ -166,18 +166,11 @@
     var track = document.getElementById('rcComingSoonTrack');
     if (!wrap || !track) return;
     var maxScroll = track.scrollWidth - track.clientWidth;
-    // the track has its own left/right padding (for the circular nav buttons), and
-    // scroll-snap rests there rather than at an exact 0 -- so use a generous edge buffer
-    var EDGE_BUFFER = 48;
+    var EDGE_BUFFER = 24;
     var atStart = track.scrollLeft <= EDGE_BUFFER;
     var atEnd = track.scrollLeft >= maxScroll - EDGE_BUFFER;
     wrap.classList.toggle('can-scroll-left', !atStart && maxScroll > 0);
     wrap.classList.toggle('can-scroll-right', !atEnd && maxScroll > 0);
-    var leftFade = atStart ? '0px' : '44px';
-    var rightFade = atEnd ? '0px' : '60px';
-    var mask = 'linear-gradient(to right, transparent 0, black ' + leftFade + ', black calc(100% - ' + rightFade + '), transparent 100%)';
-    track.style.maskImage = mask;
-    track.style.webkitMaskImage = mask;
   }
 
   function renderComingSoon() {

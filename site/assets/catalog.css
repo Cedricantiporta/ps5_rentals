@@ -170,8 +170,7 @@
 
 .rc-strip-wrap { position: relative; }
 .rc-strip {
-  display: flex; gap: 1rem; overflow-x: auto; padding: 0 2.75rem 0.75rem; scroll-snap-type: none;
-  /* mask-image is set dynamically in JS based on scroll position (updateStripEdges) */
+  display: flex; gap: 1rem; overflow-x: auto; padding: 0 0 0.75rem; scroll-snap-type: none;
 }
 .rc-strip::-webkit-scrollbar { height: 6px; }
 .rc-strip::-webkit-scrollbar-thumb { background: var(--rc-border-2); border-radius: 999px; }
@@ -307,7 +306,7 @@
 .rc-modal-overlay.is-open .rc-modal { transform: translateY(0); }
 .rc-modal-close {
   position: absolute; right: 0.9rem; top: 0.9rem; z-index: 3; width: 34px; height: 34px; border-radius: 50%;
-  background: rgba(10,10,15,.7); border: 1px solid var(--rc-border-2); color: #fff; display: flex;
+  background: #0a0a0a; border: 1px solid var(--rc-border-2); color: #fff; display: flex;
   align-items: center; justify-content: center; cursor: pointer;
 }
 .rc-modal-share {
