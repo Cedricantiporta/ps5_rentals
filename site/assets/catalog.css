@@ -418,10 +418,11 @@
 
 /* rental wizard: intent -> plan -> access */
 .rc-wizard-back {
-  display: inline-flex; align-items: center; gap: 0.2rem; background: none; border: none; color: var(--rc-text-2);
-  font-size: 0.78rem; font-weight: 700; cursor: pointer; padding: 0 0 0.9rem; text-transform: uppercase; letter-spacing: .03em;
+  display: inline-flex; align-items: center; gap: 0.3rem; background: #fff; border: none; color: #0a0a0a;
+  font-size: 0.72rem; font-weight: 800; cursor: pointer; padding: 0.45rem 0.9rem 0.45rem 0.7rem;
+  border-radius: 999px; text-transform: uppercase; letter-spacing: .03em; margin-bottom: 0.9rem;
 }
-.rc-wizard-back:hover { color: #fff; }
+.rc-wizard-back:hover { filter: brightness(.92); }
 .rc-wizard-back .rc-icon { width: 14px; height: 14px; }
 .rc-wizard-eyebrow { display: block; color: var(--rc-blue); font-size: 0.72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 0.4rem; }
 .rc-wizard-heading { font-family: var(--_typography---font-family--headers); font-size: 1.2rem; font-weight: 400; margin: 0 0 0.25rem; }
