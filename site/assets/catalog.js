@@ -7,7 +7,58 @@
   var HIGH_DEMAND_MIN = 10;
   var PAGE_SIZE = 20;
 
-  var state = { games: [], query: '', quickFilter: 'all', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1, step: 'intent', intent: 'new' };
+  var state = { games: [], query: '', quickFilter: 'all', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1, step: 'intent', intent: 'new', overlayStack: [] };
+
+  var OVERLAY_CLOSERS = {};
+
+  // Every overlay (rental modal, share card, rental rules, mobile drawer)
+  // registers itself here so the browser Back button closes whichever one
+  // is on top instead of leaving the page -- each open pushes a history
+  // entry, and popping it (Back, or our own requestCloseOverlay) closes it.
+  function openOverlay(name, closeFn, url, extraState) {
+    OVERLAY_CLOSERS[name] = closeFn;
+    state.overlayStack.push(name);
+    var st = { rcOverlay: name };
+    if (extraState) for (var k in extraState) st[k] = extraState[k];
+    try { window.history.pushState(st, '', url); } catch (e) {}
+  }
+
+  function closeOverlayByName(name) {
+    var idx = state.overlayStack.lastIndexOf(name);
+    if (idx !== -1) state.overlayStack.splice(idx, 1);
+    var fn = OVERLAY_CLOSERS[name];
+    if (fn) fn();
+  }
+
+  function requestCloseOverlay(name) {
+    if (window.history.state && window.history.state.rcOverlay === name) {
+      window.history.back();
+    } else {
+      closeOverlayByName(name);
+    }
+  }
+
+  function pushStepState() {
+    try { window.history.pushState({ rcOverlay: 'modal', rcStep: state.step }, ''); } catch (e) {}
+  }
+
+  function wireOverlayHistory() {
+    window.addEventListener('popstate', function (e) {
+      var s = e.state;
+      var top = state.overlayStack[state.overlayStack.length - 1];
+      if (top === 'modal' && s && s.rcOverlay === 'modal' && s.rcStep) {
+        state.step = s.rcStep;
+        renderModal();
+        return;
+      }
+      if (top) closeOverlayByName(top);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var top = state.overlayStack[state.overlayStack.length - 1];
+      if (top) requestCloseOverlay(top);
+    });
+  }
 
   var ICON_PATHS = {
     trophy: '<path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"/><path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"/><path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"/>',
@@ -279,7 +330,7 @@
     return slot.available;
   }
 
-  function openModal(slug) {
+  function openModal(slug, pushHistory) {
     var g = findGame(slug);
     if (!g) return;
     state.modalGame = g;
@@ -290,6 +341,12 @@
     renderModal();
     document.getElementById('rcModalOverlay').classList.add('is-open');
     document.body.style.overflow = 'hidden';
+    if (pushHistory !== false) {
+      openOverlay('modal', closeModal, window.location.pathname + '?game=' + slug, { rcStep: state.step });
+    } else {
+      OVERLAY_CLOSERS.modal = closeModal;
+      state.overlayStack.push('modal');
+    }
   }
 
   function closeModal() {
@@ -367,6 +424,7 @@
         state.intent = btn.getAttribute('data-intent');
         state.step = (state.intent === 'swap') ? 'access' : 'plan';
         renderModal();
+        pushStepState();
       });
     });
   }
@@ -395,12 +453,13 @@
 
   function wirePlanStep(body) {
     var back = document.getElementById('rcWizardBack');
-    if (back) back.addEventListener('click', function () { state.step = 'intent'; renderModal(); });
+    if (back) back.addEventListener('click', function () { window.history.back(); });
     Array.prototype.forEach.call(body.querySelectorAll('.rc-plan-card'), function (btn) {
       btn.addEventListener('click', function () {
         state.plan = btn.getAttribute('data-plan');
         state.step = 'access';
         renderModal();
+        pushStepState();
       });
     });
   }
@@ -481,7 +540,7 @@
 
   function wireAccessStep(body) {
     var back = document.getElementById('rcWizardBack');
-    if (back) back.addEventListener('click', function () { state.step = 'plan'; renderModal(); });
+    if (back) back.addEventListener('click', function () { window.history.back(); });
     Array.prototype.forEach.call(body.querySelectorAll('.rc-access-choose'), function (btn) {
       if (btn.hasAttribute('disabled')) return;
       btn.addEventListener('click', function () { finalizeRental(btn.getAttribute('data-slot')); });
@@ -678,10 +737,12 @@
     var openBtn = document.getElementById('rcModalShare');
     var closeBtn = document.getElementById('rcShareClose');
     var overlay = document.getElementById('rcShareOverlay');
-    if (openBtn) openBtn.addEventListener('click', function () { openShareModal(state.modalGame); });
-    if (closeBtn) closeBtn.addEventListener('click', closeShareModal);
-    if (overlay) overlay.addEventListener('click', function (e) { if (e.target === overlay) closeShareModal(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeShareModal(); });
+    if (openBtn) openBtn.addEventListener('click', function () {
+      openShareModal(state.modalGame);
+      openOverlay('share', closeShareModal);
+    });
+    if (closeBtn) closeBtn.addEventListener('click', function () { requestCloseOverlay('share'); });
+    if (overlay) overlay.addEventListener('click', function (e) { if (e.target === overlay) requestCloseOverlay('share'); });
   }
 
   function wireToolbar() {
@@ -720,10 +781,9 @@
       });
     });
     document.getElementById('rcModalOverlay').addEventListener('click', function (e) {
-      if (e.target.id === 'rcModalOverlay') closeModal();
+      if (e.target.id === 'rcModalOverlay') requestCloseOverlay('modal');
     });
-    document.getElementById('rcModalClose').addEventListener('click', closeModal);
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+    document.getElementById('rcModalClose').addEventListener('click', function () { requestCloseOverlay('modal'); });
 
     var track = document.getElementById('rcComingSoonTrack');
     var prevBtn = document.getElementById('rcSoonPrev');
@@ -784,12 +844,11 @@
     document.body.appendChild(overlay);
 
     var closeBtn = document.getElementById('rcRulesClose');
-    var open = function () { overlay.classList.add('is-open'); };
+    var open = function () { overlay.classList.add('is-open'); openOverlay('rules', close); };
     var close = function () { overlay.classList.remove('is-open'); };
     btn.addEventListener('click', open);
-    closeBtn.addEventListener('click', close);
-    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    closeBtn.addEventListener('click', function () { requestCloseOverlay('rules'); });
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) requestCloseOverlay('rules'); });
   }
 
   function wireNavCurrentPage() {
@@ -822,23 +881,24 @@
     };
 
     btn.addEventListener('click', function () {
-      if (overlay.classList.contains('is-open')) close(); else open();
+      if (overlay.classList.contains('is-open')) requestCloseOverlay('drawer');
+      else { open(); openOverlay('drawer', close); }
     });
-    if (closeBtn) closeBtn.addEventListener('click', close);
-    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    if (closeBtn) closeBtn.addEventListener('click', function () { requestCloseOverlay('drawer'); });
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) requestCloseOverlay('drawer'); });
     if (rulesLink) rulesLink.addEventListener('click', function () {
-      close();
+      closeOverlayByName('drawer');
       var rb = document.getElementById('rcRulesBtn');
       if (rb) rb.click();
     });
     Array.prototype.forEach.call(overlay.querySelectorAll('.rc-drawer-link'), function (a) {
-      a.addEventListener('click', close);
+      a.addEventListener('click', function () { closeOverlayByName('drawer'); });
     });
   }
 
   function init() {
     wireNavSolidOnScroll();
+    wireOverlayHistory();
     wireRulesModal();
     wireShareModal();
     wireDrawer();
@@ -852,7 +912,7 @@
 
       var params = new URLSearchParams(window.location.search);
       var wanted = params.get('game');
-      if (wanted) openModal(wanted);
+      if (wanted) openModal(wanted, false);
     }).catch(function (err) { console.error('Catalog load failed', err); });
   }
 
