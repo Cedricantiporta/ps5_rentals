@@ -337,14 +337,17 @@
 .rc-slot-label { display: flex; align-items: center; gap: 0.3rem; font-weight: 600; color: var(--rc-text-2); }
 .rc-slot-status {
   font-weight: 800; letter-spacing: .03em; text-transform: uppercase; font-size: 0.62rem;
-  display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.22rem 0.55rem; border-radius: 999px;
+  display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.12rem 0.4rem; border-radius: 999px;
 }
 .rc-dot { display: none; }
-.rc-status-available { color: #fff; background: var(--rc-green); }
-.rc-status-full { color: #fff; background: var(--rc-red); }
-.rc-status-open { color: #fff; background: var(--rc-blue); }
-.rc-status-limited { color: #fff; background: var(--rc-amber); }
-.rc-status-priority { color: #fff; background: var(--rc-purple); }
+/* dedicated (darker-than-token) shades so white text keeps solid contrast --
+   the raw --rc-green/--rc-amber etc tokens are tuned for text-on-dark, too
+   light/bright to hold white text on their own as a solid pill fill. */
+.rc-status-available { color: #fff; background: #1f9d57; }
+.rc-status-full { color: #fff; background: #d63b3d; }
+.rc-status-open { color: #fff; background: #2054d9; }
+.rc-status-limited { color: #fff; background: #c9791a; }
+.rc-status-priority { color: #fff; background: #8347e0; }
 .rc-status-closed { color: #fff; background: #6b6b74; }
 
 .rc-price-row { display: flex; gap: 0.4rem; padding-top: 0.4rem; }
