@@ -13,7 +13,7 @@
 
 /* push nav links to the right of the topbar (next to the hamburger), and
    stop them from being forced to uppercase (frog's .text-sm default) */
-.nav_wrap { flex: 1 1 auto; justify-content: flex-end !important; }
+.nav_wrap { flex: 1 1 auto; justify-content: flex-end !important; margin-right: 1.5rem; }
 .navbar_list .text-sm { text-transform: none !important; }
 .footer .text-sm { text-transform: none !important; }
 
