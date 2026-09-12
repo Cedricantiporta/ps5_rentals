@@ -343,9 +343,25 @@
   }
 
   function wireToolbar() {
-    document.getElementById('rcSearch').addEventListener('input', function (e) {
+    var searchInput = document.getElementById('rcSearch');
+    var searchWrap = searchInput.closest('.rc-search');
+    var clearBtn = document.getElementById('rcSearchClear');
+    var updateClearVisibility = function () {
+      if (searchWrap) searchWrap.classList.toggle('has-value', !!searchInput.value);
+    };
+    searchInput.addEventListener('input', function (e) {
       state.query = e.target.value; state.page = 1; renderGrid();
+      updateClearVisibility();
     });
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        state.query = ''; state.page = 1; renderGrid();
+        updateClearVisibility();
+        searchInput.focus();
+      });
+    }
+    updateClearVisibility();
     document.getElementById('rcGenre').addEventListener('change', function (e) {
       state.genre = e.target.value; state.page = 1; renderGrid();
     });
@@ -390,8 +406,22 @@
     update();
   }
 
+  function wireContactModal() {
+    var btn = document.getElementById('rcContactBtn');
+    var overlay = document.getElementById('rcContactOverlay');
+    var closeBtn = document.getElementById('rcContactClose');
+    if (!btn || !overlay) return;
+    var open = function () { overlay.classList.add('is-open'); };
+    var close = function () { overlay.classList.remove('is-open'); };
+    btn.addEventListener('click', open);
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  }
+
   function init() {
     wireNavSolidOnScroll();
+    wireContactModal();
     fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (games) {
       state.games = games;
       populateGenres();

@@ -9,6 +9,13 @@
 }
 
 .navbar { background-color: #000 !important; }
+.navbar_list { background-color: #0a0a0a !important; }
+
+/* push nav links to the right of the topbar (next to the hamburger), and
+   stop them from being forced to uppercase (frog's .text-sm default) */
+.nav_wrap { flex: 1 1 auto; justify-content: flex-end !important; }
+.navbar_list .text-sm { text-transform: none !important; }
+.footer .text-sm { text-transform: none !important; }
 
 .button_left,
 .button_left:where(.w-variant-16339642-0577-1bb6-ab84-e46e09c4ed4d) {
@@ -25,5 +32,72 @@
 }
 
 .footer {
-  background: linear-gradient(180deg, #000 0%, #000 20%, #0a1f4d 55%, #123b8f 80%, var(--base--blue) 100%);
+  background: var(--base--blue);
+}
+
+/* Kill the navy gradient panel + white-bordered "segmented pill" tabs
+   (Pricing PH/SG/AU, and any other .tab-link-button group): every tab
+   becomes its own full pill, no border, solid white when active -- no
+   more blue gradient or line-container look anywhere. */
+.section_pricing2, .section-2 {
+  background-image: none !important;
+  background-color: #000 !important;
+}
+
+.tab-link-button,
+.tab-link-button.tab-link-button-left,
+.tab-link-button.tab-link-button-right {
+  border: none !important;
+  border-radius: 999px !important;
+  background-color: #16171f !important;
+  background-image: none !important;
+  color: #fff9 !important;
+}
+.tab-link-button.w--current,
+.tab-link-button.tab-link-button-left.w--current,
+.tab-link-button.tab-link-button-left.w--current:active {
+  background-color: #fff !important;
+  background-image: none !important;
+  color: #0a0a0a !important;
+}
+.rental-tabs-top.w-tab-menu, .w-tab-menu {
+  gap: 0.4rem;
+}
+
+/* pricing cards: drop the white outline, keep just a soft panel */
+.pricing_card-item {
+  border: none !important;
+  background-color: #14151c;
+}
+
+/* Webflow's own injected "Made in Webflow" badge */
+.w-webflow-badge { display: none !important; }
+
+/* on mobile the fixed navbar is taller relative to the page than desktop, and
+   frog's own spacer padding shrinks at this breakpoint -- so section content
+   (page titles, hero text) renders half-hidden underneath it. Give sections
+   more top clearance on small screens instead. */
+@media screen and (max-width: 767px) {
+  :root { --_sizes---padding-section--small: 4.5rem; }
+}
+
+/* Kill FridayFrog's leftover hover/reveal/slide animations (button text swap,
+   hamburger morph, popout/modal reveals, scroll-triggered fades) -- static,
+   instant states everywhere instead. */
+.button_banner-text.is-bottom { display: none !important; }
+.button_left, .clip_intro, .button_text, .button_banner-text,
+.nav-button_line, .menu-button, .w-nav-button, .w-nav-overlay,
+[data-animation], [data-w-id] {
+  transition: none !important;
+  animation: none !important;
+}
+/* Webflow's native menu-button toggle rotates/morphs the 3 lines into an X via
+   inline JS styles (not CSS transitions), so transition:none above can't stop
+   it -- pin the lines' transform with !important instead, which does win over
+   the inline style Webflow sets. */
+.nav-button_line.is-first { transform: translate(0, -.5rem) !important; }
+.nav-button_line.is-second { transform: none !important; }
+.nav-button_line.is-third { transform: translate(0, .5rem) !important; }
+html.w-mod-js:not(.w-mod-ix3) :is([animation="first"], [animation="second"], [navbar="item"], .hero_img) {
+  visibility: visible !important;
 }

@@ -88,7 +88,7 @@
       "Action",
       "RPG"
     ],
-    "cover": "/assets/games/diablo-iv-lord-of-hatred.jpg",
+    "cover": "/assets/games/diablo-iv-lord-of-hatred.webp",
     "releaseDate": "2024-10-08",
     "activeRentals": 1,
     "status": "available",
@@ -922,7 +922,7 @@
       "Action",
       "RPG"
     ],
-    "cover": "/assets/games/granblue-fantasy-relink.jpg",
+    "cover": "/assets/games/granblue-fantasy-relink.webp",
     "releaseDate": "2024-02-01",
     "activeRentals": 0,
     "status": "available",
@@ -2813,7 +2813,7 @@
       "RPG",
       "Strategy"
     ],
-    "cover": "/assets/games/final-fantasy-vii-remake-intergrade.jpg",
+    "cover": "/assets/games/final-fantasy-vii-remake-intergrade.webp",
     "releaseDate": "2022-06-10",
     "activeRentals": 0,
     "status": "available",
@@ -2841,7 +2841,7 @@
       "Shooter",
       "Fighting"
     ],
-    "cover": "/assets/games/mafia-trilogy.jpg",
+    "cover": "/assets/games/mafia-trilogy.webp",
     "releaseDate": "2020-09-25",
     "activeRentals": 0,
     "status": "available",
@@ -2869,7 +2869,7 @@
       "Adventure",
       "Shooter"
     ],
-    "cover": "/assets/games/starfield.jpg",
+    "cover": "/assets/games/starfield.webp",
     "releaseDate": "2026-04-07",
     "activeRentals": 1,
     "status": "available",
@@ -2897,7 +2897,7 @@
       "Adventure",
       "Shooter"
     ],
-    "cover": "/assets/games/resident-evil-4.jpg",
+    "cover": "/assets/games/resident-evil-4.webp",
     "releaseDate": "2023-03-04",
     "activeRentals": 0,
     "status": "available",
@@ -2924,7 +2924,7 @@
       "Action",
       "RPG"
     ],
-    "cover": "/assets/games/hades.jpg",
+    "cover": "/assets/games/hades.webp",
     "releaseDate": "2020-09-16",
     "activeRentals": 0,
     "status": "available",
@@ -2951,7 +2951,7 @@
       "Strategy",
       "Co-op"
     ],
-    "cover": "/assets/games/overcooked-all-you-can-eat.jpg",
+    "cover": "/assets/games/overcooked-all-you-can-eat.webp",
     "releaseDate": "2020-11-10",
     "activeRentals": 1,
     "status": "available",
@@ -2978,7 +2978,7 @@
       "Action",
       "RPG"
     ],
-    "cover": "/assets/games/fallout-4.jpg",
+    "cover": "/assets/games/fallout-4.webp",
     "releaseDate": "2023-04-25",
     "activeRentals": 0,
     "status": "available",
@@ -3004,7 +3004,7 @@
     "genre": [
       "Fighting"
     ],
-    "cover": "/assets/games/ultimate-marvel-vs-capcom-3.jpg",
+    "cover": "/assets/games/ultimate-marvel-vs-capcom-3.webp",
     "releaseDate": "2021-11-15",
     "activeRentals": 0,
     "status": "available",
@@ -3032,7 +3032,7 @@
       "Adventure",
       "Puzzle"
     ],
-    "cover": "/assets/games/pragmata.jpg",
+    "cover": "/assets/games/pragmata.webp",
     "releaseDate": "2026-04-17",
     "activeRentals": 3,
     "status": "available",
@@ -3059,7 +3059,7 @@
       "Action",
       "RPG"
     ],
-    "cover": "/assets/games/hades-ii.jpg",
+    "cover": "/assets/games/hades-ii.webp",
     "releaseDate": "2026-04-15",
     "activeRentals": 1,
     "status": "available",
@@ -3086,7 +3086,7 @@
       "Action",
       "RPG"
     ],
-    "cover": "/assets/games/horizon-zero-dawn.jpg",
+    "cover": "/assets/games/horizon-zero-dawn.webp",
     "releaseDate": "2024-10-31",
     "activeRentals": 0,
     "status": "available",
@@ -3113,7 +3113,7 @@
       "Adventure",
       "RPG"
     ],
-    "cover": "/assets/games/saros-digital-deluxe-edition.jpg",
+    "cover": "/assets/games/saros-digital-deluxe-edition.webp",
     "releaseDate": "2026-04-28",
     "activeRentals": 0,
     "status": "available",
@@ -3139,7 +3139,7 @@
     "genre": [
       "Shooter"
     ],
-    "cover": "/assets/games/call-of-duty-modern-warfare-2-campaign-remastered.jpg",
+    "cover": "/assets/games/call-of-duty-modern-warfare-2-campaign-remastered.webp",
     "releaseDate": "2020-03-21",
     "activeRentals": 1,
     "status": "available",
@@ -3165,7 +3165,7 @@
     "genre": [
       "Shooter"
     ],
-    "cover": "/assets/games/call-of-duty-modern-warfare-remastered.jpg",
+    "cover": "/assets/games/call-of-duty-modern-warfare-remastered.webp",
     "releaseDate": "2016-11-04",
     "activeRentals": 0,
     "status": "available",
@@ -3217,7 +3217,7 @@
     "genre": [
       "Shooter"
     ],
-    "cover": "/assets/games/call-of-duty-wwii-gold-edition.jpg",
+    "cover": "/assets/games/call-of-duty-wwii-gold-edition.webp",
     "releaseDate": "2018-05-08",
     "activeRentals": 3,
     "status": "available",
@@ -3243,7 +3243,7 @@
     "genre": [
       "Shooter"
     ],
-    "cover": "/assets/games/007-first-light.jpg",
+    "cover": "/assets/games/007-first-light.webp",
     "releaseDate": "2026-05-27",
     "activeRentals": 24,
     "status": "available",
@@ -3270,7 +3270,7 @@
       "Adventure",
       "RPG"
     ],
-    "cover": "/assets/games/resident-evil-triple-pack.jpg",
+    "cover": "/assets/games/resident-evil-triple-pack.webp",
     "releaseDate": "2019-10-29",
     "activeRentals": 0,
     "status": "available",
@@ -3296,7 +3296,7 @@
     "genre": [
       "Adventure"
     ],
-    "cover": "/assets/games/life-is-strange-true-colors.jpg",
+    "cover": "/assets/games/life-is-strange-true-colors.webp",
     "releaseDate": "2021-09-10",
     "activeRentals": 0,
     "status": "available",
@@ -3323,7 +3323,7 @@
       "Adventure",
       "Horror"
     ],
-    "cover": "/assets/games/little-nightmares-i-ii-bundle.jpg",
+    "cover": "/assets/games/little-nightmares-i-ii-bundle.webp",
     "releaseDate": "2021-08-25",
     "activeRentals": 1,
     "status": "available",
@@ -3350,7 +3350,7 @@
       "Adventure",
       "RPG"
     ],
-    "cover": "/assets/games/assassin-s-creed-mirage-deluxe-edition.jpg",
+    "cover": "/assets/games/assassin-s-creed-mirage-deluxe-edition.webp",
     "releaseDate": "2023-05-10",
     "activeRentals": 0,
     "status": "available",
@@ -3376,7 +3376,7 @@
     "genre": [
       "Adventure"
     ],
-    "cover": "/assets/games/mixtape.jpg",
+    "cover": "/assets/games/mixtape.webp",
     "releaseDate": "2026-05-07",
     "activeRentals": 0,
     "status": "available",
@@ -3403,7 +3403,7 @@
       "Adventure",
       "Horror"
     ],
-    "cover": "/assets/games/directive-8020.jpg",
+    "cover": "/assets/games/directive-8020.webp",
     "releaseDate": "2026-05-12",
     "activeRentals": 1,
     "status": "available",
@@ -3429,7 +3429,7 @@
     "genre": [
       "Adventure"
     ],
-    "cover": "/assets/games/lego-batman-legacy-of-the-dark-knight.jpg",
+    "cover": "/assets/games/lego-batman-legacy-of-the-dark-knight.webp",
     "releaseDate": "2026-05-22",
     "activeRentals": 1,
     "status": "available",
@@ -3458,7 +3458,7 @@
       "RPG",
       "Shooter"
     ],
-    "cover": "/assets/games/nier-automata-game-of-the-yorha-edition.jpg",
+    "cover": "/assets/games/nier-automata-game-of-the-yorha-edition.webp",
     "releaseDate": "2019-02-27",
     "activeRentals": 1,
     "status": "available",
@@ -3485,7 +3485,7 @@
       "Adventure",
       "RPG"
     ],
-    "cover": "/assets/games/the-adventures-of-elliot-the-millennium-tales.png",
+    "cover": "/assets/games/the-adventures-of-elliot-the-millennium-tales.webp",
     "releaseDate": "2026-06-18",
     "activeRentals": 2,
     "status": "available",
@@ -3512,7 +3512,7 @@
       "Fighting",
       "Sports"
     ],
-    "cover": "/assets/games/ea-sports-ufc-6.jpg",
+    "cover": "/assets/games/ea-sports-ufc-6.webp",
     "releaseDate": "2026-06-19",
     "activeRentals": 5,
     "status": "available",
@@ -3539,7 +3539,7 @@
       "Action",
       "Adventure"
     ],
-    "cover": "/assets/games/assassin-s-creed-black-flag-resynced.jpg",
+    "cover": "/assets/games/assassin-s-creed-black-flag-resynced.webp",
     "releaseDate": "2026-07-09",
     "activeRentals": 20,
     "status": "available",
@@ -3567,7 +3567,7 @@
       "Adventure",
       "RPG"
     ],
-    "cover": "/assets/games/assassin-s-creed-odyssey-ultimate-edition.jpg",
+    "cover": "/assets/games/assassin-s-creed-odyssey-ultimate-edition.webp",
     "releaseDate": "2018-10-05",
     "activeRentals": 2,
     "status": "available",
@@ -3595,7 +3595,7 @@
       "Adventure",
       "Fighting"
     ],
-    "cover": "/assets/games/batman-arkham-knight.jpg",
+    "cover": "/assets/games/batman-arkham-knight.webp",
     "releaseDate": "2015-06-23",
     "activeRentals": 1,
     "status": "available",
@@ -3622,7 +3622,7 @@
       "Action",
       "Adventure"
     ],
-    "cover": "/assets/games/lego-batman-3-beyond-gotham.jpg",
+    "cover": "/assets/games/lego-batman-3-beyond-gotham.webp",
     "releaseDate": "2014-11-14",
     "activeRentals": 0,
     "status": "available",
@@ -3649,7 +3649,7 @@
       "Action",
       "Adventure"
     ],
-    "cover": "/assets/games/lego-marvel-super-heroes.jpg",
+    "cover": "/assets/games/lego-marvel-super-heroes.webp",
     "releaseDate": "2013-10-22",
     "activeRentals": 0,
     "status": "available",
@@ -3676,7 +3676,7 @@
       "Action",
       "Adventure"
     ],
-    "cover": "/assets/games/lego-the-hobbit.jpg",
+    "cover": "/assets/games/lego-the-hobbit.webp",
     "releaseDate": "2014-04-08",
     "activeRentals": 0,
     "status": "available",
@@ -3703,7 +3703,7 @@
       "Action",
       "Adventure"
     ],
-    "cover": "/assets/games/mad-max.png",
+    "cover": "/assets/games/mad-max.webp",
     "releaseDate": "2015-09-01",
     "activeRentals": 0,
     "status": "available",
@@ -3731,7 +3731,7 @@
       "Adventure",
       "Fighting"
     ],
-    "cover": "/assets/games/devil-may-cry-5.jpg",
+    "cover": "/assets/games/devil-may-cry-5.webp",
     "releaseDate": "2019-03-08",
     "activeRentals": 0,
     "status": "available",
@@ -3759,7 +3759,7 @@
       "Adventure",
       "RPG"
     ],
-    "cover": "/assets/games/bioshock.jpg",
+    "cover": "/assets/games/bioshock.webp",
     "releaseDate": "2007-08-07",
     "activeRentals": 0,
     "status": "available",
@@ -3787,7 +3787,7 @@
       "Adventure",
       "Fighting"
     ],
-    "cover": "/assets/games/lego-city-undercover.jpg",
+    "cover": "/assets/games/lego-city-undercover.webp",
     "releaseDate": "2013-03-13",
     "activeRentals": 0,
     "status": "available",
@@ -3814,7 +3814,7 @@
       "Action",
       "RPG"
     ],
-    "cover": "/assets/games/echoes-of-aincrad.jpg",
+    "cover": "/assets/games/echoes-of-aincrad.webp",
     "releaseDate": "2026-07-09",
     "activeRentals": 1,
     "status": "available",
@@ -3841,7 +3841,7 @@
       "Action",
       "Survival"
     ],
-    "cover": "/assets/games/call-of-duty-black-ops-i.png",
+    "cover": "/assets/games/call-of-duty-black-ops-i.webp",
     "releaseDate": "2026-07-09",
     "activeRentals": 1,
     "status": "available",
@@ -3868,7 +3868,7 @@
       "Action",
       "Survival"
     ],
-    "cover": "/assets/games/call-of-duty-black-ops-ii.png",
+    "cover": "/assets/games/call-of-duty-black-ops-ii.webp",
     "releaseDate": "2026-07-09",
     "activeRentals": 2,
     "status": "available",
@@ -3896,7 +3896,7 @@
       "Action",
       "Adventure"
     ],
-    "cover": "/assets/games/halo-campaign-evolved.png",
+    "cover": "/assets/games/halo-campaign-evolved.webp",
     "releaseDate": "2026-07-28",
     "activeRentals": 3,
     "status": "available",
@@ -3923,7 +3923,7 @@
       "Strategy",
       "Co-op"
     ],
-    "cover": "/assets/games/moving-out-moving-out-2-bundle.jpg",
+    "cover": "/assets/games/moving-out-moving-out-2-bundle.webp",
     "releaseDate": "2023-08-15",
     "activeRentals": 0,
     "status": "available",
@@ -3951,7 +3951,7 @@
       "Adventure",
       "RPG"
     ],
-    "cover": "/assets/games/beast-of-reincarnation.png",
+    "cover": "/assets/games/beast-of-reincarnation.webp",
     "releaseDate": "2026-08-04",
     "activeRentals": 7,
     "status": "available",
@@ -3977,7 +3977,7 @@
     "genre": [
       "Fighting"
     ],
-    "cover": "/assets/games/marvel-tokon-fighting-souls.jpg",
+    "cover": "/assets/games/marvel-tokon-fighting-souls.webp",
     "releaseDate": "2026-08-06",
     "activeRentals": 3,
     "status": "available",
@@ -4003,7 +4003,7 @@
     "genre": [
       "Action"
     ],
-    "cover": "/assets/games/marvel-s-wolverine.jpg",
+    "cover": "/assets/games/marvel-s-wolverine.webp",
     "releaseDate": "2026-09-15",
     "activeRentals": 0,
     "status": "upcoming",
@@ -4012,13 +4012,13 @@
       "available": false,
       "weekly": 349,
       "monthly": 899,
-      "reservationStatus": "LIMITED"
+      "reservationStatus": "CLOSED"
     },
     "nontrophy": {
       "available": false,
       "weekly": 349,
       "monthly": 899,
-      "reservationStatus": "OPEN"
+      "reservationStatus": "CLOSED"
     },
     "platform": "PS5"
   },
@@ -4030,7 +4030,7 @@
       "Action",
       "Adventure"
     ],
-    "cover": "/assets/games/grand-theft-auto-vi.jpg",
+    "cover": "/assets/games/grand-theft-auto-vi.webp",
     "releaseDate": "2026-11-19",
     "activeRentals": 0,
     "status": "upcoming",
@@ -4057,7 +4057,7 @@
       "Action",
       "Shooter"
     ],
-    "cover": "/assets/games/call-of-duty-modern-warfare-4.png",
+    "cover": "/assets/games/call-of-duty-modern-warfare-4.webp",
     "releaseDate": "2026-10-23",
     "activeRentals": 0,
     "status": "upcoming",
@@ -4084,11 +4084,11 @@
       "Action",
       "Stealth"
     ],
-    "cover": "/assets/games/metal-gear-solid-master-collection-vol-2.jpg",
+    "cover": "/assets/games/metal-gear-solid-master-collection-vol-2.webp",
     "releaseDate": "2026-08-27",
     "activeRentals": 0,
-    "status": "upcoming",
-    "upcomingOrder": 3,
+    "status": "available",
+    "upcomingOrder": 99999,
     "trophy": {
       "available": false,
       "weekly": 349,
@@ -4111,7 +4111,7 @@
       "Action",
       "Shooter"
     ],
-    "cover": "/assets/games/call-of-duty-black-ops-4.jpg",
+    "cover": "/assets/games/call-of-duty-black-ops-4.webp",
     "releaseDate": "2018-10-12",
     "activeRentals": 0,
     "status": "available",
@@ -4138,7 +4138,7 @@
       "Action",
       "Shooter"
     ],
-    "cover": "/assets/games/call-of-duty-black-ops-cold-war.jpg",
+    "cover": "/assets/games/call-of-duty-black-ops-cold-war.webp",
     "releaseDate": "2020-11-13",
     "activeRentals": 1,
     "status": "available",
@@ -4165,7 +4165,7 @@
       "Action",
       "Shooter"
     ],
-    "cover": "/assets/games/call-of-duty-infinite-warfare.jpg",
+    "cover": "/assets/games/call-of-duty-infinite-warfare.webp",
     "releaseDate": "2016-11-04",
     "activeRentals": 0,
     "status": "available",
@@ -4192,7 +4192,7 @@
       "Action",
       "Shooter"
     ],
-    "cover": "/assets/games/call-of-duty-advanced-warfare.jpg",
+    "cover": "/assets/games/call-of-duty-advanced-warfare.webp",
     "releaseDate": "2014-11-04",
     "activeRentals": 2,
     "status": "available",
@@ -4219,7 +4219,7 @@
       "Action",
       "Shooter"
     ],
-    "cover": "/assets/games/call-of-duty-ghosts-gold-edition.jpg",
+    "cover": "/assets/games/call-of-duty-ghosts-gold-edition.webp",
     "releaseDate": "2013-11-05",
     "activeRentals": 0,
     "status": "available",
@@ -4246,7 +4246,7 @@
       "Action",
       "RPG"
     ],
-    "cover": "/assets/games/mortal-shell-ii.jpg",
+    "cover": "/assets/games/mortal-shell-ii.webp",
     "releaseDate": "2026-08-20",
     "activeRentals": 0,
     "status": "available",
@@ -4273,11 +4273,11 @@
       "Action",
       "Adventure"
     ],
-    "cover": "/assets/games/resonance-a-plague-tale-legacy.jpg",
+    "cover": "/assets/games/resonance-a-plague-tale-legacy.webp",
     "releaseDate": "2026-08-27",
     "activeRentals": 0,
-    "status": "upcoming",
-    "upcomingOrder": 2,
+    "status": "available",
+    "upcomingOrder": 99999,
     "trophy": {
       "available": false,
       "weekly": 349,
@@ -4285,7 +4285,7 @@
       "reservationStatus": "OPEN"
     },
     "nontrophy": {
-      "available": false,
+      "available": true,
       "weekly": 349,
       "monthly": 899,
       "reservationStatus": "OPEN"
@@ -4301,11 +4301,11 @@
       "Adventure",
       "RPG"
     ],
-    "cover": "/assets/games/the-blood-of-dawnwalker.jpg",
+    "cover": "/assets/games/the-blood-of-dawnwalker.webp",
     "releaseDate": "2026-09-03",
     "activeRentals": 0,
-    "status": "upcoming",
-    "upcomingOrder": 4,
+    "status": "available",
+    "upcomingOrder": 99999,
     "trophy": {
       "available": false,
       "weekly": 349,
@@ -4327,11 +4327,11 @@
     "genre": [
       "Sports"
     ],
-    "cover": "/assets/games/nba-2k27.jpg",
+    "cover": "/assets/games/nba-2k27.webp",
     "releaseDate": "2026-09-04",
     "activeRentals": 0,
-    "status": "upcoming",
-    "upcomingOrder": 5,
+    "status": "available",
+    "upcomingOrder": 99999,
     "trophy": {
       "available": false,
       "weekly": 349,
@@ -4354,11 +4354,11 @@
       "Action",
       "Adventure"
     ],
-    "cover": "/assets/games/onimusha-way-of-the-sword.jpg",
+    "cover": "/assets/games/onimusha-way-of-the-sword.webp",
     "releaseDate": "2026-09-04",
     "activeRentals": 0,
-    "status": "upcoming",
-    "upcomingOrder": 6,
+    "status": "available",
+    "upcomingOrder": 99999,
     "trophy": {
       "available": false,
       "weekly": 349,
@@ -4382,7 +4382,7 @@
       "Adventure",
       "RPG"
     ],
-    "cover": "/assets/games/control-resonant.jpg",
+    "cover": "/assets/games/control-resonant.webp",
     "releaseDate": "2026-09-24",
     "activeRentals": 0,
     "status": "upcoming",
@@ -4410,7 +4410,7 @@
       "Horror",
       "Puzzle"
     ],
-    "cover": "/assets/games/silent-hill-townfall.jpg",
+    "cover": "/assets/games/silent-hill-townfall.webp",
     "releaseDate": "2026-09-24",
     "activeRentals": 0,
     "status": "upcoming",
@@ -4436,7 +4436,7 @@
     "genre": [
       "RPG"
     ],
-    "cover": "/assets/games/final-fantasy-resonance.jpg",
+    "cover": "/assets/games/final-fantasy-resonance.webp",
     "releaseDate": "2026-10-22",
     "activeRentals": 0,
     "status": "upcoming",
@@ -4463,7 +4463,7 @@
       "Action",
       "RPG"
     ],
-    "cover": "/assets/games/phantom-blade-zero.jpg",
+    "cover": "/assets/games/phantom-blade-zero.webp",
     "releaseDate": "2026-10-29",
     "activeRentals": 0,
     "status": "upcoming",
