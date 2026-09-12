@@ -3,8 +3,8 @@
    as a sibling of .rc-root, not a descendant of it. */
 :root {
   --rc-bg: var(--_colors-2---bg-primary, #0a0a0f);
-  --rc-panel: #1c1d20;
-  --rc-panel-2: #232427;
+  --rc-panel: #1a233f;
+  --rc-panel-2: #232f52;
   --rc-border: #ffffff2b;
   --rc-border-2: var(--_colors-2---border-subtle, #ffffff1f);
   --rc-text: var(--_colors-2---text-primary, #fff);
@@ -168,7 +168,7 @@
 .rc-section-label h3 { margin: 0; font-family: var(--_typography---font-family--headers); font-weight: 400; font-size: 1.4rem; }
 .rc-section-sub { color: var(--rc-text-2); font-size: 0.85rem; margin: 0 0 1.1rem; }
 
-.rc-strip-wrap { position: relative; }
+.rc-strip-wrap { position: relative; margin-right: -1.75rem; }
 .rc-strip {
   display: flex; gap: 1rem; overflow-x: auto; padding: 0 0 0.75rem; scroll-snap-type: none;
 }
@@ -229,7 +229,7 @@
 .rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1.1rem; }
 .rc-card {
   position: relative; border-radius: 1rem; overflow: hidden;
-  background: linear-gradient(180deg, #1c1d20 0%, #0a0a0a 100%);
+  background: linear-gradient(180deg, #1a233f 0%, #0a0a0a 100%);
   border: none; cursor: pointer; transition: transform .18s, box-shadow .18s;
   display: flex; flex-direction: column;
 }
