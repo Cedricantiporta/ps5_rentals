@@ -260,7 +260,7 @@
   --rc-text: #0a0a0f; --rc-text-2: #3f3f48; --rc-text-3: #6b6b74;
 }
 .rc-soon-card:hover { transform: translateY(-3px); box-shadow: 0 0 0 2px var(--rc-blue); }
-.rc-soon-cover { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #1c1e28; }
+.rc-soon-cover { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #1c1e28; }
 .rc-soon-body { padding: 0.75rem 0.85rem 0.9rem; display: flex; flex-direction: column; flex: 1; }
 .rc-soon-title { color: var(--rc-text); font-size: 0.92rem; font-weight: 700; line-height: 1.25; margin: 0 0 0.3rem; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .rc-soon-date { font-size: 0.76rem; font-weight: 600; color: var(--rc-text-2); margin: 0.3rem 0 0; }
@@ -311,7 +311,7 @@
   content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 45%; z-index: 1;
   background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.75) 100%); pointer-events: none;
 }
-.rc-card-cover { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; background: #1c1e28; }
+.rc-card-cover { width: 100%; aspect-ratio: 3/2; object-fit: cover; display: block; background: #1c1e28; }
 .rc-card-body { padding: 0.75rem 0.8rem 0.85rem; display: flex; flex-direction: column; flex: 1; }
 .rc-card-top { display: flex; flex-direction: column; gap: 0.3rem; }
 .rc-card-bottom { margin-top: auto; padding-top: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; }
