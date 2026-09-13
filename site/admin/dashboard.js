@@ -514,7 +514,29 @@
     var isNew = $('renterSelect').value === '__new';
     $('newRenterNameField').style.display = isNew ? '' : 'none';
     $('newRenterExtraRow').style.display = isNew ? '' : 'none';
+    if (!isNew) $('renterMatchHint').hidden = true;
   }
+
+  // Warn when the typed name matches an existing renter, so the admin can
+  // reuse that renter instead of creating a duplicate.
+  $('newRenterName').addEventListener('input', function () {
+    var typed = this.value.trim().toLowerCase();
+    var hint = $('renterMatchHint');
+    if (!typed) { hint.hidden = true; return; }
+    var matches = state.renters.filter(function (r) { return r.name.trim().toLowerCase() === typed; });
+    if (!matches.length) { hint.hidden = true; return; }
+    hint.innerHTML = (matches.length === 1 ? 'Already a renter: ' : 'Already renters with this name: ') +
+      matches.map(function (r) {
+        return '<button type="button" class="a-link-btn" data-use-renter="' + r.id + '">' + esc(r.name) + '</button>';
+      }).join(', ') + '.';
+    hint.hidden = false;
+  });
+  $('renterMatchHint').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-use-renter]');
+    if (!btn) return;
+    $('renterSelect').value = btn.getAttribute('data-use-renter');
+    toggleNewRenterFields();
+  });
 
   function populateGameOptions() {
     var dl = $('gameList');
