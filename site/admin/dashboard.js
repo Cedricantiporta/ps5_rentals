@@ -89,6 +89,10 @@
   }
   $('newRentalBackdrop').addEventListener('click', closeNewRentalModal);
   $('closeNewRentalModalBtn').addEventListener('click', closeNewRentalModal);
+  $('openBlankNewRentalBtn').addEventListener('click', function () {
+    cancelSwap();
+    openNewRentalModal();
+  });
 
   $('signOutBtn').addEventListener('click', function () { window.rcSignOut(); });
 
@@ -587,7 +591,7 @@
       'and keeps the same end date (' + fmtDate(rental.end_date) + ').';
     $('newRentalHeading').textContent = 'Swap game';
     $('createRentalBtn').textContent = 'Swap to this game';
-    document.querySelector('.a-tab[data-tab="new-rental"]').click();
+    openNewRentalModal();
   }
 
   function cancelSwap() {
