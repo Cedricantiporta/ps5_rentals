@@ -282,6 +282,7 @@
           actions += '<a class="a-menu-item" href="' + esc(renterObj.messenger_url) + '" target="_blank" rel="noopener">Open Messenger</a>';
         }
       }
+      var isQueued = r.status === 'pending' && r.queue_position != null;
       tr.innerHTML =
         '<td>' + esc(game.title) + '</td>' +
         '<td>' + esc(renter.name) + ' ' + messengerIcon(renterObj && renterObj.messenger_url) + '</td>' +
@@ -290,8 +291,11 @@
           ' <button type="button" class="a-edit-amount" data-action="edit-amount" data-id="' + r.id + '" title="Edit amount">✎</button>)</td>' +
         '<td>' + (r.status === 'ended' && wasSwapped(r.id) ? '<span class="a-pill a-pill-swap">SWAPPED</span>' : statusPill(r.status)) + '</td>' +
         '<td>' + paymentPill(r.payment_status) + '</td>' +
-        '<td>' + fmtDate(r.start_date) + '</td>' +
-        '<td>' + fmtDate(r.end_date) + '</td>' +
+        // Still in the queue -- start/end aren't real yet (they only
+        // become meaningful once activated), so don't show a countdown
+        // that hasn't started.
+        '<td>' + (isQueued ? '—' : fmtDate(r.start_date)) + '</td>' +
+        '<td>' + (isQueued ? '—' : fmtDate(r.end_date)) + '</td>' +
         '<td>' + timeLeftCell + '</td>' +
         '<td class="a-actions-cell">' + actionsMenu(actions) + '</td>';
       tbody.appendChild(tr);
