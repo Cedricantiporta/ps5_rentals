@@ -9,9 +9,18 @@
     return;
   }
 
+  // "Remember me" unchecked at login stores the session in sessionStorage
+  // instead of localStorage, so it disappears when the browser closes --
+  // the marker itself lives in sessionStorage since it should only apply
+  // for the current browser session anyway.
+  var rememberOff = false;
+  try { rememberOff = sessionStorage.getItem('rc_no_remember') === '1'; } catch (e) {}
+  var authStorage = rememberOff ? window.sessionStorage : window.localStorage;
+
   var supabase = window.supabase.createClient(
     window.RC_ADMIN_CONFIG.SUPABASE_URL,
-    window.RC_ADMIN_CONFIG.SUPABASE_ANON_KEY
+    window.RC_ADMIN_CONFIG.SUPABASE_ANON_KEY,
+    { auth: { persistSession: true, storage: authStorage } }
   );
   window.rcSupabase = supabase;
 

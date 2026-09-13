@@ -10,16 +10,22 @@
 <body>
   <div class="a-login-wrap">
     <div class="a-login-box">
-      <h1 style="display:flex;align-items:center;gap:0.6rem;"><img src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals" style="height:28px;width:auto;filter:invert(1);"><span>Admin</span></h1>
+      <img class="a-login-logo" src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals">
+      <h1>Sign in to Admin</h1>
+      <p class="a-login-sub">Manage rentals, renters and the live catalog.</p>
       <form id="loginForm">
         <div class="a-field">
           <label for="email">Email</label>
-          <input id="email" type="email" autocomplete="username" required>
+          <input id="email" type="email" autocomplete="username" required autofocus>
         </div>
         <div class="a-field">
           <label for="password">Password</label>
           <input id="password" type="password" autocomplete="current-password" required>
         </div>
+        <label class="a-checkbox-row">
+          <input id="rememberMe" type="checkbox" checked>
+          <span>Remember me on this device</span>
+        </label>
         <button type="submit" class="a-btn a-btn-primary" id="signInBtn">Sign In</button>
         <p class="a-error" id="loginError"></p>
       </form>
@@ -44,7 +50,23 @@
         errEl.textContent = '';
         btn.disabled = true;
         btn.textContent = 'Signing in...';
-        window.rcSupabase.auth.signInWithPassword({
+
+        var remember = document.getElementById('rememberMe').checked;
+        try {
+          if (remember) sessionStorage.removeItem('rc_no_remember');
+          else sessionStorage.setItem('rc_no_remember', '1');
+        } catch (err) {}
+        // admin.js already created window.rcSupabase using whichever
+        // storage the PREVIOUS marker state pointed to -- build a client
+        // scoped to what was just chosen so this sign-in actually lands
+        // in the right place.
+        var authClient = window.supabase.createClient(
+          window.RC_ADMIN_CONFIG.SUPABASE_URL,
+          window.RC_ADMIN_CONFIG.SUPABASE_ANON_KEY,
+          { auth: { persistSession: true, storage: remember ? window.localStorage : window.sessionStorage } }
+        );
+
+        authClient.auth.signInWithPassword({
           email: document.getElementById('email').value,
           password: document.getElementById('password').value
         }).then(function (res) {
