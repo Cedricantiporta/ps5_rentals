@@ -84,6 +84,12 @@
     <div class="a-panel" id="panel-rentals">
       <div class="a-card">
         <h2>All rentals</h2>
+        <div class="a-chip-row" id="rentalsFilterRow">
+          <button type="button" class="a-chip is-active" data-filter="all">All</button>
+          <button type="button" class="a-chip" data-filter="active">Active</button>
+          <button type="button" class="a-chip" data-filter="pending">Pending &amp; Reservations</button>
+          <button type="button" class="a-chip" data-filter="history">History</button>
+        </div>
         <div class="a-table-wrap">
         <table class="a-table" id="rentalsTable">
           <thead>

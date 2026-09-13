@@ -136,6 +136,14 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
 
 .a-msg-icon { color: var(--a-blue); vertical-align: -2px; }
 
+.a-chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
+.a-chip {
+  background: var(--a-panel-2); border: none; color: var(--a-text-2); padding: 0.45rem 0.9rem;
+  border-radius: 999px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: background-color .15s, color .15s;
+}
+.a-chip:hover { background: #e4e4e7; }
+.a-chip.is-active { background: var(--a-blue); color: #fff; }
+
 .a-login-wrap {
   min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem;
   background: radial-gradient(circle at 50% 0%, #eef4ff 0%, var(--a-bg) 55%);
