@@ -280,7 +280,23 @@
     var rental = state.rentals.filter(function (r) { return r.id === id; })[0];
     if (!rental) return;
     var action = btn.getAttribute('data-action');
-    if (action === 'activate') activateRental(rental);
+    if (action === 'activate') {
+      if (rental.queue_position != null && rental.queue_position > 1) {
+        var ahead = pendingQueue(rental.game_id, rental.slot).filter(function (r) { return r.queue_position < rental.queue_position; });
+        if (ahead.length) {
+          var aheadNames = ahead.map(function (r) {
+            var ren = state.renters.filter(function (x) { return x.id === r.renter_id; })[0];
+            return '#' + r.queue_position + ' (' + (ren ? ren.name : 'unknown') + ')';
+          }).join(', ');
+          var ok = window.confirm(
+            'This renter is #' + rental.queue_position + ' in the queue for this slot -- ' + aheadNames +
+            ' is still ahead of them and hasn\'t been activated or cancelled yet. Activate this one anyway?'
+          );
+          if (!ok) return;
+        }
+      }
+      activateRental(rental);
+    }
     else if (action === 'cancel') setRentalStatus(rental, 'cancelled', false);
     else if (action === 'end') setRentalStatus(rental, 'ended', true);
     else if (action === 'end-override') {
