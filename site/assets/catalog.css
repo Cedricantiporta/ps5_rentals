@@ -474,7 +474,7 @@
 .rc-share-status { text-align: center; font-size: 0.75rem; color: var(--rc-blue); font-weight: 700; min-height: 1.1rem; margin: 0.6rem 0 0; }
 .rc-modal-cover { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #1c1e28; }
 .rc-modal-body {
-  position: relative; margin-top: -3rem; padding: 2.5rem 1.4rem 1.5rem; border-radius: 1.1rem 1.1rem 0 0;
+  position: relative; margin-top: -1.25rem; padding: 2.5rem 1.4rem 1.5rem; border-radius: 1.1rem 1.1rem 0 0;
   background: linear-gradient(180deg, rgba(8,9,14,0) 0%, rgba(8,9,14,.75) 28%, rgba(8,9,14,.94) 100%);
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
 }
@@ -488,7 +488,7 @@
 .rc-modal-compact .rc-modal-cover { display: block; height: 130px; aspect-ratio: auto; object-fit: cover; }
 .rc-modal-compact { background: linear-gradient(165deg, #131a2e 0%, #0a0b10 55%, #050506 100%); }
 .rc-modal-compact .rc-modal-body {
-  position: relative; z-index: 1; margin-top: -2.25rem; padding: 3.25rem 1.3rem 0.95rem; border-radius: 1.25rem;
+  position: relative; z-index: 1; margin-top: -0.9rem; padding: 3.25rem 1.3rem 0.95rem; border-radius: 1.25rem;
   background: linear-gradient(180deg, rgba(19,26,46,0) 0%, rgba(15,20,35,.92) 45%, rgba(10,11,16,.98) 75%);
 }
 [data-theme="light"] .rc-modal-compact { background: #eef0f3; }
