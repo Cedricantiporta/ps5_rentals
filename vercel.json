@@ -1,8 +1,5 @@
 {
   "outputDirectory": "site",
   "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
-    { "source": "/admin", "destination": "/admin/login.html" }
-  ]
+  "trailingSlash": false
 }
