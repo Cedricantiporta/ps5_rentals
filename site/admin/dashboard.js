@@ -200,6 +200,24 @@
     var hoursSince = (Date.now() - new Date(rental.created_at).getTime()) / 3600000;
     return Math.max(0, Math.ceil(24 - hoursSince));
   }
+  // Walks the swapped_from_rental_id chain backward to build the full
+  // history of games this same continuous rental period has been through
+  // -- oldest first, ending with the current rental.
+  function swapChain(rental) {
+    var chain = [rental];
+    var cur = rental;
+    while (cur.swapped_from_rental_id != null) {
+      var prev = state.rentals.filter(function (r) { return r.id === cur.swapped_from_rental_id; })[0];
+      if (!prev) break;
+      chain.unshift(prev);
+      cur = prev;
+    }
+    return chain;
+  }
+  function swapsUsed(rental) { return swapChain(rental).length - 1; }
+  // Site copy promises Weekly = 1 swap, Monthly = multiple -- only Weekly
+  // is actually capped.
+  function swapLimitReached(rental) { return rental.plan === 'weekly' && swapsUsed(rental) >= 1; }
   function paymentPill(p) {
     return '<span class="a-pill ' + (p === 'paid' ? 'a-pill-paid' : 'a-pill-pending') + '">' + esc(p) + '</span>';
   }
@@ -272,11 +290,19 @@
         } else {
           actions += '<button type="button" class="a-menu-item a-menu-item-danger" data-action="end" data-id="' + r.id + '">End Rental</button>';
         }
-        var cooldownHours = swapCooldownHoursLeft(r);
-        if (cooldownHours > 0) {
-          actions += '<button type="button" class="a-menu-item" disabled title="This rental started less than 24h ago">Swap in ' + cooldownHours + 'h</button>';
+        var usedSoFar = swapsUsed(r);
+        if (swapLimitReached(r)) {
+          actions += '<button type="button" class="a-menu-item" disabled title="Weekly plan includes 1 swap, already used">Swap limit reached</button>';
         } else {
-          actions += '<button type="button" class="a-menu-item" data-action="swap" data-id="' + r.id + '">Swap Game</button>';
+          var cooldownHours = swapCooldownHoursLeft(r);
+          if (cooldownHours > 0) {
+            actions += '<button type="button" class="a-menu-item" disabled title="This rental started less than 24h ago">Swap in ' + cooldownHours + 'h</button>';
+          } else {
+            actions += '<button type="button" class="a-menu-item" data-action="swap" data-id="' + r.id + '">Swap Game' + (usedSoFar > 0 ? ' (' + usedSoFar + ' used)' : '') + '</button>';
+          }
+        }
+        if (usedSoFar > 0) {
+          actions += '<button type="button" class="a-menu-item" data-action="swap-history" data-id="' + r.id + '">Swap History (' + usedSoFar + ')</button>';
         }
         if (renterObj && renterObj.messenger_url) {
           actions += '<a class="a-menu-item" href="' + esc(renterObj.messenger_url) + '" target="_blank" rel="noopener">Open Messenger</a>';
@@ -345,6 +371,13 @@
       });
     } else if (action === 'swap') {
       startSwap(rental);
+    } else if (action === 'swap-history') {
+      var chain = swapChain(rental);
+      var lines = chain.map(function (r, i) {
+        var g = r.games || {};
+        return (i + 1) + '. ' + (g.title || 'Unknown') + ' (' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ')' + (i === chain.length - 1 ? ' -- current' : '');
+      });
+      window.alert('Swap history for this rental (' + (chain.length - 1) + ' swap' + (chain.length - 1 === 1 ? '' : 's') + '):\n\n' + lines.join('\n'));
     } else if (action === 'confirm-payment') {
       supabase.from('rentals').update({ payment_status: 'paid' }).eq('id', id).then(function (res) {
         if (res.error) { alert(res.error.message); return; }
@@ -496,6 +529,10 @@
   // ---- swap game (ends the old rental, starts a new one on the same
   // renter/end-date so the remaining paid time carries over) ----
   function startSwap(rental) {
+    if (swapLimitReached(rental)) {
+      alert('This is a Weekly rental -- it already used its 1 included swap.');
+      return;
+    }
     var cooldownHours = swapCooldownHoursLeft(rental);
     if (cooldownHours > 0) {
       alert('This rental started less than 24 hours ago. Swap available in ' + cooldownHours + ' more hour' + (cooldownHours === 1 ? '' : 's') + '.');
