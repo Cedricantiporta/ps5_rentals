@@ -94,6 +94,7 @@ Deno.serve(async (req: Request) => {
     );
     if (!geminiRes.ok) {
       const errText = await geminiRes.text();
+      console.error("Gemini API error", geminiRes.status, errText);
       return new Response(JSON.stringify({ error: "Chat is temporarily unavailable. Please message us on Messenger.", detail: errText }), {
         status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });
@@ -112,6 +113,7 @@ Deno.serve(async (req: Request) => {
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   } catch (err) {
+    console.error("Unhandled error", err);
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
