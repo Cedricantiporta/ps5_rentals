@@ -50,6 +50,26 @@ function catalogText(games: any[]): string {
   }).join("\n");
 }
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Guarantees every catalog title Gemini mentions becomes a link, regardless
+// of whether it followed the "use this markdown link" instruction -- replaces
+// the first bare or **bolded** mention of each title with its link.
+function linkifyGames(reply: string, games: any[]): string {
+  let out = reply;
+  const byLengthDesc = [...games].sort((a, b) => b.title.length - a.title.length);
+  for (const g of byLengthDesc) {
+    if (!g.slug) continue;
+    const pattern = new RegExp(`\\*{0,2}${escapeRegExp(g.title)}\\*{0,2}`, "i");
+    if (pattern.test(out)) {
+      out = out.replace(pattern, `[${g.title}](${SITE_URL}/?game=${g.slug})`);
+    }
+  }
+  return out;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS_HEADERS });
 
@@ -105,8 +125,12 @@ Deno.serve(async (req: Request) => {
       });
     }
     const geminiData = await geminiRes.json();
-    const reply = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
+    const rawReply = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
       "Sorry, I couldn't process that -- please try again or message us on Messenger.";
+    // Gemini doesn't reliably follow the "use this markdown link" instruction
+    // on its own -- guarantee the link by rewriting any mention of a catalog
+    // title (bolded with ** or plain) into a link ourselves.
+    const reply = linkifyGames(rawReply, games || []);
 
     await supabase.from("chat_usage").upsert(
       { client_id: clientId, day: today, count: currentCount + 1 },
