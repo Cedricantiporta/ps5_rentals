@@ -67,12 +67,28 @@
   // ---- tabs ----
   Array.prototype.forEach.call(document.querySelectorAll('.a-tab'), function (tab) {
     tab.addEventListener('click', function () {
+      closeNewRentalModal();
       Array.prototype.forEach.call(document.querySelectorAll('.a-tab'), function (t) { t.classList.remove('is-active'); });
       Array.prototype.forEach.call(document.querySelectorAll('.a-panel'), function (p) { p.classList.remove('is-active'); });
       tab.classList.add('is-active');
       $('panel-' + tab.getAttribute('data-tab')).classList.add('is-active');
     });
   });
+
+  // ---- New Rental as a popup (used by Incoming Requests' "Use this" so
+  // the admin doesn't lose their place on that tab) ----
+  function openNewRentalModal() {
+    $('panel-new-rental').classList.add('is-modal-open');
+    $('newRentalBackdrop').hidden = false;
+    $('closeNewRentalModalBtn').hidden = false;
+  }
+  function closeNewRentalModal() {
+    $('panel-new-rental').classList.remove('is-modal-open');
+    $('newRentalBackdrop').hidden = true;
+    $('closeNewRentalModalBtn').hidden = true;
+  }
+  $('newRentalBackdrop').addEventListener('click', closeNewRentalModal);
+  $('closeNewRentalModalBtn').addEventListener('click', closeNewRentalModal);
 
   $('signOutBtn').addEventListener('click', function () { window.rcSignOut(); });
 
@@ -81,7 +97,7 @@
     return Promise.all([
       supabase.from('games').select('*').order('title'),
       supabase.from('renters').select('*').order('name'),
-      supabase.from('rentals').select('*, games(id,title,slug), renters(id,name)').order('end_date'),
+      supabase.from('rentals').select('*, games(id,title,slug), renters(id,name)').order('created_at', { ascending: false }),
       supabase.from('rental_requests').select('*').eq('handled', false).order('created_at', { ascending: false })
     ]).then(function (results) {
       state.games = (results[0].data || []);
@@ -193,7 +209,7 @@
       state.requests = state.requests.filter(function (r) { return r.id !== id; });
       renderRequests();
     });
-    document.querySelector('.a-tab[data-tab="new-rental"]').click();
+    openNewRentalModal();
   });
 
   // ---- rentals tab ----
@@ -651,8 +667,9 @@
         if (res2.error) { $('newRentalError').textContent = res2.error.message; return; }
         $('newRentalForm').reset();
         state.amountManuallyEdited = false;
-        if (isReservation) return syncReservationStatus(g.id, slot).then(loadAll);
-        loadAll();
+        function goToRentals() { loadAll(); document.querySelector('.a-tab[data-tab="rentals"]').click(); }
+        if (isReservation) return syncReservationStatus(g.id, slot).then(goToRentals);
+        goToRentals();
       });
     });
   });

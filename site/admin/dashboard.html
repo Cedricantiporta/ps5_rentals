@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
+  <div class="a-modal-backdrop" id="newRentalBackdrop" hidden></div>
   <div class="a-shell">
     <aside class="a-sidebar">
       <h1 class="a-sidebar-title"><img src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals" class="a-sidebar-logo"></h1>
@@ -120,6 +121,7 @@
         <button type="button" class="a-btn" id="cancelSwapBtn">Cancel swap</button>
       </div>
       <div class="a-card">
+        <button type="button" class="a-modal-close" id="closeNewRentalModalBtn" hidden>&times;</button>
         <h2 id="newRentalHeading">New rental</h2>
         <form id="newRentalForm">
           <div class="a-form-row">

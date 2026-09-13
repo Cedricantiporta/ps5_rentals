@@ -261,10 +261,6 @@
 }
 .rc-soon-card:hover { transform: translateY(-3px); box-shadow: 0 0 0 2px var(--rc-blue); }
 .rc-soon-cover { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #1c1e28; }
-.rc-soon-card .rc-card-cover-wrap::before {
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 40%; z-index: 1;
-  background: linear-gradient(180deg, rgba(0,0,0,.65) 0%, rgba(0,0,0,0) 100%); pointer-events: none;
-}
 .rc-soon-body { padding: 0.75rem 0.85rem 0.9rem; display: flex; flex-direction: column; flex: 1; }
 .rc-soon-title { color: var(--rc-text); font-size: 0.92rem; font-weight: 700; line-height: 1.25; margin: 0 0 0.3rem; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .rc-soon-date { font-size: 0.76rem; font-weight: 600; color: var(--rc-text-2); margin: 0.3rem 0 0; }
