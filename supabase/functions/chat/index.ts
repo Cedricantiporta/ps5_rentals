@@ -15,6 +15,7 @@ const MAX_MESSAGE_LEN = 500;
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 const SYSTEM_PROMPT = `You are the customer-support chat assistant for June Digitals, a PS5 game rental service in the Philippines.
