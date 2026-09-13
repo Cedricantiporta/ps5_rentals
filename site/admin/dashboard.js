@@ -2,7 +2,7 @@
   'use strict';
 
   var supabase = window.rcSupabase;
-  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null, amountManuallyEdited: false, rentalsFilter: 'all' };
+  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null, amountManuallyEdited: false, rentalsFilter: 'all', rentalsSearch: '' };
 
   function $(id) { return document.getElementById(id); }
   var MESSENGER_ICON = '<svg class="a-msg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Has a Messenger link"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
@@ -210,6 +210,14 @@
     if (state.rentalsFilter === 'history') return r.status === 'ended' || r.status === 'cancelled';
     return true;
   }
+  function rentalsMatchSearch(r) {
+    var q = state.rentalsSearch;
+    if (!q) return true;
+    var game = r.games || {};
+    var renter = r.renters || {};
+    var haystack = [game.title, renter.name, r.slot === 'trophy' ? 'trophy' : 'non-trophy'].join(' ').toLowerCase();
+    return haystack.indexOf(q) !== -1;
+  }
   document.querySelectorAll('#rentalsFilterRow .a-chip').forEach(function (chip) {
     chip.addEventListener('click', function () {
       document.querySelectorAll('#rentalsFilterRow .a-chip').forEach(function (c) { c.classList.remove('is-active'); });
@@ -218,13 +226,17 @@
       renderRentals();
     });
   });
+  $('rentalsSearch').addEventListener('input', function () {
+    state.rentalsSearch = this.value.trim().toLowerCase();
+    renderRentals();
+  });
 
   function renderRentals() {
     var tbody = document.querySelector('#rentalsTable tbody');
     tbody.innerHTML = '';
-    var rows = state.rentals.filter(rentalsMatchFilter);
+    var rows = state.rentals.filter(rentalsMatchFilter).filter(rentalsMatchSearch);
     $('rentalsEmpty').hidden = rows.length > 0;
-    $('rentalsEmpty').textContent = state.rentals.length ? 'No rentals match this filter.' : 'No rentals yet.';
+    $('rentalsEmpty').textContent = state.rentals.length ? 'No rentals match this filter/search.' : 'No rentals yet.';
     rows.forEach(function (r) {
       var tr = document.createElement('tr');
       var game = r.games || {};
@@ -233,8 +245,21 @@
       var actions = '';
       var timeLeftCell = '—';
       if (r.status === 'pending') {
-        if (r.queue_position != null) timeLeftCell = 'Queue #' + r.queue_position;
-        actions += '<button type="button" class="a-menu-item" data-action="activate" data-id="' + r.id + '">Confirm Payment &amp; Activate</button>';
+        if (r.queue_position == null) {
+          // Ordinary pending rental (not tied to an upcoming-game queue) --
+          // payment confirmation and activation happen in one step, same
+          // as before.
+          actions += '<button type="button" class="a-menu-item" data-action="activate" data-id="' + r.id + '">Confirm Payment &amp; Activate</button>';
+        } else {
+          timeLeftCell = 'Queue #' + r.queue_position;
+          if (r.payment_status !== 'paid') {
+            actions += '<button type="button" class="a-menu-item" data-action="confirm-payment" data-id="' + r.id + '">Confirm Payment</button>';
+          } else if (r.queue_position === 1) {
+            actions += '<button type="button" class="a-menu-item" data-action="activate" data-id="' + r.id + '">Activate</button>';
+          } else {
+            actions += '<button type="button" class="a-menu-item" disabled title="Only the front of the queue can be activated">Activate (queue #' + r.queue_position + ')</button>';
+          }
+        }
         actions += '<button type="button" class="a-menu-item" data-action="cancel" data-id="' + r.id + '">Cancel</button>';
       } else if (r.status === 'active') {
         var left = daysLeft(r.end_date);
@@ -316,6 +341,11 @@
       });
     } else if (action === 'swap') {
       startSwap(rental);
+    } else if (action === 'confirm-payment') {
+      supabase.from('rentals').update({ payment_status: 'paid' }).eq('id', id).then(function (res) {
+        if (res.error) { alert(res.error.message); return; }
+        loadAll();
+      });
     }
   });
 
