@@ -65,6 +65,14 @@
         </table>
         <p class="a-empty" id="endingSoonEmpty" hidden>Nothing ending in the next few days.</p>
       </div>
+      <div class="a-card">
+        <h2>Most rented</h2>
+        <table class="a-table" id="mostRentedTable">
+          <thead><tr><th>Game</th><th>Times Rented</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p class="a-empty" id="mostRentedEmpty" hidden>No rentals yet.</p>
+      </div>
     </div>
 
     <div class="a-panel" id="panel-requests">
@@ -212,7 +220,7 @@
         <div class="a-field" style="max-width:280px;margin-bottom:1rem;"><input id="gamesSearch" type="text" placeholder="Search games..."></div>
         <div class="a-table-wrap">
         <table class="a-table" id="gamesTable">
-          <thead><tr><th>Title</th><th>Type</th><th>Trophy</th><th>Non-Trophy</th></tr></thead>
+          <thead><tr><th>Title</th><th>Type</th><th>Trophy</th><th>Non-Trophy</th><th id="timesRentedHeader" style="cursor:pointer;" title="Click to sort">Times Rented &#8645;</th></tr></thead>
           <tbody></tbody>
         </table>
         </div>

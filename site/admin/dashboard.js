@@ -2,7 +2,7 @@
   'use strict';
 
   var supabase = window.rcSupabase;
-  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null, amountManuallyEdited: false, rentalsFilter: 'all', rentalsSearch: '' };
+  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null, amountManuallyEdited: false, rentalsFilter: 'all', rentalsSearch: '', gamesSortByRented: false };
 
   function $(id) { return document.getElementById(id); }
   var MESSENGER_ICON = '<svg class="a-msg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Has a Messenger link"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
@@ -132,6 +132,17 @@
       tr.innerHTML = '<td>' + esc((r.games || {}).title) + '</td><td>' + esc((r.renters || {}).name) + '</td>' +
         '<td>' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + '</td><td>' + timeLeftLabel(r.end_date) + '</td>';
       tbody.appendChild(tr);
+    });
+
+    var topGames = state.games.filter(function (g) { return (g.times_rented || 0) > 0; })
+      .sort(function (a, b) { return b.times_rented - a.times_rented; }).slice(0, 5);
+    var mrTbody = document.querySelector('#mostRentedTable tbody');
+    mrTbody.innerHTML = '';
+    $('mostRentedEmpty').hidden = topGames.length > 0;
+    topGames.forEach(function (g) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + esc(g.title) + '</td><td>' + g.times_rented + '</td>';
+      mrTbody.appendChild(tr);
     });
   }
 
@@ -721,17 +732,23 @@
   function renderGames() {
     var tbody = document.querySelector('#gamesTable tbody');
     var q = ($('gamesSearch') && $('gamesSearch').value || '').trim().toLowerCase();
-    var games = q ? state.games.filter(function (g) { return g.title.toLowerCase().indexOf(q) !== -1; }) : state.games;
+    var games = q ? state.games.filter(function (g) { return g.title.toLowerCase().indexOf(q) !== -1; }) : state.games.slice();
+    if (state.gamesSortByRented) games.sort(function (a, b) { return (b.times_rented || 0) - (a.times_rented || 0); });
     tbody.innerHTML = '';
     games.forEach(function (g) {
       var tr = document.createElement('tr');
       tr.innerHTML = '<td>' + esc(g.title) + '</td><td>' + (g.status === 'upcoming' ? 'Pre-Reserve' : 'Available') + '</td>' +
         '<td>' + slotControlHtml(g, 'trophy') + '</td>' +
-        '<td>' + slotControlHtml(g, 'nontrophy') + '</td>';
+        '<td>' + slotControlHtml(g, 'nontrophy') + '</td>' +
+        '<td>' + (g.times_rented || 0) + '</td>';
       tbody.appendChild(tr);
     });
   }
   if ($('gamesSearch')) $('gamesSearch').addEventListener('input', renderGames);
+  if ($('timesRentedHeader')) $('timesRentedHeader').addEventListener('click', function () {
+    state.gamesSortByRented = !state.gamesSortByRented;
+    renderGames();
+  });
 
   document.querySelector('#gamesTable tbody').addEventListener('change', function (e) {
     var sel = e.target.closest('select[data-game]');
