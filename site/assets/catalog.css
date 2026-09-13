@@ -288,7 +288,7 @@
 }
 
 /* main grid */
-.rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1.1rem; }
+.rc-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.1rem; }
 .rc-card {
   position: relative; border-radius: 1rem; overflow: hidden;
   background: linear-gradient(180deg, #0a0a0a 0%, #1a233f 100%);
