@@ -79,7 +79,8 @@
     'chevron-left': '<path d="m15 18-6-6 6-6"/>',
     'chevron-right': '<path d="m9 18 6-6-6-6"/>',
     'refresh-cw': '<path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>',
-    zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>'
+    zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+    'message-circle': '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>'
   };
   function icon(name, cls) {
     var paths = ICON_PATHS[name] || '';
@@ -986,6 +987,85 @@
     });
   }
 
+  // ---- chat widget (bottom-left button -> FAQ + live catalog assistant) ----
+  function getChatClientId() {
+    var key = 'rc-chat-client-id';
+    try {
+      var id = localStorage.getItem(key);
+      if (!id) {
+        id = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : ('anon-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+        localStorage.setItem(key, id);
+      }
+      return id;
+    } catch (e) { return 'anon-' + Date.now(); }
+  }
+
+  function appendChatMessage(text, who) {
+    var wrap = document.getElementById('rcChatMessages');
+    if (!wrap) return;
+    var div = document.createElement('div');
+    div.className = 'rc-chat-msg rc-chat-msg-' + who;
+    div.textContent = text;
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function wireChatWidget() {
+    var widget = document.createElement('div');
+    widget.className = 'rc-chat-widget';
+    widget.innerHTML =
+      '<button type="button" class="rc-chat-toggle" id="rcChatToggle" aria-label="Chat with us">' + icon('message-circle', 'rc-chat-icon') + '</button>' +
+      '<div class="rc-chat-panel" id="rcChatPanel" hidden>' +
+        '<div class="rc-chat-header"><span>June Digitals Assistant</span><button type="button" class="rc-chat-close" id="rcChatClose" aria-label="Close chat">&times;</button></div>' +
+        '<div class="rc-chat-messages" id="rcChatMessages"><div class="rc-chat-msg rc-chat-msg-bot">Hi! Ask me about game availability, prices, or how rentals work.</div></div>' +
+        '<form class="rc-chat-input-row" id="rcChatForm"><input type="text" id="rcChatInput" placeholder="Ask a question..." maxlength="500" autocomplete="off"><button type="submit" id="rcChatSend">Send</button></form>' +
+        '<p class="rc-chat-hint" id="rcChatHint"></p>' +
+      '</div>';
+    document.body.appendChild(widget);
+
+    var toggle = document.getElementById('rcChatToggle');
+    var panel = document.getElementById('rcChatPanel');
+    var closeBtn = document.getElementById('rcChatClose');
+    var form = document.getElementById('rcChatForm');
+    var input = document.getElementById('rcChatInput');
+    var sendBtn = document.getElementById('rcChatSend');
+    var hint = document.getElementById('rcChatHint');
+
+    toggle.addEventListener('click', function () {
+      panel.hidden = !panel.hidden;
+      if (!panel.hidden) input.focus();
+    });
+    closeBtn.addEventListener('click', function () { panel.hidden = true; });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      var sb = getPublicSupabase();
+      if (!sb) { appendChatMessage('Chat is unavailable right now -- please message us on Messenger.', 'bot'); return; }
+      appendChatMessage(text, 'user');
+      input.value = '';
+      input.disabled = true;
+      sendBtn.disabled = true;
+      sb.functions.invoke('chat', { body: { clientId: getChatClientId(), message: text } }).then(function (res) {
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
+        var data = res.data;
+        if (res.error || !data) {
+          appendChatMessage('Sorry, something went wrong. Please try again or message us on Messenger.', 'bot');
+          return;
+        }
+        appendChatMessage(data.reply, 'bot');
+        hint.textContent = data.limited ? '' : (typeof data.remaining === 'number' ? data.remaining + ' message' + (data.remaining === 1 ? '' : 's') + ' left today.' : '');
+      }).catch(function () {
+        input.disabled = false;
+        sendBtn.disabled = false;
+        appendChatMessage('Sorry, something went wrong. Please try again or message us on Messenger.', 'bot');
+      });
+    });
+  }
+
   function init() {
     wireNavSolidOnScroll();
     wireOverlayHistory();
@@ -994,6 +1074,7 @@
     wireDrawer();
     wireThemeToggle();
     wireNavCurrentPage();
+    wireChatWidget();
     loadGames().then(function (games) {
       state.games = games;
       populateGenres();
