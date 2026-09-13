@@ -439,7 +439,7 @@
      full-screen mobile sheet a bare gradient looks too empty -- bring
      back a short header cover, faded into the gradient below it. */
   .rc-modal-compact .rc-modal-cover {
-    display: block !important; height: 150px; aspect-ratio: auto; object-fit: cover;
+    display: block !important; height: 220px; aspect-ratio: auto; object-fit: cover;
   }
   .rc-modal-compact .rc-modal-body {
     margin-top: -0.8rem; padding-top: 3.5rem;
@@ -472,7 +472,7 @@
 .rc-share-btn:hover:not(:disabled) { background: var(--rc-panel); }
 .rc-share-btn:disabled { opacity: .5; cursor: not-allowed; }
 .rc-share-status { text-align: center; font-size: 0.75rem; color: var(--rc-blue); font-weight: 700; min-height: 1.1rem; margin: 0.6rem 0 0; }
-.rc-modal-cover { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #1c1e28; }
+.rc-modal-cover { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #1c1e28; }
 .rc-modal-body {
   position: relative; margin-top: -0.6rem; padding: 2.5rem 1.4rem 1.5rem; border-radius: 1.1rem 1.1rem 0 0;
   background: linear-gradient(180deg, rgba(8,9,14,0) 0%, rgba(8,9,14,.75) 28%, rgba(8,9,14,.94) 100%);
@@ -485,7 +485,7 @@
 /* compact wizard steps (plan/access): a short header cover (not the
    full hero-height cover) fading into the blue-black gradient body,
    so there's still a visual anchor without the step needing to scroll. */
-.rc-modal-compact .rc-modal-cover { display: block; height: 130px; aspect-ratio: auto; object-fit: cover; }
+.rc-modal-compact .rc-modal-cover { display: block; height: 220px; aspect-ratio: auto; object-fit: cover; }
 .rc-modal-compact { background: linear-gradient(165deg, #131a2e 0%, #0a0b10 55%, #050506 100%); }
 .rc-modal-compact .rc-modal-body {
   position: relative; z-index: 1; margin-top: -0.3rem; padding: 3.25rem 1.3rem 0.95rem; border-radius: 1.25rem;
