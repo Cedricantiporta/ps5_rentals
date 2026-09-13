@@ -2,7 +2,7 @@
   'use strict';
 
   var supabase = window.rcSupabase;
-  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null, amountManuallyEdited: false, rentalsFilter: 'all', rentalsSearch: '', gamesSortByRented: false };
+  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null, activeRequestId: null, amountManuallyEdited: false, rentalsFilter: 'all', rentalsSearch: '', gamesSortByRented: false };
 
   function $(id) { return document.getElementById(id); }
   var MESSENGER_ICON = '<svg class="a-msg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Has a Messenger link"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
@@ -86,6 +86,7 @@
     $('panel-new-rental').classList.remove('is-modal-open');
     $('newRentalBackdrop').hidden = true;
     $('closeNewRentalModalBtn').hidden = true;
+    state.activeRequestId = null;
   }
   $('newRentalBackdrop').addEventListener('click', closeNewRentalModal);
   $('closeNewRentalModalBtn').addEventListener('click', closeNewRentalModal);
@@ -209,10 +210,10 @@
     $('slotSelect').value = req.slot;
     if (req.plan) $('planSelect').value = req.plan;
     updateSlotHintAndAmount();
-    supabase.from('rental_requests').update({ handled: true }).eq('id', id).then(function () {
-      state.requests = state.requests.filter(function (r) { return r.id !== id; });
-      renderRequests();
-    });
+    // Only marked handled once the rental is actually created (see the
+    // newRentalForm submit handler) -- closing the popup without finishing
+    // should leave the request in the list.
+    state.activeRequestId = id;
     openNewRentalModal();
   });
 
@@ -618,6 +619,7 @@
 
   function cancelSwap() {
     state.swapFromRental = null;
+    state.activeRequestId = null;
     $('swapBanner').hidden = true;
     $('renterSelect').disabled = false;
     $('newRentalHeading').textContent = 'New rental';
@@ -693,9 +695,16 @@
         if (res2.error) { $('newRentalError').textContent = res2.error.message; return; }
         $('newRentalForm').reset();
         state.amountManuallyEdited = false;
+        var handledRequestId = state.activeRequestId;
+        state.activeRequestId = null;
+        var markHandled = handledRequestId
+          ? supabase.from('rental_requests').update({ handled: true }).eq('id', handledRequestId)
+          : Promise.resolve();
         function goToRentals() { loadAll(); document.querySelector('.a-tab[data-tab="rentals"]').click(); }
-        if (isReservation) return syncReservationStatus(g.id, slot).then(goToRentals);
-        goToRentals();
+        return markHandled.then(function () {
+          if (isReservation) return syncReservationStatus(g.id, slot).then(goToRentals);
+          goToRentals();
+        });
       });
     });
   });
@@ -879,6 +888,6 @@
     // Incoming requests (and everything else) come from customers using the
     // public site in real time -- poll instead of requiring a manual refresh
     // to notice a new one.
-    setInterval(loadAll, 20000);
+    setInterval(loadAll, 5000);
   });
 })();
