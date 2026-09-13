@@ -779,7 +779,7 @@
 .rc-drawer-rules-btn:hover { filter: brightness(.94); }
 
 /* ---- chat widget ---- */
-.rc-chat-widget { position: fixed; left: 1.25rem; bottom: 1.25rem; z-index: 70; }
+.rc-chat-widget { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 70; }
 .rc-chat-toggle {
   width: 56px; height: 56px; border-radius: 50%; background: var(--rc-blue); color: #fff; border: none;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
@@ -788,7 +788,7 @@
 .rc-chat-toggle:hover { filter: brightness(1.08); transform: scale(1.04); }
 .rc-chat-icon { width: 26px; height: 26px; }
 .rc-chat-panel {
-  position: absolute; left: 0; bottom: 70px; width: 340px; max-width: 88vw; max-height: 70vh;
+  position: absolute; right: 0; bottom: 70px; width: 340px; max-width: 88vw; max-height: 70vh;
   display: flex; flex-direction: column; background: var(--rc-panel); border: 1px solid var(--rc-border);
   border-radius: 1.1rem; box-shadow: 0 24px 56px rgba(0,0,0,.35); overflow: hidden;
 }
@@ -815,6 +815,6 @@
 .rc-chat-input-row button:disabled { opacity: .5; cursor: not-allowed; }
 .rc-chat-hint { font-size: 0.7rem; color: var(--rc-text-3); text-align: center; padding: 0 0.75rem 0.65rem; margin: 0; min-height: 1em; }
 @media (max-width: 480px) {
-  .rc-chat-widget { left: 0.75rem; bottom: 0.75rem; }
+  .rc-chat-widget { right: 0.75rem; bottom: 0.75rem; }
   .rc-chat-panel { width: 88vw; }
 }

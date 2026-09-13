@@ -7,7 +7,7 @@
   var HIGH_DEMAND_MIN = 10;
   var PAGE_SIZE = 20;
 
-  var state = { games: [], query: '', quickFilter: 'all', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1, step: 'intent', intent: 'new', overlayStack: [] };
+  var state = { games: [], query: '', quickFilter: 'available', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1, step: 'intent', intent: 'new', overlayStack: [], modalStepDepth: 0 };
 
   var THEME_KEY = 'rc-theme';
   function getSavedTheme() {
@@ -51,7 +51,22 @@
   }
 
   function pushStepState() {
+    state.modalStepDepth++;
     try { window.history.pushState({ rcOverlay: 'modal', rcStep: state.step }, ''); } catch (e) {}
+  }
+
+  // Explicit close (X button, backdrop click, Escape) should always fully
+  // close the wizard, never just step back one screen -- but each step
+  // change also pushes a history entry tagged rcOverlay:'modal', so a
+  // plain history.back() (requestCloseOverlay's normal behavior) would
+  // only undo the most recent step instead of leaving the modal. Jump back
+  // past every step pushed this session in one go instead.
+  function hardCloseOverlay(name) {
+    if (name === 'modal' && window.history.state && window.history.state.rcOverlay === 'modal') {
+      window.history.go(-(1 + state.modalStepDepth));
+    } else {
+      requestCloseOverlay(name);
+    }
   }
 
   function wireOverlayHistory() {
@@ -68,7 +83,8 @@
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
       var top = state.overlayStack[state.overlayStack.length - 1];
-      if (top) requestCloseOverlay(top);
+      if (top === 'modal') hardCloseOverlay(top);
+      else if (top) requestCloseOverlay(top);
     });
   }
 
@@ -359,6 +375,7 @@
     renderModal();
     document.getElementById('rcModalOverlay').classList.add('is-open');
     document.body.style.overflow = 'hidden';
+    state.modalStepDepth = 0;
     if (pushHistory !== false) {
       openOverlay('modal', closeModal, window.location.pathname + '?game=' + slug, { rcStep: state.step });
     } else {
@@ -841,9 +858,9 @@
       });
     });
     document.getElementById('rcModalOverlay').addEventListener('click', function (e) {
-      if (e.target.id === 'rcModalOverlay') requestCloseOverlay('modal');
+      if (e.target.id === 'rcModalOverlay') hardCloseOverlay('modal');
     });
-    document.getElementById('rcModalClose').addEventListener('click', function () { requestCloseOverlay('modal'); });
+    document.getElementById('rcModalClose').addEventListener('click', function () { hardCloseOverlay('modal'); });
 
     var track = document.getElementById('rcComingSoonTrack');
     var prevBtn = document.getElementById('rcSoonPrev');
