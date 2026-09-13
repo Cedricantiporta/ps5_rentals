@@ -391,7 +391,7 @@
   function mapGameRow(row) {
     return {
       id: row.id, slug: row.slug, title: row.title, genre: row.genre || [],
-      cover: row.cover, releaseDate: row.release_date, activeRentals: 0,
+      cover: row.cover, releaseDate: row.release_date, activeRentals: row.times_rented || 0,
       status: row.status, upcomingOrder: row.upcoming_order,
       trophy: { available: row.trophy_available, availableAt: row.trophy_available_at, weekly: row.trophy_weekly, monthly: row.trophy_monthly, reservationStatus: row.trophy_reservation_status },
       nontrophy: { available: row.nontrophy_available, availableAt: row.nontrophy_available_at, weekly: row.nontrophy_weekly, monthly: row.nontrophy_monthly, reservationStatus: row.nontrophy_reservation_status },

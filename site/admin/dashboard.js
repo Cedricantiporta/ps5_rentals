@@ -349,6 +349,13 @@
     }
   });
 
+  // Powers the "times played" count badge on the public catalog card.
+  function incrementTimesRented(gameId) {
+    var game = state.games.filter(function (g) { return g.id === gameId; })[0];
+    var current = (game && game.times_rented) || 0;
+    return supabase.from('games').update({ times_rented: current + 1 }).eq('id', gameId);
+  }
+
   function activateRental(rental) {
     var start = todayISO();
     var end = addDaysISO(start, rental.plan === 'weekly' ? 7 : 30);
@@ -360,7 +367,9 @@
       // public site as a "Xd left" countdown instead of a flat FULL.
       return setGameSlotAvailable(rental.game_id, rental.slot, false, addDaysISO(end, 1)).then(function (res2) {
         if (res2.error) { alert(res2.error.message); return; }
-        return resolveQueueSlot(rental).then(loadAll);
+        return incrementTimesRented(rental.game_id).then(function () {
+          return resolveQueueSlot(rental).then(loadAll);
+        });
       });
     });
   }
@@ -547,7 +556,8 @@
         });
       })
       .then(function (res) { if (res.error) throw res.error; return setGameSlotAvailable(newGame.id, slot, false, addDaysISO(endDate, 1)); })
-      .then(function (res) { if (res && res.error) throw res.error; cancelSwap(); loadAll(); })
+      .then(function (res) { if (res && res.error) throw res.error; return incrementTimesRented(newGame.id); })
+      .then(function () { cancelSwap(); loadAll(); })
       .catch(function (err) { $('newRentalError').textContent = (err && err.message) || 'Swap failed.'; })
       .then(function () { btn.disabled = false; });
   }
