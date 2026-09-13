@@ -28,6 +28,8 @@ Never invent game titles, prices, or availability -- only use the CATALOG DATA b
 
 Keep answers short (2-4 sentences), friendly, and reply in the same language the customer used (English or Tagalog/Taglish are both fine).
 
+Whenever you mention a specific game from the catalog, link its title using the exact markdown link given for that game in CATALOG DATA below, e.g. "[Ghost of Yotei](https://ps5-rentals.vercel.app/?game=ghost-of-yotei) is available now." Never invent a link or change the URL.
+
 FAQ:
 - Trophy Slot: played on the customer's own PSN profile, trophies and saves stay theirs.
 - Non-Trophy Slot: played on the rented game's own profile, same full game access either way.
@@ -36,12 +38,15 @@ FAQ:
 - Payment: GCash, confirmed manually via Messenger before the rental is activated.
 - To rent: use the site's Rent button to start, then message June Digitals on Messenger to arrange payment.`;
 
+const SITE_URL = "https://ps5-rentals.vercel.app";
+
 function catalogText(games: any[]): string {
   return games.map((g) => {
+    const link = `[${g.title}](${SITE_URL}/?game=${g.slug})`;
     if (g.status === "upcoming") {
-      return `${g.title} (PRE-RESERVE, releases ${g.release_date}): Trophy slot ${g.trophy_reservation_status}, Non-Trophy slot ${g.nontrophy_reservation_status}. Weekly ₱${g.trophy_weekly}, Monthly ₱${g.trophy_monthly}.`;
+      return `${link} (PRE-RESERVE, releases ${g.release_date}): Trophy slot ${g.trophy_reservation_status}, Non-Trophy slot ${g.nontrophy_reservation_status}. Weekly ₱${g.trophy_weekly}, Monthly ₱${g.trophy_monthly}.`;
     }
-    return `${g.title}: Trophy ${g.trophy_available ? "AVAILABLE" : "FULL"} (Weekly ₱${g.trophy_weekly} / Monthly ₱${g.trophy_monthly}), Non-Trophy ${g.nontrophy_available ? "AVAILABLE" : "FULL"} (Weekly ₱${g.nontrophy_weekly} / Monthly ₱${g.nontrophy_monthly}).`;
+    return `${link}: Trophy ${g.trophy_available ? "AVAILABLE" : "FULL"} (Weekly ₱${g.trophy_weekly} / Monthly ₱${g.trophy_monthly}), Non-Trophy ${g.nontrophy_available ? "AVAILABLE" : "FULL"} (Weekly ₱${g.nontrophy_weekly} / Monthly ₱${g.nontrophy_monthly}).`;
   }).join("\n");
 }
 
@@ -79,7 +84,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const { data: games } = await supabase.from("games").select(
-      "title,status,release_date,trophy_available,trophy_weekly,trophy_monthly,trophy_reservation_status,nontrophy_available,nontrophy_weekly,nontrophy_monthly,nontrophy_reservation_status"
+      "slug,title,status,release_date,trophy_available,trophy_weekly,trophy_monthly,trophy_reservation_status,nontrophy_available,nontrophy_weekly,nontrophy_monthly,nontrophy_reservation_status"
     );
 
     const prompt = `${SYSTEM_PROMPT}\n\nCATALOG DATA (live, right now):\n${catalogText(games || [])}\n\nCustomer message: ${message}`;

@@ -1017,12 +1017,23 @@
     } catch (e) { return 'anon-' + Date.now(); }
   }
 
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  // Bot replies may include "[Game Title](https://.../?game=slug)" links --
+  // turn those into real clickable links, everything else stays plain text.
+  function renderChatText(text) {
+    return escapeHtml(text).replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, function (m, label, url) {
+      return '<a href="' + url + '" target="_blank" rel="noopener">' + label + '</a>';
+    });
+  }
   function appendChatMessage(text, who) {
     var wrap = document.getElementById('rcChatMessages');
     if (!wrap) return;
     var div = document.createElement('div');
     div.className = 'rc-chat-msg rc-chat-msg-' + who;
-    div.textContent = text;
+    if (who === 'bot') div.innerHTML = renderChatText(text);
+    else div.textContent = text;
     wrap.appendChild(div);
     wrap.scrollTop = wrap.scrollHeight;
   }
