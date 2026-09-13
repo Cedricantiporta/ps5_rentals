@@ -9,7 +9,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const DAILY_LIMIT = 20;
-const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_MODEL = "gemini-3.6-flash";
 const MAX_MESSAGE_LEN = 500;
 
 const CORS_HEADERS = {
