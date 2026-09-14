@@ -1022,9 +1022,14 @@
   }
   // Bot replies may include "[Game Title](https://.../?game=slug)" links --
   // turn those into real clickable links, everything else stays plain text.
+  // Tagged with data-game-slug so the click handler below can open the
+  // game's popup in place instead of a full page navigation (which would
+  // reset the chat panel).
   function renderChatText(text) {
     return escapeHtml(text).replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, function (m, label, url) {
-      return '<a href="' + url + '">' + label + '</a>';
+      var slugMatch = /[?&]game=([^&]+)/.exec(url);
+      var slugAttr = slugMatch ? ' data-game-slug="' + slugMatch[1] + '"' : '';
+      return '<a href="' + url + '"' + slugAttr + '>' + label + '</a>';
     });
   }
   function appendChatMessage(text, who) {
@@ -1064,6 +1069,16 @@
       if (!panel.hidden) input.focus();
     });
     closeBtn.addEventListener('click', function () { panel.hidden = true; });
+
+    // Game links inside bot replies open the popup in place instead of
+    // navigating (a real navigation would reload the page and lose the
+    // chat history).
+    document.getElementById('rcChatMessages').addEventListener('click', function (e) {
+      var link = e.target.closest('a[data-game-slug]');
+      if (!link) return;
+      e.preventDefault();
+      openModal(link.getAttribute('data-game-slug'), true);
+    });
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
