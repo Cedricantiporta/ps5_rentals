@@ -62,6 +62,8 @@ function linkifyGames(reply: string, games: any[]): string {
   const byLengthDesc = [...games].sort((a, b) => b.title.length - a.title.length);
   for (const g of byLengthDesc) {
     if (!g.slug) continue;
+    const linkTarget = `(${SITE_URL}/?game=${g.slug})`;
+    if (out.includes(linkTarget)) continue; // Gemini already linked it correctly -- don't double-wrap.
     const pattern = new RegExp(`\\*{0,2}${escapeRegExp(g.title)}\\*{0,2}`, "i");
     if (pattern.test(out)) {
       out = out.replace(pattern, `[${g.title}](${SITE_URL}/?game=${g.slug})`);
