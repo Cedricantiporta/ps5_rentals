@@ -1024,7 +1024,7 @@
   // turn those into real clickable links, everything else stays plain text.
   function renderChatText(text) {
     return escapeHtml(text).replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, function (m, label, url) {
-      return '<a href="' + url + '" target="_blank" rel="noopener">' + label + '</a>';
+      return '<a href="' + url + '">' + label + '</a>';
     });
   }
   function appendChatMessage(text, who) {
