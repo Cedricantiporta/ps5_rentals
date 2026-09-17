@@ -123,7 +123,8 @@
 [data-theme="light"] .navbar_list a.link.is-current-page::after { background: #0a0a0f; }
 [data-theme="light"] .navbar_logo-link img { filter: invert(1); }
 [data-theme="light"] .rc-menu-line { background: #0a0a0f; }
-[data-theme="light"] .rc-rules-nav-btn { background: var(--rc-blue, #0137e2) !important; color: #fff !important; }
+[data-theme="light"] .rc-account-btn:not(.is-signed-in) { background: var(--rc-blue, #0137e2) !important; color: #fff !important; }
+[data-theme="light"] .rc-account-btn.is-signed-in .rc-account-avatar { background: var(--rc-blue, #0137e2) !important; color: #fff !important; }
 
 /* Webflow's native menu-button toggle rotates/morphs the 3 lines into an X via
    inline JS styles (not CSS transitions), so transition:none above can't stop

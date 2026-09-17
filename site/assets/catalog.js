@@ -217,6 +217,7 @@
   function renderComingSoon() {
     var track = document.getElementById('rcComingSoonTrack');
     var section = document.getElementById('rcComingSoonSection');
+    if (!track || !section) return; // no coming-soon strip on this page
     var upcoming = state.games.filter(function (g) { return g.status === 'upcoming'; })
       .sort(function (a, b) { return a.upcomingOrder - b.upcomingOrder; });
     if (!upcoming.length) { section.style.display = 'none'; return; }
@@ -254,8 +255,10 @@
   function renderGrid() {
     var grid = document.getElementById('rcGrid');
     var empty = document.getElementById('rcEmpty');
+    var countEl = document.getElementById('rcCount');
+    if (!grid || !empty || !countEl) return; // no catalog grid on this page
     var allGames = filteredSortedGames();
-    document.getElementById('rcCount').textContent = allGames.length;
+    countEl.textContent = allGames.length;
     if (!allGames.length) {
       grid.innerHTML = '';
       empty.style.display = '';
@@ -344,9 +347,10 @@
   }
 
   function populateGenres() {
+    var select = document.getElementById('rcGenre');
+    if (!select) return; // no catalog toolbar on this page (e.g. how-it-works, account, game detail)
     var set = {};
     state.games.forEach(function (g) { g.genre.forEach(function (x) { set[x] = true; }); });
-    var select = document.getElementById('rcGenre');
     Object.keys(set).sort().forEach(function (g) {
       var opt = document.createElement('option');
       opt.value = g; opt.textContent = g;
@@ -830,6 +834,7 @@
 
   function wireToolbar() {
     var searchInput = document.getElementById('rcSearch');
+    if (!searchInput) return; // no catalog toolbar on this page
     var searchWrap = searchInput.closest('.rc-search');
     var clearBtn = document.getElementById('rcSearchClear');
     var updateClearVisibility = function () {
@@ -913,49 +918,6 @@
     update();
   }
 
-  var RENTAL_RULES = [
-    ['Use the correct profile', 'Trophy Slot is played on your personal PSN profile. Non-Trophy Slot is played on the rented game profile.'],
-    ['Follow the provided instructions', 'Please follow all setup, game-sharing, return, disabling, and video-proof steps correctly.'],
-    ['Rental and swap rules', 'Weekly is valid for 7 days with 1 game swap. Monthly is valid for 30 days with multiple swaps. Every completed swap has a 24-hour cooldown. All swaps are subject to availability. Higher-priced swaps require an add-on; lower-priced swaps have no refund or credit.'],
-    ['Wait for confirmation before disabling', 'For swaps, do not disable or remove your current game until June Digitals confirms that your requested slot is ready.'],
-    ['Security deposit', 'The ₱150 security deposit is refundable when the rental is returned correctly and on time by following the provided steps. Failure to follow the return instructions may affect the refund or rental access.'],
-    ['Please allow us time to reply', 'Requests are handled in order, and we’ll assist you as soon as possible based on staff availability and current request volume.'],
-    ['Final availability', 'Availability is rechecked before an available RENT request is handed to Messenger. Do not send payment for waitlist, pre-reserve, or unverified-availability requests unless June Digitals confirms payment is due.']
-  ];
-
-  function wireRulesModal() {
-    var btn = document.getElementById('rcRulesBtn');
-    if (!btn) return;
-
-    var itemsHtml = RENTAL_RULES.map(function (r, i) {
-      return '<div class="rc-rules-item">' +
-        '<span class="rc-guide-step-num">' + (i + 1) + '</span>' +
-        '<div class="rc-rules-item-body"><h4>' + r[0] + '</h4><p>' + r[1] + '</p></div>' +
-      '</div>';
-    }).join('');
-
-    var overlay = document.createElement('div');
-    overlay.className = 'rc-modal-overlay rc-rules-modal';
-    overlay.id = 'rcRulesOverlay';
-    overlay.innerHTML =
-      '<div class="rc-modal">' +
-        '<button type="button" class="rc-modal-close" id="rcRulesClose" aria-label="Close"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>' +
-        '<div class="rc-popup-modal-body">' +
-          '<h3 class="rc-modal-title">Rental Rules</h3>' +
-          '<p class="rc-modal-genre">Please review these rules before requesting a rental on Messenger.</p>' +
-          '<div class="rc-rules-list">' + itemsHtml + '</div>' +
-        '</div>' +
-      '</div>';
-    document.body.appendChild(overlay);
-
-    var closeBtn = document.getElementById('rcRulesClose');
-    var open = function () { overlay.classList.add('is-open'); openOverlay('rules', close); };
-    var close = function () { overlay.classList.remove('is-open'); };
-    btn.addEventListener('click', open);
-    closeBtn.addEventListener('click', function () { requestCloseOverlay('rules'); });
-    overlay.addEventListener('click', function (e) { if (e.target === overlay) requestCloseOverlay('rules'); });
-  }
-
   function wireNavCurrentPage() {
     var path = window.location.pathname;
     var links = document.querySelectorAll('.navbar_list a.link, .rc-drawer-link');
@@ -971,7 +933,6 @@
     var btn = document.getElementById('rcMenuBtn');
     var overlay = document.getElementById('rcDrawerOverlay');
     var closeBtn = document.getElementById('rcDrawerClose');
-    var rulesLink = document.getElementById('rcDrawerRulesBtn');
     if (!btn || !overlay) return;
 
     var open = function () {
@@ -991,11 +952,6 @@
     });
     if (closeBtn) closeBtn.addEventListener('click', function () { requestCloseOverlay('drawer'); });
     overlay.addEventListener('click', function (e) { if (e.target === overlay) requestCloseOverlay('drawer'); });
-    if (rulesLink) rulesLink.addEventListener('click', function () {
-      closeOverlayByName('drawer');
-      var rb = document.getElementById('rcRulesBtn');
-      if (rb) rb.click();
-    });
     Array.prototype.forEach.call(overlay.querySelectorAll('.rc-drawer-link'), function (a) {
       a.addEventListener('click', function () { closeOverlayByName('drawer'); });
     });
@@ -1138,7 +1094,6 @@
   function init() {
     wireNavSolidOnScroll();
     wireOverlayHistory();
-    wireRulesModal();
     wireShareModal();
     wireDrawer();
     wireThemeToggle();

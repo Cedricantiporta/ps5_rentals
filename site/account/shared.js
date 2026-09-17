@@ -155,7 +155,8 @@
 
   function wireNavLink() {
     var links = document.querySelectorAll('[data-rc-account-link]');
-    if (!links.length) return;
+    var controls = document.querySelectorAll('[data-rc-account-control]');
+    if (!links.length && !controls.length) return;
     getSession().then(function (session) {
       Array.prototype.forEach.call(links, function (a) {
         if (session) {
@@ -164,6 +165,28 @@
         } else {
           setLinkText(a, 'Sign in');
           a.setAttribute('href', '/account/login.html');
+        }
+      });
+
+      // Desktop nav profile control: a "Sign in" pill when signed out, an
+      // avatar (first letter of the customer's email) linking to /account/
+      // when signed in. Structure is ours (not Webflow markup), so no
+      // textContent trap here -- just toggle the .is-signed-in class and
+      // fill the avatar initial.
+      Array.prototype.forEach.call(controls, function (a) {
+        var avatar = a.querySelector('.rc-account-avatar');
+        if (session) {
+          a.classList.add('is-signed-in');
+          a.setAttribute('href', '/account/');
+          a.setAttribute('aria-label', 'My Account');
+          if (avatar) {
+            var email = (session.user && session.user.email) || '';
+            avatar.textContent = email ? email.charAt(0).toUpperCase() : 'A';
+          }
+        } else {
+          a.classList.remove('is-signed-in');
+          a.setAttribute('href', '/account/login.html');
+          a.setAttribute('aria-label', 'Sign in');
         }
       });
     });
