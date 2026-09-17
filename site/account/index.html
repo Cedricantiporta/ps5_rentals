@@ -172,7 +172,14 @@
     document.getElementById('rcAccountEmail').textContent = session.user.email || '';
     var sb = RCAccount.getClient();
 
-    sb.from('renters').select('*').eq('auth_user_id', session.user.id).maybeSingle().then(function (rentersRes) {
+    // Ensure this account has a renters row before we look it up -- covers
+    // a brand-new signup and self-heals any older account that predates
+    // migration_12. Runs regardless of outcome: if the RPC is missing (
+    // migration not applied yet) ensureRenter() resolves to null and the
+    // portal falls through to the existing "unlinked" empty state below.
+    RCAccount.ensureRenter().then(function () {
+      return sb.from('renters').select('*').eq('auth_user_id', session.user.id).maybeSingle();
+    }).then(function (rentersRes) {
       if (rentersRes.error) {
         console.error('June Digitals: renters lookup failed', rentersRes.error);
         show('rcLoading', false);

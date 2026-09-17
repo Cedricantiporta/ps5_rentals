@@ -45,6 +45,29 @@
     });
   }
 
+  // Calls the ensure_my_renter() RPC (see supabase/migration_12_renter_claiming_rpc.sql)
+  // so a signed-in customer with no renters row yet (fresh signup, or an
+  // orphaned account from before the migration shipped) gets one created
+  // right now, before we query rentals. Deliberately fails silently: if the
+  // migration hasn't been applied yet the RPC won't exist (PostgREST answers
+  // with a 404/PGRST202), and the portal must still load and fall back to
+  // its existing "no rental history linked yet" state rather than breaking.
+  function ensureRenter() {
+    var sb = getClient();
+    if (!sb) return Promise.resolve(null);
+    return sb.rpc('ensure_my_renter').then(function (res) {
+      if (res.error) {
+        console.warn('June Digitals: ensure_my_renter RPC unavailable (migration not applied yet?)', res.error);
+        return null;
+      }
+      var row = Array.isArray(res.data) ? res.data[0] : res.data;
+      return row || null;
+    }, function (err) {
+      console.warn('June Digitals: ensure_my_renter call failed', err);
+      return null;
+    });
+  }
+
   function signOut() {
     var sb = getClient();
     if (!sb) return Promise.resolve();
@@ -196,6 +219,7 @@
     getClient: getClient,
     getSession: getSession,
     requireAuth: requireAuth,
+    ensureRenter: ensureRenter,
     signOut: signOut,
     peso: peso,
     fmtDate: fmtDate,
