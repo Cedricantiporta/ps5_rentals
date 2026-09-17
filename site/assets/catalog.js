@@ -424,7 +424,13 @@
     if (!sb) return fetch(DATA_URL).then(function (r) { return r.json(); });
     return sb.from('games').select('*').then(function (res) {
       if (res.error) throw res.error;
-      return res.data.map(mapGameRow);
+      // Filtered client-side (not `.eq('is_test', false)` server-side) so
+      // this keeps working before migration_10_customer_accounts.sql (which
+      // adds `games.is_test`) has been run -- an unknown column in a
+      // server-side filter would error the whole query and take down the
+      // live catalog. `row.is_test !== true` also treats missing/null the
+      // same as false, so pre-migration rows are unaffected.
+      return res.data.filter(function (row) { return row.is_test !== true; }).map(mapGameRow);
     });
   }
   // Drops a note in the admin app's "Incoming Requests" inbox with the
