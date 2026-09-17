@@ -2,7 +2,7 @@
   'use strict';
 
   var supabase = window.rcSupabase;
-  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null, activeRequestId: null, amountManuallyEdited: false, rentalsFilter: 'all', rentalsSearch: '', gamesSortByRented: false };
+  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null, activeRequestId: null, amountManuallyEdited: false, rentalsFilter: 'all', rentalsSearch: '', gamesSortByRented: false, rentersFilter: 'all', mergeRemoveId: null };
 
   function $(id) { return document.getElementById(id); }
   var MESSENGER_ICON = '<svg class="a-msg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Has a Messenger link"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
@@ -737,12 +737,49 @@
   });
 
   // ---- renters tab ----
+  // A renter with a linked account (auth_user_id set, from migration_11's
+  // signup trigger) but zero rentals is very likely a brand-new empty row
+  // sitting next to that same person's real walk-in history under a
+  // different renter row -- exactly the case the merge tool below exists
+  // for. Surfaced as its own filter chip so the admin doesn't have to hunt.
+  function renterRentals(renterId) {
+    return state.rentals.filter(function (x) { return x.renter_id === renterId; });
+  }
+  function isMergeCandidate(r) {
+    return !!r.auth_user_id && renterRentals(r.id).length === 0;
+  }
+  function rentersMatchFilter(r) {
+    if (state.rentersFilter === 'linked') return !!r.auth_user_id;
+    if (state.rentersFilter === 'needs-merge') return isMergeCandidate(r);
+    return true;
+  }
+  document.querySelectorAll('#rentersFilterRow .a-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      document.querySelectorAll('#rentersFilterRow .a-chip').forEach(function (c) { c.classList.remove('is-active'); });
+      chip.classList.add('is-active');
+      state.rentersFilter = chip.getAttribute('data-filter');
+      renderRenters();
+    });
+  });
+
   function renderRenters() {
     var tbody = document.querySelector('#rentersTable tbody');
     tbody.innerHTML = '';
-    $('rentersEmpty').hidden = state.renters.length > 0;
-    state.renters.forEach(function (r) {
-      var theirRentals = state.rentals.filter(function (x) { return x.renter_id === r.id; });
+    var candidateCount = state.renters.filter(isMergeCandidate).length;
+    var hint = $('rentersMergeHint');
+    if (candidateCount > 0) {
+      hint.hidden = false;
+      hint.textContent = candidateCount + ' renter' + (candidateCount === 1 ? '' : 's') + ' signed up for an account ' +
+        'but ' + (candidateCount === 1 ? 'has' : 'have') + ' no rental history yet -- probably an existing Messenger ' +
+        'customer. Check "Needs Merge Review" below and use Merge to attach their account to their real history.';
+    } else {
+      hint.hidden = true;
+    }
+    var rows = state.renters.filter(rentersMatchFilter);
+    $('rentersEmpty').hidden = rows.length > 0;
+    $('rentersEmpty').textContent = state.renters.length ? 'No renters match this filter.' : 'No renters yet.';
+    rows.forEach(function (r) {
+      var theirRentals = renterRentals(r.id);
       var totalPaid = theirRentals.reduce(function (sum, x) { return sum + (x.payment_status === 'paid' && !wasSwapped(x.id) ? (x.amount || 0) : 0); }, 0);
       var activeNow = theirRentals.filter(function (x) { return x.status === 'active'; }).length;
       var tr = document.createElement('tr');
@@ -750,8 +787,13 @@
       if (r.messenger_url) menuItems += '<a class="a-menu-item" href="' + esc(r.messenger_url) + '" target="_blank" rel="noopener">Open Messenger</a>';
       menuItems += '<button type="button" class="a-menu-item" data-action="edit-messenger-link" data-id="' + r.id + '">' +
         (r.messenger_url ? 'Edit Messenger link' : 'Add Messenger link') + '</button>';
+      menuItems += '<button type="button" class="a-menu-item" data-action="merge" data-id="' + r.id + '">Merge into another renter&hellip;</button>';
+      var accountCell = r.auth_user_id
+        ? '<span class="a-pill a-pill-linked" title="Has a customer-portal account">Linked</span>'
+        : '—';
       tr.innerHTML = '<td>' + esc(r.name) + ' ' + messengerIcon(r.messenger_url) + '</td><td>' + esc(r.messenger_name) + '</td>' +
         '<td>' + esc(r.contact_note) + '</td><td>' + fmtDate((r.created_at || '').slice(0, 10)) + '</td>' +
+        '<td>' + accountCell + '</td>' +
         '<td>₱' + totalPaid.toLocaleString() + '</td>' +
         '<td>' + theirRentals.length + '</td>' +
         '<td>' + (activeNow ? '<span class="a-pill a-pill-active">' + activeNow + '</span>' : '—') + '</td>' +
@@ -761,18 +803,90 @@
   }
 
   document.querySelector('#rentersTable tbody').addEventListener('click', function (e) {
-    var btn = e.target.closest('button[data-action="edit-messenger-link"]');
-    if (!btn) return;
-    var id = Number(btn.getAttribute('data-id'));
-    var renter = state.renters.filter(function (r) { return r.id === id; })[0];
-    if (!renter) return;
-    var input = window.prompt(
-      'Messenger conversation link for ' + renter.name + ' (paste the URL from your address bar while viewing their thread in Messenger/Business Suite):',
-      renter.messenger_url || 'https://www.facebook.com/messages/t/'
-    );
-    if (input === null) return;
-    supabase.from('renters').update({ messenger_url: input.trim() || null }).eq('id', id).then(function (res) {
-      if (res.error) { alert(res.error.message); return; }
+    var editBtn = e.target.closest('button[data-action="edit-messenger-link"]');
+    if (editBtn) {
+      var id = Number(editBtn.getAttribute('data-id'));
+      var renter = state.renters.filter(function (r) { return r.id === id; })[0];
+      if (!renter) return;
+      var input = window.prompt(
+        'Messenger conversation link for ' + renter.name + ' (paste the URL from your address bar while viewing their thread in Messenger/Business Suite):',
+        renter.messenger_url || 'https://www.facebook.com/messages/t/'
+      );
+      if (input === null) return;
+      supabase.from('renters').update({ messenger_url: input.trim() || null }).eq('id', id).then(function (res) {
+        if (res.error) { alert(res.error.message); return; }
+        loadAll();
+      });
+      return;
+    }
+    var mergeBtn = e.target.closest('button[data-action="merge"]');
+    if (mergeBtn) {
+      var renterId = Number(mergeBtn.getAttribute('data-id'));
+      var renterToMerge = state.renters.filter(function (r) { return r.id === renterId; })[0];
+      if (renterToMerge) openMergeModal(renterToMerge);
+    }
+  });
+
+  // ---- merge renters (see supabase/migration_11_renter_claiming.sql for
+  // merge_renters()'s server-side semantics and why it's structured this
+  // way) ----
+  function mergeTargetLabel(r) {
+    var count = renterRentals(r.id).length;
+    return r.name + (r.auth_user_id ? ' (linked account)' : '') + ' -- ' + count + ' rental' + (count === 1 ? '' : 's');
+  }
+  function openMergeModal(renter) {
+    state.mergeRemoveId = renter.id;
+    $('mergeRemoveName').value = renter.name;
+    var options = state.renters
+      .filter(function (r) { return r.id !== renter.id; })
+      .slice()
+      .sort(function (a, b) { return a.name.localeCompare(b.name); })
+      .map(function (r) { return '<option value="' + r.id + '">' + esc(mergeTargetLabel(r)) + '</option>'; })
+      .join('');
+    $('mergeKeepSelect').innerHTML = options || '<option value="">No other renters exist</option>';
+    $('mergeError').textContent = '';
+    updateMergePreview();
+    $('mergeBackdrop').hidden = false;
+    $('mergeModal').hidden = false;
+  }
+  function closeMergeModal() {
+    state.mergeRemoveId = null;
+    $('mergeBackdrop').hidden = true;
+    $('mergeModal').hidden = true;
+  }
+  function updateMergePreview() {
+    var removeId = state.mergeRemoveId;
+    var keepId = Number($('mergeKeepSelect').value);
+    var preview = $('mergePreview');
+    var removeRenter = state.renters.filter(function (r) { return r.id === removeId; })[0];
+    var keepRenter = state.renters.filter(function (r) { return r.id === keepId; })[0];
+    if (!removeRenter || !keepRenter) { preview.textContent = ''; return; }
+    var movedCount = renterRentals(removeId).length;
+    var lines = [];
+    if (movedCount > 0) lines.push(movedCount + ' rental' + (movedCount === 1 ? '' : 's') + ' will move to ' + keepRenter.name + '.');
+    if (removeRenter.auth_user_id && !keepRenter.auth_user_id) {
+      lines.push(keepRenter.name + ' will gain the linked customer-portal account; "' + removeRenter.name + '" is deleted.');
+    } else if (removeRenter.auth_user_id && keepRenter.auth_user_id && removeRenter.auth_user_id !== keepRenter.auth_user_id) {
+      lines.push('Both renters have a different linked account -- this merge will be refused. Resolve manually.');
+    } else {
+      lines.push('"' + removeRenter.name + '" will be deleted after the merge.');
+    }
+    preview.textContent = lines.join(' ');
+  }
+  $('mergeKeepSelect').addEventListener('change', updateMergePreview);
+  $('closeMergeModalBtn').addEventListener('click', closeMergeModal);
+  $('mergeBackdrop').addEventListener('click', closeMergeModal);
+  $('mergeConfirmBtn').addEventListener('click', function () {
+    var removeId = state.mergeRemoveId;
+    var keepId = Number($('mergeKeepSelect').value);
+    $('mergeError').textContent = '';
+    if (!removeId || !keepId) { $('mergeError').textContent = 'Pick a renter to merge into.'; return; }
+    var btn = $('mergeConfirmBtn');
+    btn.disabled = true;
+    supabase.rpc('merge_renters', { keep_id: keepId, remove_id: removeId }).then(function (res) {
+      btn.disabled = false;
+      if (res.error) { $('mergeError').textContent = res.error.message; return; }
+      closeMergeModal();
       loadAll();
     });
   });

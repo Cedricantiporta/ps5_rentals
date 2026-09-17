@@ -9,6 +9,25 @@
 </head>
 <body>
   <div class="a-modal-backdrop" id="newRentalBackdrop" hidden></div>
+  <div class="a-modal-backdrop" id="mergeBackdrop" hidden></div>
+  <div class="a-card a-modal-card" id="mergeModal" hidden>
+    <button type="button" class="a-modal-close" id="closeMergeModalBtn">&times;</button>
+    <h2>Merge renters</h2>
+    <p class="a-hint">Use this when a customer who already has rental history over Messenger signs up for an
+      account (the signup auto-creates a new, empty renter row), or to collapse a true duplicate. Everything below
+      is moved onto the renter you keep; the other row is deleted afterward.</p>
+    <div class="a-field">
+      <label>Removing (deleted after merge)</label>
+      <input id="mergeRemoveName" type="text" disabled>
+    </div>
+    <div class="a-field">
+      <label for="mergeKeepSelect">Keep and merge into</label>
+      <select id="mergeKeepSelect"></select>
+    </div>
+    <p class="a-hint" id="mergePreview"></p>
+    <button type="button" class="a-btn a-btn-primary" id="mergeConfirmBtn">Merge renters</button>
+    <p class="a-error" id="mergeError"></p>
+  </div>
   <div class="a-shell">
     <aside class="a-sidebar">
       <h1 class="a-sidebar-title"><img src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals" class="a-sidebar-logo"></h1>
@@ -218,9 +237,15 @@
       </div>
       <div class="a-card">
         <h2>All renters</h2>
+        <p class="a-hint" id="rentersMergeHint" hidden></p>
+        <div class="a-chip-row" id="rentersFilterRow">
+          <button type="button" class="a-chip is-active" data-filter="all">All</button>
+          <button type="button" class="a-chip" data-filter="linked">Linked Account</button>
+          <button type="button" class="a-chip" data-filter="needs-merge">Needs Merge Review</button>
+        </div>
         <div class="a-table-wrap">
         <table class="a-table" id="rentersTable">
-          <thead><tr><th>Name</th><th>Messenger</th><th>Note</th><th>Added</th><th>Total Paid</th><th>Rentals</th><th>Active Now</th><th></th></tr></thead>
+          <thead><tr><th>Name</th><th>Messenger</th><th>Note</th><th>Added</th><th>Account</th><th>Total Paid</th><th>Rentals</th><th>Active Now</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
         </div>

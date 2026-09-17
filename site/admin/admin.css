@@ -176,6 +176,19 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
 }
 .a-modal-close[hidden] { display: none; }
 
+/* Standalone modal card (e.g. the renter-merge dialog) -- same look as
+   .a-panel.is-modal-open but not tied to the sidebar tab system, so it can
+   open on top of whichever tab is currently active. */
+.a-modal-card {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 91; width: 92vw; max-width: 520px; max-height: 85vh; overflow-y: auto; border-radius: 1rem;
+  box-shadow: 0 24px 64px rgba(0,0,0,.32);
+}
+.a-modal-card[hidden] { display: none; }
+.a-modal-card .a-field { margin-bottom: 1rem; }
+
+.a-pill-linked { background: var(--a-blue); }
+
 .a-chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
 .a-chip {
   background: var(--a-panel-2); border: none; color: var(--a-text-2); padding: 0.45rem 0.9rem;
