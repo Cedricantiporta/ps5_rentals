@@ -665,8 +665,15 @@
 .rc-contact-value { font-size: 0.78rem; color: var(--rc-text-2); margin-top: 0.15rem; overflow-wrap: anywhere; }
 @media (max-width: 640px) { .rc-contact-grid { grid-template-columns: 1fr; } }
 
-/* per-game detail page (/games/:slug/) */
-.rc-detail-hero { display: grid; grid-template-columns: 300px 1fr; gap: 2.5rem; align-items: start; margin-bottom: 2.5rem; }
+/* per-game detail page (/games/:slug/)
+   .rc-detail-hero/.rc-detail-cards sit inside the shared .container-large (max-width
+   82.5rem / 1320px), which is itself centered. But neither element filled that width
+   (hero's text column left-aligned well short of it, cards capped at 760px with no
+   auto margins), so on wide viewports the actual visible content hugged the left side
+   of the container with a large empty gap on the right. Capping both at a narrower
+   "article" width and centering them with auto margins keeps the container-large
+   centering intact while centering the content itself too. */
+.rc-detail-hero { display: grid; grid-template-columns: 300px 1fr; gap: 2.5rem; align-items: start; margin: 0 auto 2.5rem; max-width: 960px; }
 .rc-detail-cover { width: 100%; border-radius: 1.25rem; aspect-ratio: 3/4; object-fit: cover; background: #1c1e28; }
 .rc-detail-eyebrow { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem; }
 .rc-detail-eyebrow-text { font-size: 0.72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--rc-text-2); }
@@ -681,7 +688,7 @@
   text-decoration: none; padding: 1rem 1.85rem; border-radius: 999px; font-size: 0.95rem;
 }
 .rc-detail-cta:hover { filter: brightness(1.12); }
-.rc-detail-cards { display: flex; flex-direction: column; gap: 1.25rem; max-width: 760px; margin: 0.5rem 0 4rem; }
+.rc-detail-cards { display: flex; flex-direction: column; gap: 1.25rem; max-width: 960px; margin: 0.5rem auto 4rem; }
 .rc-detail-card { background: var(--rc-panel); border: none; border-radius: 1.25rem; padding: 1.75rem 2rem; }
 .rc-detail-card h3 { font-family: var(--_typography---font-family--headers); font-size: 1.3rem; font-weight: 400; margin: 0 0 0.75rem; }
 .rc-detail-card p { color: var(--rc-text-2); line-height: 1.6; margin: 0; }
