@@ -7,7 +7,7 @@
   var HIGH_DEMAND_MIN = 10;
   var PAGE_SIZE = 20;
 
-  var state = { games: [], query: '', quickFilter: 'available', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1, step: 'intent', intent: 'new', overlayStack: [], modalStepDepth: 0 };
+  var state = { games: [], query: '', quickFilter: 'available', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1, step: 'intent', intent: 'new', overlayStack: [], modalStepDepth: 0, hold: null, holdError: null };
 
   var THEME_KEY = 'rc-theme';
   function getSavedTheme() {
@@ -374,6 +374,8 @@
     state.modalGame = g;
     state.plan = 'weekly';
     state.slot = null;
+    state.hold = null;
+    state.holdError = null;
     state.intent = 'new';
     state.step = (g.status === 'upcoming') ? 'plan' : 'intent';
     renderModal();
@@ -391,6 +393,7 @@
   function closeModal() {
     document.getElementById('rcModalOverlay').classList.remove('is-open');
     document.body.style.overflow = '';
+    clearHoldCountdown();
   }
 
   function slotLabel(g, slotKey) {
@@ -489,6 +492,258 @@
     }).then(function () {}, function () {});
   }
 
+  // ---- self-serve payment step (create_rental_hold) ----
+  // Pre-migration (RPCs not deployed yet) or any Supabase failure must fail
+  // soft back to the exact old behaviour -- submitRentalRequest() + open
+  // Messenger -- so the live site never breaks for a real customer while
+  // the SQL agent's migration hasn't landed. See RENT-FLOW-CONTRACT.md.
+  var holdCountdownTimer = null;
+
+  function clearHoldCountdown() {
+    if (holdCountdownTimer) { clearInterval(holdCountdownTimer); holdCountdownTimer = null; }
+  }
+
+  function startHoldCountdown(expiresAtIso) {
+    clearHoldCountdown();
+    var tick = function () {
+      var el = document.getElementById('rcHoldCountdown');
+      if (!el) { clearHoldCountdown(); return; }
+      var remain = new Date(expiresAtIso).getTime() - Date.now();
+      if (isNaN(remain) || remain <= 0) {
+        el.textContent = 'Expired';
+        el.classList.add('rc-hold-expired');
+        clearHoldCountdown();
+        return;
+      }
+      var totalSec = Math.floor(remain / 1000);
+      var m = Math.floor(totalSec / 60);
+      var s = totalSec % 60;
+      el.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    };
+    tick();
+    holdCountdownTimer = setInterval(tick, 1000);
+  }
+
+  // navigator.clipboard is unavailable/rejects on older browsers and on
+  // non-HTTPS -- always fall back to the hidden-textarea execCommand trick,
+  // wrapped in try/catch since execCommand itself can throw or just return
+  // false depending on the browser.
+  function fallbackCopyToClipboard(text) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, text.length);
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) { return false; }
+  }
+
+  function copyToClipboard(text, cb) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { cb(true); }, function () { cb(fallbackCopyToClipboard(text)); });
+        return;
+      }
+    } catch (e) {}
+    cb(fallbackCopyToClipboard(text));
+  }
+
+  function slotDisplayName(slotKey) { return slotKey === 'trophy' ? 'Trophy' : 'Non-Trophy'; }
+
+  // Auto-login for the customer portal (site/account/): the moment a hold
+  // is created we stash the renter's public_code on this device under this
+  // exact key so /account/ can pick it up with no typing and no password.
+  // Never clobber an existing code -- a different code already present
+  // means a different person on a shared device, and overwriting it would
+  // log the first person out of their own rentals. localStorage throws in
+  // private-browsing modes, so this must never break the payment screen.
+  var TRACK_CODE_KEY = 'rc-track-code';
+  function saveTrackCodeIfAbsent(code) {
+    if (!code) return;
+    try {
+      if (!localStorage.getItem(TRACK_CODE_KEY)) {
+        localStorage.setItem(TRACK_CODE_KEY, code);
+      }
+    } catch (e) {}
+  }
+
+  function buildModalHeader(g) {
+    return '<h2 class="rc-modal-title">' + g.title + '</h2>' +
+      platformBadge(g.platform) +
+      '<p class="rc-modal-genre">' + g.genre.join(' · ') + (g.releaseDate ? ' · Release ' + releaseDateLabel(g.releaseDate) : '') + '</p>';
+  }
+
+  // Shown in place while create_rental_hold is in flight -- writes straight
+  // to the modal body rather than going through state.step/history, since
+  // this is a transient state: on failure we fall all the way back to the
+  // pre-payment-step behaviour and this spinner just disappears again.
+  function renderHoldSpinner(g) {
+    var body = document.getElementById('rcModalBody');
+    if (!body) return;
+    body.innerHTML = buildModalHeader(g) +
+      '<div class="rc-pay-loading">' +
+        '<span class="rc-pay-spinner" aria-hidden="true"></span>' +
+        '<p class="rc-pay-loading-text">Reserving your slot…</p>' +
+      '</div>';
+  }
+
+  function holdErrorMessage(code) {
+    switch (code) {
+      case 'slot_unavailable': return 'Someone just took this slot. Try the other access type or another game.';
+      case 'game_not_found': return 'We couldn\'t find this game anymore. Please close this and refresh the page.';
+      case 'no_price': return 'This game doesn\'t have a price set for that plan yet. Please message us on Messenger instead.';
+      case 'bad_plan': return 'Something went wrong with the selected plan. Please go back and choose again.';
+      case 'bad_slot': return 'Something went wrong with the selected access type. Please go back and choose again.';
+      default: return 'Something went wrong reserving your slot. Please go back and try again, or message us on Messenger.';
+    }
+  }
+
+  function renderPaymentFailure(code) {
+    return '' +
+      '<button type="button" class="rc-wizard-back" id="rcWizardBack">' + icon('chevron-left') + ' Back</button>' +
+      '<div class="rc-wizard-heading">Couldn\'t reserve that slot</div>' +
+      '<p class="rc-wizard-sub">' + holdErrorMessage(code) + '</p>';
+  }
+
+  function renderPaymentSuccess(g, hold) {
+    var planName = state.plan === 'weekly' ? 'Weekly' : 'Monthly';
+    var amount = peso(hold.amount);
+    return '' +
+      '<div class="rc-wizard-heading">Reserve your slot with GCash</div>' +
+      '<p class="rc-wizard-sub">Your slot is held for a limited time. Send the exact amount below to confirm.</p>' +
+      '<div class="rc-pay-summary">' +
+        '<div class="rc-pay-row"><span>Game</span><b>' + g.title + '</b></div>' +
+        '<div class="rc-pay-row"><span>Access</span><b>' + slotDisplayName(state.slot) + '</b></div>' +
+        '<div class="rc-pay-row"><span>Plan</span><b>' + planName + '</b></div>' +
+        '<div class="rc-pay-row rc-pay-row-amount"><span>Amount Due</span><b>' + amount + '</b></div>' +
+      '</div>' +
+      '<div class="rc-pay-hold">' +
+        '<span class="rc-pay-hold-label">Slot held for</span>' +
+        '<span class="rc-pay-hold-timer" id="rcHoldCountdown">--:--</span>' +
+      '</div>' +
+      '<div class="rc-pay-gcash">' +
+        '<div class="rc-pay-field">' +
+          '<span class="rc-pay-field-label">GCash Number</span>' +
+          '<div class="rc-pay-field-row">' +
+            '<span class="rc-pay-field-value">' + hold.gcash_number + '</span>' +
+            '<button type="button" class="rc-pay-copy" id="rcCopyGcash" data-copy="' + hold.gcash_number + '">Copy</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="rc-pay-field">' +
+          '<span class="rc-pay-field-label">GCash Name</span>' +
+          '<div class="rc-pay-field-row"><span class="rc-pay-field-value">' + hold.gcash_name + '</span></div>' +
+        '</div>' +
+        '<div class="rc-pay-field">' +
+          '<span class="rc-pay-field-label">Reference Code</span>' +
+          '<div class="rc-pay-field-row">' +
+            '<span class="rc-pay-field-value rc-pay-refcode">' + hold.ref_code + '</span>' +
+            '<button type="button" class="rc-pay-copy" id="rcCopyRef" data-copy="' + hold.ref_code + '">Copy</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<p class="rc-pay-instruction">Send exactly <b>' + amount + '</b> to this GCash number, then put <b>' + hold.ref_code + '</b> in the message/note.</p>' +
+      '<button type="button" class="rc-modal-cta rc-pay-cta" id="rcPaySentBtn">' + icon('message-circle') + ' I\'ve paid — send screenshot</button>' +
+      '<div class="rc-pay-code-box">' +
+        '<span class="rc-pay-code-label">Saved on this device</span>' +
+        '<p class="rc-pay-code-intro">This phone will remember your rentals automatically. <a href="/account/">View my rentals</a> anytime — no sign-in needed.</p>' +
+        '<div class="rc-pay-code-row">' +
+          '<span class="rc-pay-code-value">' + hold.public_code + '</span>' +
+          '<button type="button" class="rc-pay-copy" id="rcCopyTrackCode" data-copy="' + hold.public_code + '">Copy</button>' +
+        '</div>' +
+        '<p class="rc-pay-code-note">Backup: write this down for another device, or in case you clear your browser.</p>' +
+      '</div>';
+  }
+
+  function renderPaymentStep(g) {
+    return state.hold ? renderPaymentSuccess(g, state.hold) : renderPaymentFailure(state.holdError);
+  }
+
+  function wirePaymentStep(body) {
+    var back = document.getElementById('rcWizardBack');
+    if (back) back.addEventListener('click', function () { window.history.back(); });
+
+    var flashCopied = function (btn) {
+      var original = btn.textContent;
+      btn.textContent = 'Copied';
+      btn.classList.add('is-copied');
+      setTimeout(function () {
+        btn.textContent = original;
+        btn.classList.remove('is-copied');
+      }, 1800);
+    };
+    Array.prototype.forEach.call(body.querySelectorAll('.rc-pay-copy'), function (btn) {
+      btn.addEventListener('click', function () {
+        copyToClipboard(btn.getAttribute('data-copy'), function (ok) {
+          if (ok) flashCopied(btn);
+        });
+      });
+    });
+
+    var sendBtn = document.getElementById('rcPaySentBtn');
+    if (sendBtn) sendBtn.addEventListener('click', function () {
+      var game = state.modalGame, hold = state.hold;
+      if (!game || !hold) return;
+      var planName = state.plan === 'weekly' ? 'Weekly' : 'Monthly';
+      var text = 'Hi! I\'ve paid for "' + game.title + '" — ' + slotDisplayName(state.slot) + ' access, ' +
+        planName + ' plan (' + peso(hold.amount) + '). Ref: ' + hold.ref_code + '. Attaching my GCash screenshot.';
+      window.open(messengerLink(game, text), '_blank', 'noopener');
+    });
+  }
+
+  // Called when a customer picks an access slot for a brand-new rental
+  // (never for swaps -- see wireAccessStep). Tries to soft-hold the
+  // slot server-side and show a GCash payment screen; falls all the way
+  // back to the pre-existing Messenger-only flow (submitRentalRequest +
+  // messengerLink, via finalizeRental) on any error, including the RPC not
+  // existing yet pre-migration. Never leaves the customer stuck on a
+  // spinner.
+  function chooseNewRentalSlot(slotKey) {
+    var g = state.modalGame;
+    if (!g) return;
+    state.slot = slotKey;
+    state.hold = null;
+    state.holdError = null;
+    renderHoldSpinner(g);
+
+    var sb = getPublicSupabase();
+    if (!sb) { renderModal(); finalizeRental(slotKey); return; }
+
+    getSignedInRenterId().then(function (renterId) {
+      return sb.rpc('create_rental_hold', {
+        p_game_slug: g.slug, p_slot: slotKey, p_plan: state.plan, p_renter_id: renterId || null
+      });
+    }).then(function (res) {
+      if (state.modalGame !== g) return; // stale response -- customer moved on
+      if (!res || res.error) { renderModal(); finalizeRental(slotKey); return; }
+      var row = res.data && res.data[0];
+      if (!row) { renderModal(); finalizeRental(slotKey); return; }
+      if (!row.ok) {
+        state.holdError = row.error || null;
+        state.hold = null;
+        state.step = 'payment';
+        renderModal();
+        pushStepState();
+        return;
+      }
+      state.hold = row;
+      state.holdError = null;
+      saveTrackCodeIfAbsent(row.public_code);
+      state.step = 'payment';
+      renderModal();
+      pushStepState();
+    }, function () {
+      if (state.modalGame !== g) return;
+      renderModal();
+      finalizeRental(slotKey);
+    });
+  }
+
   function finalizeRental(slotKey) {
     var g = state.modalGame;
     state.slot = slotKey;
@@ -509,13 +764,17 @@
   function renderModal() {
     var g = state.modalGame;
     if (!g) return;
+    clearHoldCountdown();
     var body = document.getElementById('rcModalBody');
-    var header = '<h2 class="rc-modal-title">' + g.title + '</h2>' +
-      platformBadge(g.platform) +
-      '<p class="rc-modal-genre">' + g.genre.join(' · ') + (g.releaseDate ? ' · Release ' + releaseDateLabel(g.releaseDate) : '') + '</p>';
+    var header = buildModalHeader(g);
 
     if (state.step === 'intent') { body.innerHTML = header + renderIntentStep(g); wireIntentStep(body); }
     else if (state.step === 'plan') { body.innerHTML = header + renderPlanStep(g); wirePlanStep(body); }
+    else if (state.step === 'payment') {
+      body.innerHTML = header + renderPaymentStep(g);
+      wirePaymentStep(body);
+      if (state.hold) startHoldCountdown(state.hold.hold_expires_at);
+    }
     else { body.innerHTML = header + renderAccessStep(g); wireAccessStep(body); }
 
     var cover = document.getElementById('rcModalCover');
@@ -669,7 +928,14 @@
     if (back) back.addEventListener('click', function () { window.history.back(); });
     Array.prototype.forEach.call(body.querySelectorAll('.rc-access-choose'), function (btn) {
       if (btn.hasAttribute('disabled')) return;
-      btn.addEventListener('click', function () { finalizeRental(btn.getAttribute('data-slot')); });
+      btn.addEventListener('click', function () {
+        var slotKey = btn.getAttribute('data-slot');
+        // Swaps keep their existing Messenger-only behaviour untouched --
+        // only a brand-new rental goes through the self-serve hold/payment
+        // step (see chooseNewRentalSlot).
+        if (state.intent === 'swap') finalizeRental(slotKey);
+        else chooseNewRentalSlot(slotKey);
+      });
     });
   }
 
