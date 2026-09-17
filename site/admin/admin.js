@@ -31,7 +31,24 @@
         window.location.href = '/admin/login.html';
         return null;
       }
-      return session;
+      // A session just means "logged in", not "admin" -- customer accounts
+      // (AUTOMATION-PLAN.md Phase 1) share the same auth.users table. Confirm
+      // this user is actually in the admins allowlist (migration_9) before
+      // letting them into the dashboard.
+      return supabase
+        .from('admins')
+        .select('user_id')
+        .eq('user_id', session.user.id)
+        .maybeSingle()
+        .then(function (adminRes) {
+          if (adminRes.error || !adminRes.data) {
+            return supabase.auth.signOut().then(function () {
+              window.location.href = '/admin/login.html';
+              return null;
+            });
+          }
+          return session;
+        });
     });
   };
 
