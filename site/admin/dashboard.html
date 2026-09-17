@@ -33,6 +33,16 @@
     </aside>
 
     <main class="a-main">
+    <div class="a-topbar" id="topbar">
+      <div class="a-topbar-info">
+        <h2 class="a-topbar-title" id="topbarTitle">Overview</h2>
+        <p class="a-topbar-desc" id="topbarDesc">Snapshot of revenue, active rentals, and renters.</p>
+      </div>
+      <div class="a-topbar-live" id="topbarLive" title="Dashboard auto-refreshes from Supabase every 5 seconds">
+        <span class="a-live-dot" aria-hidden="true"></span>
+        <span id="topbarLiveText">Connecting&hellip;</span>
+      </div>
+    </div>
     <div class="a-wrap">
     <div class="a-panel is-active" id="panel-overview">
       <div class="a-stat-grid">

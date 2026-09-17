@@ -64,6 +64,30 @@
     if (e.target.closest('.a-menu-item')) closeAllMenus();
   }, true);
 
+  // ---- topbar (section title + live-refresh indicator) ----
+  var TAB_META = {
+    overview: { title: 'Overview', desc: 'Snapshot of revenue, active rentals, and renters.' },
+    requests: { title: 'Incoming Requests', desc: 'New rental requests submitted from the public site, waiting to be matched.' },
+    rentals: { title: 'Rentals', desc: 'Every rental -- active, pending, and past.' },
+    renters: { title: 'Renters', desc: 'Renter profiles, Messenger links, and lifetime spend.' },
+    games: { title: 'Games', desc: 'Live catalog status -- changes here go out to the public site immediately.' },
+    'add-game': { title: 'Add Game', desc: 'Add a new title to the rental catalog.' }
+  };
+  function setTopbarSection(tabKey) {
+    var meta = TAB_META[tabKey];
+    if (!meta) return;
+    $('topbarTitle').textContent = meta.title;
+    $('topbarDesc').textContent = meta.desc;
+  }
+  var lastLoadAt = null;
+  function updateLiveText() {
+    var el = $('topbarLiveText');
+    if (!lastLoadAt) { el.textContent = 'Connecting…'; return; }
+    var secs = Math.round((Date.now() - lastLoadAt) / 1000);
+    if (secs < 3) el.textContent = 'Updated just now';
+    else el.textContent = 'Updated ' + secs + 's ago';
+  }
+
   // ---- tabs ----
   Array.prototype.forEach.call(document.querySelectorAll('.a-tab'), function (tab) {
     tab.addEventListener('click', function () {
@@ -72,6 +96,7 @@
       Array.prototype.forEach.call(document.querySelectorAll('.a-panel'), function (p) { p.classList.remove('is-active'); });
       tab.classList.add('is-active');
       $('panel-' + tab.getAttribute('data-tab')).classList.add('is-active');
+      setTopbarSection(tab.getAttribute('data-tab'));
     });
   });
 
@@ -117,6 +142,8 @@
       populateRenterSelect();
       populateGameOptions();
       updateSlotHintAndAmount();
+      lastLoadAt = Date.now();
+      updateLiveText();
     });
   }
 
@@ -889,5 +916,8 @@
     // public site in real time -- poll instead of requiring a manual refresh
     // to notice a new one.
     setInterval(loadAll, 5000);
+    // Ticks the topbar's "Updated Xs ago" text between polls so the refresh
+    // cadence is visible instead of silent.
+    setInterval(updateLiveText, 1000);
   });
 })();
