@@ -623,6 +623,62 @@
   .rc-choice-grid, .rc-plan-grid, .rc-access-grid, .rc-access-grid-simple { grid-template-columns: 1fr; }
 }
 
+/* step 4: payment -- create_rental_hold spinner, GCash instructions, ref
+   code, hold countdown. Reuses .rc-panel/.rc-panel-2 tokens and the
+   plan/access-card light-mode overrides so it matches the rest of the
+   wizard in both themes. */
+.rc-pay-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 3rem 1rem; text-align: center; }
+.rc-pay-spinner {
+  width: 2.4rem; height: 2.4rem; border-radius: 50%; border: 3px solid var(--rc-border-2);
+  border-top-color: var(--rc-blue); animation: rc-pay-spin 0.8s linear infinite;
+}
+@keyframes rc-pay-spin { to { transform: rotate(360deg); } }
+.rc-pay-loading-text { color: var(--rc-text-2); font-size: 0.88rem; margin: 0; }
+@media (prefers-reduced-motion: reduce) { .rc-pay-spinner { animation-duration: 1.6s; } }
+
+.rc-pay-summary { background: var(--rc-panel); border-radius: 1rem; padding: 0.9rem 1.1rem; margin-bottom: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem; }
+[data-theme="light"] .rc-pay-summary { background: #fff; }
+.rc-pay-row { display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; color: var(--rc-text-2); gap: 1rem; }
+.rc-pay-row b { color: var(--rc-text); font-weight: 700; text-align: right; }
+.rc-pay-row-amount { padding-top: 0.5rem; border-top: 1px solid var(--rc-border-2); }
+.rc-pay-row-amount b { font-size: 1.15rem; color: var(--rc-blue); }
+
+.rc-pay-hold { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; background: var(--rc-panel-2); border-radius: 999px; padding: 0.55rem 1rem; margin-bottom: 0.85rem; }
+[data-theme="light"] .rc-pay-hold { background: #f0f1f4; }
+.rc-pay-hold-label { font-size: 0.72rem; font-weight: 700; color: var(--rc-text-2); text-transform: uppercase; letter-spacing: .04em; }
+.rc-pay-hold-timer { font-size: 0.95rem; font-weight: 800; color: var(--rc-amber); font-variant-numeric: tabular-nums; }
+.rc-pay-hold-timer.rc-hold-expired { color: var(--rc-red); }
+
+.rc-pay-gcash { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.85rem; }
+.rc-pay-field { background: var(--rc-panel); border-radius: 0.85rem; padding: 0.65rem 0.9rem; }
+[data-theme="light"] .rc-pay-field { background: #fff; }
+.rc-pay-field-label { display: block; font-size: 0.65rem; font-weight: 700; color: var(--rc-text-3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 0.2rem; }
+.rc-pay-field-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+.rc-pay-field-value { font-size: 1.05rem; font-weight: 800; color: var(--rc-text); word-break: break-word; }
+.rc-pay-refcode { letter-spacing: .04em; }
+.rc-pay-copy {
+  flex: none; background: #fff; color: #0a0a0a; border: none; border-radius: 999px; padding: 0.4rem 0.9rem;
+  font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: .03em; cursor: pointer;
+}
+.rc-pay-copy:hover { filter: brightness(.92); }
+.rc-pay-copy.is-copied { background: var(--rc-green); color: #fff; }
+
+.rc-pay-instruction { font-size: 0.82rem; color: var(--rc-text); background: var(--rc-blue-glow); border: 1px solid rgba(37,98,255,.35); border-radius: 0.85rem; padding: 0.75rem 0.9rem; margin: 0 0 0.9rem; line-height: 1.5; }
+.rc-pay-instruction b { color: var(--rc-blue); }
+[data-theme="light"] .rc-pay-instruction b { color: #123b8f; }
+
+.rc-pay-cta { background: var(--rc-blue); color: #fff; margin-bottom: 0.9rem; }
+.rc-pay-cta:hover { filter: brightness(1.08); }
+
+.rc-pay-code-box { background: var(--rc-panel-2); border-radius: 0.85rem; padding: 0.85rem 1rem; text-align: center; }
+[data-theme="light"] .rc-pay-code-box { background: #f0f1f4; }
+.rc-pay-code-label { display: block; font-size: 0.65rem; font-weight: 700; color: var(--rc-green); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 0.3rem; }
+.rc-pay-code-intro { font-size: 0.75rem; color: var(--rc-text-2); margin: 0 0 0.6rem; line-height: 1.45; }
+.rc-pay-code-intro a { color: var(--rc-blue); text-decoration: underline; font-weight: 700; }
+.rc-pay-code-row { display: flex; align-items: center; justify-content: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.rc-pay-code-value { display: inline-block; font-size: 1.1rem; font-weight: 800; color: var(--rc-text); letter-spacing: .04em; }
+.rc-pay-code-note { font-size: 0.7rem; color: var(--rc-text-3); margin: 0; line-height: 1.4; }
+
 /* the site nav is transparent by design (meant to sit over a hero image); once the
    catalog grid scrolls under it, give it a solid backdrop so text doesn't show through */
 .navbar.rc-nav-solid {
