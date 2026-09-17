@@ -113,7 +113,7 @@
         <p class="a-hint">Someone clicked through the rental wizard on the public site. Match it to their Messenger message, then hit "Use this" to jump into New Rental with the game/slot/plan already filled in.</p>
         <div class="a-table-wrap">
         <table class="a-table" id="requestsTable">
-          <thead><tr><th>Game</th><th>Slot</th><th>Plan</th><th>Amount</th><th>When</th><th></th></tr></thead>
+          <thead><tr><th>Game</th><th>Requester</th><th>Slot</th><th>Plan</th><th>Amount</th><th>When</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
         </div>
@@ -159,6 +159,7 @@
             <div class="a-field">
               <label for="renterSelect">Renter</label>
               <select id="renterSelect"><option value="__new">+ New renter</option></select>
+              <p class="a-hint" id="requestRenterHint" hidden></p>
             </div>
             <div class="a-field" id="newRenterNameField">
               <label for="newRenterName">Renter name</label>

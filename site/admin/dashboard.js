@@ -195,6 +195,22 @@
   }
 
   // ---- incoming requests tab ----
+  // rental_requests.renter_id doesn't exist in the live DB until
+  // migration_13_request_identity.sql is applied -- req.renter_id is simply
+  // undefined until then, which this treats identically to "anonymous", so
+  // the existing flow keeps working with zero visual change until the
+  // column is live.
+  function resolveRequester(req) {
+    var renterId = req.renter_id;
+    if (renterId == null) {
+      return '<span class="a-pill a-pill-anon" title="No linked account -- match this to a renter manually">Anonymous</span>';
+    }
+    var renter = state.renters.filter(function (r) { return r.id === renterId; })[0];
+    if (!renter) {
+      return '<span class="a-pill a-pill-anon" title="Linked renter id not found in Renters">Unknown renter</span>';
+    }
+    return esc(renter.name) + ' <span class="a-pill a-pill-linked" title="Signed-in customer account">Linked</span>';
+  }
   function renderRequests() {
     var tbody = document.querySelector('#requestsTable tbody');
     tbody.innerHTML = '';
@@ -206,6 +222,7 @@
       var when = new Date(req.created_at);
       tr.innerHTML =
         '<td>' + esc(req.game_title) + '</td>' +
+        '<td>' + resolveRequester(req) + '</td>' +
         '<td>' + (req.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + '</td>' +
         '<td>' + esc(req.plan || '—') + '</td>' +
         '<td>' + (req.amount != null ? '₱' + req.amount : '—') + '</td>' +
@@ -228,7 +245,11 @@
       supabase.from('rental_requests').update({ handled: true }).eq('id', id).then(loadAll);
       return;
     }
-    // "Use this": jump to New Rental with game/slot/plan pre-filled.
+    // "Use this": jump to New Rental with game/slot/plan pre-filled. Clear
+    // any leftover swap state first (mirrors openBlankNewRentalBtn) so a
+    // stale disabled renterSelect from a previous swap/request can't bleed
+    // into this one.
+    cancelSwap();
     var match = state.games.filter(function (g) { return g.slug === req.game_slug; })[0];
     if (match) {
       $('gameSearch').value = match.title;
@@ -237,11 +258,39 @@
     $('slotSelect').value = req.slot;
     if (req.plan) $('planSelect').value = req.plan;
     updateSlotHintAndAmount();
+    applyRequestRenter(req);
     // Only marked handled once the rental is actually created (see the
     // newRentalForm submit handler) -- closing the popup without finishing
     // should leave the request in the list.
     state.activeRequestId = id;
     openNewRentalModal();
+  });
+
+  // Pre-attaches the request's renter (when it has one) so approving it
+  // can't silently spawn a second, unlinked renter -- the exact failure
+  // mode migration_13 exists to close off. Locked by default (like
+  // startSwap's precedent) but with an explicit override, because real
+  // cases exist where the linked account is wrong (customer confusion,
+  // shared device) and the admin needs an escape hatch rather than being
+  // stuck re-typing everything into a brand-new request.
+  function applyRequestRenter(req) {
+    var hint = $('requestRenterHint');
+    if (req.renter_id == null) { hint.hidden = true; return; }
+    var renter = state.renters.filter(function (r) { return r.id === req.renter_id; })[0];
+    if (!renter) { hint.hidden = true; return; }
+    populateRenterSelect();
+    $('renterSelect').value = String(renter.id);
+    $('renterSelect').disabled = true;
+    toggleNewRenterFields();
+    hint.innerHTML = 'This request came from <strong>' + esc(renter.name) + '</strong>&rsquo;s account -- renter ' +
+      'locked in to keep this rental attached to it. <button type="button" class="a-link-btn" id="overrideRequestRenterBtn">Use a different renter</button>';
+    hint.hidden = false;
+  }
+  $('panel-new-rental').addEventListener('click', function (e) {
+    if (!e.target || e.target.id !== 'overrideRequestRenterBtn') return;
+    $('renterSelect').disabled = false;
+    toggleNewRenterFields();
+    $('requestRenterHint').hidden = true;
   });
 
   // ---- rentals tab ----
@@ -533,7 +582,9 @@
     var sel = $('renterSelect');
     var current = sel.value;
     sel.innerHTML = '<option value="__new">+ New renter</option>' +
-      state.renters.map(function (r) { return '<option value="' + r.id + '">' + esc(r.name) + '</option>'; }).join('');
+      state.renters.map(function (r) {
+        return '<option value="' + r.id + '">' + esc(r.name) + (r.auth_user_id ? ' (linked account)' : '') + '</option>';
+      }).join('');
     sel.value = current || '__new';
     toggleNewRenterFields();
   }
@@ -649,6 +700,7 @@
     state.activeRequestId = null;
     $('swapBanner').hidden = true;
     $('renterSelect').disabled = false;
+    $('requestRenterHint').hidden = true;
     $('newRentalHeading').textContent = 'New rental';
     $('createRentalBtn').textContent = 'Create rental (pending payment)';
     $('newRentalForm').reset();

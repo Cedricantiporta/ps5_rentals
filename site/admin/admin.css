@@ -188,6 +188,7 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
 .a-modal-card .a-field { margin-bottom: 1rem; }
 
 .a-pill-linked { background: var(--a-blue); }
+.a-pill-anon { background: var(--a-panel-2); color: var(--a-text-2); }
 
 .a-chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
 .a-chip {
