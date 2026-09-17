@@ -8,31 +8,28 @@
 -- this SQL can create that data. `renters` and `rentals` rows, and linking a
 -- renter to an auth user, are all writes no customer or anon key can perform.
 --
--- BLOCKED -- READ BEFORE RUNNING:
--- The two auth.users ids below are PLACEHOLDERS. Signing up either test
--- account (zz-agent-test-a@example.com / zz-agent-test-b@example.com) via
--- /account/login.html currently succeeds up to Supabase attempting to send
--- the confirmation email, then fails with `over_email_send_rate_limit` (429).
--- This means "Confirm email" is ON (Authentication -> Providers -> Email),
--- which requires a click in an inbox neither test account has, compounded by
--- the built-in email service's very low send rate limit blocking even that.
--- Until a human either (a) turns "Confirm email" OFF for this project, or
--- (b) manually confirms/creates the two test users from the Supabase
--- dashboard (Authentication -> Users -> Add user, or Invite), no agent can
--- obtain real auth_user_ids here. Once you have them:
+-- STATUS: "Confirm email" is now OFF, and both test accounts below are real,
+-- already-created auth.users rows (confirmed via signUp() returning a session
+-- directly, then reading session.user.id in-browser -- not guessed):
 --
---   select id, email from auth.users where email in
---     ('zz-agent-test-a@example.com', 'zz-agent-test-b@example.com');
+--   Customer A: zz-agent-test-a@zzqarentals.test -> 0e06ce8a-10bd-40ae-abc4-962422fb285e
+--   Customer B: zz-agent-test-b@zzqarentals.test -> cfa3b4a0-6794-43cb-beb2-661e56549e66
 --
--- ...replace the two placeholder uuids below with the real ids and run this
--- file. Safe to re-run: renters upsert on the auth_user_id unique constraint,
--- and the rental insert is guarded with "where not exists".
+-- (zzqarentals.test is a made-up, obviously-disposable domain -- avoid
+-- example.com specifically, Supabase's signup validation blocklists it.)
+--
+-- Customer B intentionally gets a renter row but NO rental -- it exists so a
+-- later Part B API-level RLS check has a second real, linked account to try
+-- (and fail) to read customer A's data through.
+--
+-- Safe to re-run: renters upsert on the auth_user_id unique constraint, and
+-- the rental insert is guarded with "where not exists".
 
 -- Customer A -- gets the active rental below.
 insert into renters (name, messenger_name, contact_note, auth_user_id)
 values (
   'ZZ Agent Test A', null, 'QA test account (see test_seed_customer.sql) -- safe to delete',
-  '00000000-0000-0000-0000-0000000000aa'::uuid -- REPLACE with zz-agent-test-a@example.com's auth.users.id
+  '0e06ce8a-10bd-40ae-abc4-962422fb285e'::uuid -- zz-agent-test-a@zzqarentals.test
 )
 on conflict (auth_user_id) do update set
   name = excluded.name, contact_note = excluded.contact_note;
@@ -44,7 +41,7 @@ on conflict (auth_user_id) do update set
 insert into renters (name, messenger_name, contact_note, auth_user_id)
 values (
   'ZZ Agent Test B', null, 'QA test account (see test_seed_customer.sql) -- safe to delete',
-  '00000000-0000-0000-0000-0000000000bb'::uuid -- REPLACE with zz-agent-test-b@example.com's auth.users.id
+  'cfa3b4a0-6794-43cb-beb2-661e56549e66'::uuid -- zz-agent-test-b@zzqarentals.test
 )
 on conflict (auth_user_id) do update set
   name = excluded.name, contact_note = excluded.contact_note;
@@ -58,7 +55,7 @@ select
   current_date, current_date + 30
 from games g, renters r
 where g.slug = 'zz-test-game-a'
-  and r.auth_user_id = '00000000-0000-0000-0000-0000000000aa'::uuid -- keep in sync with customer A's id above
+  and r.auth_user_id = '0e06ce8a-10bd-40ae-abc4-962422fb285e'::uuid -- keep in sync with customer A's id above
   and not exists (
     select 1 from rentals
     where renter_id = r.id and game_id = g.id and status = 'active'
@@ -73,11 +70,11 @@ where g.slug = 'zz-test-game-a'
 -- ============================================================================
 -- delete from rentals where renter_id in (
 --   select id from renters where auth_user_id in (
---     '00000000-0000-0000-0000-0000000000aa'::uuid,
---     '00000000-0000-0000-0000-0000000000bb'::uuid
+--     '0e06ce8a-10bd-40ae-abc4-962422fb285e'::uuid,
+--     'cfa3b4a0-6794-43cb-beb2-661e56549e66'::uuid
 --   )
 -- );
 -- delete from renters where auth_user_id in (
---   '00000000-0000-0000-0000-0000000000aa'::uuid,
---   '00000000-0000-0000-0000-0000000000bb'::uuid
+--   '0e06ce8a-10bd-40ae-abc4-962422fb285e'::uuid,
+--   'cfa3b4a0-6794-43cb-beb2-661e56549e66'::uuid
 -- );
