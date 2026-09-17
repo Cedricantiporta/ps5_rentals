@@ -437,16 +437,55 @@
       return res.data.filter(function (row) { return row.is_test !== true; }).map(mapGameRow);
     });
   }
+  // Resolves to the signed-in customer's renters.id, or null if they're
+  // signed out, RCAccount isn't on the page, or the customer has no renter
+  // row yet and ensure_my_renter() can't be reached (e.g. migration_12
+  // hasn't been applied) -- every one of those falls back to null (submit
+  // anonymously) rather than failing the rent flow. Reads the session
+  // through window.RCAccount (site/account/shared.js -- loaded on every
+  // page that loads this file, see site/index.html etc.) so this checks the
+  // customer's own session under its own storageKey instead of standing up
+  // a second, ad-hoc Supabase client that might see a stale/other session.
+  function getSignedInRenterId() {
+    if (!window.RCAccount) return Promise.resolve(null);
+    return window.RCAccount.getSession().then(function (session) {
+      if (!session) return null;
+      // ensure_my_renter() creates the renters row on first call for a
+      // fresh signup -- idempotent, safe to call every time (see
+      // migration_12_renter_claiming_rpc.sql). Already fails soft to null
+      // internally if the RPC doesn't exist yet.
+      return window.RCAccount.ensureRenter().then(function (row) {
+        return (row && row.renter_id) || null;
+      });
+    }, function () { return null; });
+  }
+
   // Drops a note in the admin app's "Incoming Requests" inbox with the
   // game/slot/plan the customer already picked, so the admin doesn't have
   // to re-enter it by hand after reading the Messenger message. Best-effort
-  // only -- never blocks or delays opening Messenger.
+  // only -- never blocks or delays opening Messenger. When the customer is
+  // signed in, tags the request with their renter_id (migration_13) so it
+  // lands in their account once the admin approves it, instead of needing
+  // manual linking.
   function submitRentalRequest(g, slotKey) {
     var sb = getPublicSupabase();
     if (!sb) return;
-    sb.from('rental_requests').insert({
+    var payload = {
       game_slug: g.slug, game_title: g.title, slot: slotKey,
       plan: state.plan || null, amount: g[slotKey] ? (g[slotKey][state.plan] || null) : null
+    };
+    getSignedInRenterId().then(function (renterId) {
+      if (renterId) payload.renter_id = renterId;
+      return sb.from('rental_requests').insert(payload);
+    }).then(function (res) {
+      // migration_13 not applied yet -> renter_id is an unknown column and
+      // this insert errors. Retry once without it so the customer's rent
+      // request still goes through anonymously rather than silently
+      // failing -- completing the rental matters more than the identity tag.
+      if (res && res.error && payload.renter_id) {
+        delete payload.renter_id;
+        return sb.from('rental_requests').insert(payload);
+      }
     }).then(function () {}, function () {});
   }
 
