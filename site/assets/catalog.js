@@ -1048,6 +1048,23 @@
     wrap.appendChild(div);
     wrap.scrollTop = wrap.scrollHeight;
   }
+  // Thinking indicator shown while the reply is in flight. Not a real
+  // message: no text content for renderChatText/selection to touch, and
+  // always removed before the next appendChatMessage call for the reply.
+  function showChatTyping() {
+    var wrap = document.getElementById('rcChatMessages');
+    if (!wrap) return null;
+    var div = document.createElement('div');
+    div.className = 'rc-chat-msg rc-chat-msg-bot rc-chat-typing';
+    div.setAttribute('aria-hidden', 'true');
+    div.innerHTML = '<span class="rc-chat-typing-dot"></span><span class="rc-chat-typing-dot"></span><span class="rc-chat-typing-dot"></span>';
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+    return div;
+  }
+  function hideChatTyping(el) {
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
 
   function wireChatWidget() {
     var widget = document.createElement('div');
@@ -1096,7 +1113,9 @@
       input.value = '';
       input.disabled = true;
       sendBtn.disabled = true;
+      var typingEl = showChatTyping();
       sb.functions.invoke('chat', { body: { clientId: getChatClientId(), message: text } }).then(function (res) {
+        hideChatTyping(typingEl);
         input.disabled = false;
         sendBtn.disabled = false;
         input.focus();
@@ -1108,6 +1127,7 @@
         appendChatMessage(data.reply, 'bot');
         hint.textContent = data.limited ? '' : (typeof data.remaining === 'number' ? data.remaining + ' message' + (data.remaining === 1 ? '' : 's') + ' left today.' : '');
       }).catch(function () {
+        hideChatTyping(typingEl);
         input.disabled = false;
         sendBtn.disabled = false;
         appendChatMessage('Sorry, something went wrong. Please try again or message us on Messenger.', 'bot');
