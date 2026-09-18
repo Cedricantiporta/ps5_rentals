@@ -509,7 +509,7 @@
       var swapsInfo = '&mdash;';
       if (rental) {
         var used = rental.swap_count != null ? rental.swap_count : swapsUsed(rental);
-        var limit = state.settings && state.settings.swap_limit ? Number(state.settings.swap_limit) : null;
+        var limit = planSwapLimit(rental.plan);
         swapsInfo = used + (limit != null ? ' / ' + limit : '') +
           (limit != null ? ' <span class="a-text-3">(' + Math.max(0, limit - used) + ' left)</span>' : '');
       }
@@ -841,7 +841,7 @@
       if (r.swapped_from_rental_id != null) {
         swapInfo += ' <span class="a-pill a-pill-swap" title="Created by a swap -- old rental ended, this one carries the same end date">Swapped</span>';
         if (r.swap_count != null) {
-          var swapLimitVal = (state.settings && state.settings.swap_limit) ? Number(state.settings.swap_limit) : null;
+          var swapLimitVal = planSwapLimit(r.plan);
           swapInfo += ' <span class="a-hint" style="display:inline;margin:0;">(' + r.swap_count + ' swap' + (r.swap_count === 1 ? '' : 's') +
             (swapLimitVal != null ? ', ' + Math.max(0, swapLimitVal - r.swap_count) + ' left' : '') + ')</span>';
         }
@@ -1251,6 +1251,15 @@
     });
   });
 
+  // Swap allowance is per plan (weekly rentals get fewer than monthly ones),
+  // with the flat swap_limit as the fallback for anything unconfigured.
+  function planSwapLimit(plan) {
+    var st = state.settings || {};
+    var v = st['swap_limit_' + String(plan || '').toLowerCase()];
+    if (v === undefined || v === null || v === '') v = st.swap_limit;
+    return (v === undefined || v === null || v === '') ? null : Number(v);
+  }
+
   function renderRenters() {
     var tbody = document.querySelector('#rentersTable tbody');
     tbody.innerHTML = '';
@@ -1597,6 +1606,8 @@
     $('setMessengerUrl').value = state.settings.messenger_url || '';
     $('setHoldMinutes').value = state.settings.hold_minutes || '';
     $('setSwapLimit').value = state.settings.swap_limit || '';
+    $('setSwapLimitWeekly').value = state.settings.swap_limit_weekly || '';
+    $('setSwapLimitMonthly').value = state.settings.swap_limit_monthly || '';
   }
   $('settingsForm').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -1610,7 +1621,9 @@
       { key: 'gcash_name', value: $('setGcashName').value.trim() },
       { key: 'messenger_url', value: $('setMessengerUrl').value.trim() },
       { key: 'hold_minutes', value: String(Number($('setHoldMinutes').value) || 30) },
-      { key: 'swap_limit', value: String(Number($('setSwapLimit').value) || 2) }
+      { key: 'swap_limit', value: String(Number($('setSwapLimit').value) || 2) },
+      { key: 'swap_limit_weekly', value: String(Number($('setSwapLimitWeekly').value) || 1) },
+      { key: 'swap_limit_monthly', value: String(Number($('setSwapLimitMonthly').value) || 3) }
     ];
     var btn = $('saveSettingsBtn');
     btn.disabled = true;

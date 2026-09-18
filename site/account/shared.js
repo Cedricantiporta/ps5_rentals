@@ -216,11 +216,58 @@
     }
   }
 
+  // "Track rental" nav entry. A customer who rented without signing up has
+  // a tracking code and nowhere to type it from the homepage -- "Sign in"
+  // is the only account entry in the nav, and it doesn't apply to them.
+  // Injected here rather than into 173 exported HTML files, all of which
+  // already load this script. Idempotent, and skipped entirely for a
+  // signed-in customer, whose account link already covers it.
+  function injectTrackLink(session) {
+    if (session) return;
+    if (document.querySelector('[data-rc-track-link]')) return;
+
+    var code = loadGuestCode();
+    var label = code ? 'My Rentals' : 'Track Rental';
+    var href = '/account/track.html';
+
+    // Mobile drawer: plain <a>, simple text node.
+    var drawer = document.querySelector('.rc-drawer-nav');
+    if (drawer) {
+      var d = document.createElement('a');
+      d.setAttribute('href', href);
+      d.setAttribute('data-rc-track-link', '');
+      d.className = 'rc-drawer-link';
+      d.textContent = label;
+      drawer.appendChild(d);
+    }
+
+    // Desktop nav: Webflow's hover-reveal pattern needs the two nested
+    // .text-sm divs, so clone an existing sibling link and retarget it
+    // rather than hand-building markup that would drift from the export.
+    var list = document.querySelector('.navbar_list');
+    if (list) {
+      var sibling = list.querySelector('a.link');
+      if (sibling) {
+        var a = sibling.cloneNode(true);
+        a.removeAttribute('data-rc-account-link');
+        a.removeAttribute('id');
+        a.setAttribute('href', href);
+        a.setAttribute('data-rc-track-link', '');
+        a.classList.remove('is-current-page');
+        setLinkText(a, label);
+        var accountLink = list.querySelector('[data-rc-account-link]');
+        if (accountLink) list.insertBefore(a, accountLink);
+        else list.appendChild(a);
+      }
+    }
+  }
+
   function wireNavLink() {
     var links = document.querySelectorAll('[data-rc-account-link]');
     var controls = document.querySelectorAll('[data-rc-account-control]');
-    if (!links.length && !controls.length) return;
     getSession().then(function (session) {
+      try { injectTrackLink(session); } catch (e) { /* nav is cosmetic */ }
+      if (!links.length && !controls.length) return;
       Array.prototype.forEach.call(links, function (a) {
         if (session) {
           setLinkText(a, 'My Account');

@@ -389,8 +389,13 @@
             <div class="a-field"><label for="setHoldMinutes">Hold minutes (unpaid rental)</label><input id="setHoldMinutes" type="number" min="1"></div>
           </div>
           <div class="a-form-row">
-            <div class="a-field"><label for="setSwapLimit">Swap limit (per rental)</label><input id="setSwapLimit" type="number" min="0"></div>
+            <div class="a-field"><label for="setSwapLimitWeekly">Swaps allowed &mdash; Weekly</label><input id="setSwapLimitWeekly" type="number" min="0"></div>
+            <div class="a-field"><label for="setSwapLimitMonthly">Swaps allowed &mdash; Monthly</label><input id="setSwapLimitMonthly" type="number" min="0"></div>
           </div>
+          <div class="a-form-row">
+            <div class="a-field"><label for="setSwapLimit">Swap limit &mdash; fallback</label><input id="setSwapLimit" type="number" min="0"></div>
+          </div>
+          <p class="a-hint" style="margin-top:-0.4rem;">Weekly and Monthly are what customers actually get. The fallback only applies to a rental whose plan has no row of its own.</p>
           <button type="submit" class="a-btn a-btn-primary" id="saveSettingsBtn">Save settings</button>
           <p class="a-error" id="settingsError"></p>
           <p class="a-hint" id="settingsSavedHint" hidden>Saved.</p>

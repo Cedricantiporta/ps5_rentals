@@ -138,8 +138,33 @@ $$;
 --    security definer: reads `settings` and `swap_requests`, both
 --    admin-only RLS, on behalf of callers that may be anon.
 -- ============================================================================
+-- Swap allowance depends on the plan: a weekly rental and a monthly rental
+-- do not get the same number of swaps. Falls back to the plan-agnostic
+-- 'swap_limit' row, then to 2, so a half-configured settings table can never
+-- make this return null and block every swap.
+drop function if exists swap_generic_block_reason(bigint, text, date, int);
+
+create or replace function swap_limit_for(p_plan text)
+returns int
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_limit int;
+begin
+  select value::int into v_limit from settings
+   where key = 'swap_limit_' || lower(coalesce(p_plan, ''));
+  if v_limit is null then
+    select value::int into v_limit from settings where key = 'swap_limit';
+  end if;
+  return coalesce(v_limit, 2);
+end;
+$$;
+
 create or replace function swap_generic_block_reason(
-  p_rental_id bigint, p_status text, p_end_date date, p_swap_count int
+  p_rental_id bigint, p_status text, p_end_date date, p_swap_count int,
+  p_plan text default null
 )
 returns text
 language plpgsql
@@ -156,10 +181,7 @@ begin
     return 'too_close_to_end';
   end if;
 
-  select value::int into v_limit from settings where key = 'swap_limit';
-  if v_limit is null then
-    v_limit := 2;
-  end if;
+  v_limit := swap_limit_for(p_plan);
   if p_swap_count >= v_limit then
     return 'swap_limit_reached';
   end if;
@@ -213,7 +235,7 @@ begin
   join renters rr on rr.id = r.renter_id
   join games g on g.id = r.game_id
   left join lateral (
-    select swap_generic_block_reason(r.id, r.status, r.end_date, r.swap_count) as reason
+    select swap_generic_block_reason(r.id, r.status, r.end_date, r.swap_count, r.plan) as reason
   ) block on true
   left join swap_requests sw on sw.rental_id = r.id and sw.status = 'pending'
   left join games tg on tg.id = sw.to_game_id
@@ -285,7 +307,7 @@ begin
 
   -- ---- the same rule set can_swap / swap_blocked_reason already told
   -- the UI about (status/end_date/swap_count/already_pending) ------------
-  v_block_reason := swap_generic_block_reason(v_old.id, v_old.status, v_old.end_date, v_old.swap_count);
+  v_block_reason := swap_generic_block_reason(v_old.id, v_old.status, v_old.end_date, v_old.swap_count, v_old.plan);
   if v_block_reason is not null then
     return query select false, v_block_reason, null::bigint, null::text, null::text, null::text, null::text, null::int;
     return;
@@ -348,10 +370,7 @@ begin
   )
   returning id, ref_code into v_swap_id, v_swap_ref_code;
 
-  select value::int into v_limit from settings where key = 'swap_limit';
-  if v_limit is null then
-    v_limit := 2;
-  end if;
+  v_limit := swap_limit_for(v_old.plan);
 
   return query select
     true, null::text, v_swap_id, v_swap_ref_code,

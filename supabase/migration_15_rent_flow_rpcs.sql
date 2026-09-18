@@ -220,13 +220,16 @@ grant execute on function create_rental_hold(text, text, text, bigint, text, tex
 -- there's no reason to make them log out to see them (interpretation noted
 -- in the commit message / final report).
 -- ============================================================================
+drop function if exists get_public_settings();
 create or replace function get_public_settings()
 returns table (
   gcash_number text,
   gcash_name text,
   messenger_url text,
   hold_minutes int,
-  swap_limit int
+  swap_limit int,
+  swap_limit_weekly int,
+  swap_limit_monthly int
 )
 language plpgsql
 security definer
@@ -239,13 +242,19 @@ begin
     max(value) filter (where key = 'gcash_name'),
     max(value) filter (where key = 'messenger_url'),
     coalesce((max(value) filter (where key = 'hold_minutes'))::int, 30),
-    coalesce((max(value) filter (where key = 'swap_limit'))::int, 2)
+    coalesce((max(value) filter (where key = 'swap_limit'))::int, 2),
+    -- Per-plan allowances; fall back to the plan-agnostic swap_limit so a
+    -- half-configured settings table still reports something usable.
+    coalesce((max(value) filter (where key = 'swap_limit_weekly'))::int,
+             (max(value) filter (where key = 'swap_limit'))::int, 1),
+    coalesce((max(value) filter (where key = 'swap_limit_monthly'))::int,
+             (max(value) filter (where key = 'swap_limit'))::int, 3)
   from settings;
 exception when others then
   -- Defensive fallback (e.g. a non-numeric value hand-edited into
   -- hold_minutes/swap_limit) -- still hand back a usable row of defaults
   -- rather than erroring the public page.
-  return query select null::text, null::text, null::text, 30, 2;
+  return query select null::text, null::text, null::text, 30, 2, 1, 3;
 end;
 $$;
 

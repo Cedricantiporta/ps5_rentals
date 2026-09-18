@@ -84,7 +84,13 @@ insert into settings (key, value) values
   ('gcash_name', 'SET YOUR GCASH NUMBER'),
   ('messenger_url', 'https://m.me/junedigitalaccess'),
   ('hold_minutes', '30'),
+  -- Swap allowance is per plan, matching what the How It Works page and the
+  -- chatbot already tell customers (weekly includes one swap, monthly
+  -- includes several). 'swap_limit' stays as the fallback for any plan that
+  -- doesn't have its own row. Edit these in Admin -> Settings, not here.
   ('swap_limit', '2'),
+  ('swap_limit_weekly', '1'),
+  ('swap_limit_monthly', '3'),
   ('swap_hold_hours', '24')
 on conflict (key) do nothing;
 
