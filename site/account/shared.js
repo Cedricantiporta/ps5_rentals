@@ -13,6 +13,43 @@
 
   var CUSTOMER_STORAGE_KEY = 'rc-customer-auth-token';
 
+  // Tracking-code guest portal (track.html) behaves like an auto-login:
+  // once a customer has a code, it's remembered across tabs/restarts so
+  // they never have to type it again. This exact key/plain-string shape is
+  // a cross-agent contract -- site/assets/catalog.js (owned by another
+  // agent) writes this same key the instant a rent request succeeds, so a
+  // customer who just rented lands in the portal already tracked. Do not
+  // rename the key or wrap the value (e.g. JSON) without updating that
+  // agent's code too. Kept separate from CUSTOMER_STORAGE_KEY -- a guest
+  // code and a signed-in session are unrelated, independent ways into the
+  // portal (see RENT-FLOW-CONTRACT.md). localStorage throws in
+  // private-browsing / storage-blocked modes, so every read and write here
+  // is wrapped -- a guest who can't persist the code just has to retype
+  // it; the page must never break because of it.
+  var GUEST_CODE_KEY = 'rc-track-code';
+  function saveGuestCode(code) {
+    try { window.localStorage.setItem(GUEST_CODE_KEY, code); } catch (e) {}
+  }
+  function loadGuestCode() {
+    try { return window.localStorage.getItem(GUEST_CODE_KEY) || ''; } catch (e) { return ''; }
+  }
+  function clearGuestCode() {
+    try { window.localStorage.removeItem(GUEST_CODE_KEY); } catch (e) {}
+  }
+
+  // Accepts a renters.public_code ("JD-XXXXXX") or a rentals.ref_code
+  // ("R-XXXXXX") per RENT-FLOW-CONTRACT.md, case-insensitively and tolerant
+  // of surrounding whitespace and a missing prefix. When a recognizable
+  // JD/R prefix is present (with or without its dash) it's normalized to
+  // "PREFIX-REST"; otherwise the trimmed/uppercased/whitespace-stripped
+  // value is sent as-is and left to the RPC to match.
+  function normalizeTrackingCode(raw) {
+    var s = String(raw == null ? '' : raw).trim().toUpperCase().replace(/\s+/g, '');
+    var m = /^(JD|R)-?(.+)$/.exec(s);
+    if (m && m[2]) return m[1] + '-' + m[2];
+    return s;
+  }
+
   var client = null;
   function getClient() {
     if (client) return client;
@@ -128,7 +165,10 @@
     trophy: '<path d="M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2"/><path d="M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2"/><path d="M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3"/><path d="M4 22h16"/><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/><path d="M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3"/>',
     user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
     'refresh-cw': '<path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>',
-    'gamepad-2': '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>'
+    'gamepad-2': '<line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>',
+    'x': '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    'clock': '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    'search': '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>'
   };
   function icon(name, cls) {
     var paths = ICON_PATHS[name] || '';
@@ -221,6 +261,10 @@
     requireAuth: requireAuth,
     ensureRenter: ensureRenter,
     signOut: signOut,
+    saveGuestCode: saveGuestCode,
+    loadGuestCode: loadGuestCode,
+    clearGuestCode: clearGuestCode,
+    normalizeTrackingCode: normalizeTrackingCode,
     peso: peso,
     fmtDate: fmtDate,
     daysLeft: daysLeft,

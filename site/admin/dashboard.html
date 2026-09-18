@@ -9,6 +9,7 @@
 </head>
 <body>
   <div class="a-modal-backdrop" id="newRentalBackdrop" hidden></div>
+  <div class="a-modal-backdrop" id="addGameBackdrop" hidden></div>
   <div class="a-modal-backdrop" id="mergeBackdrop" hidden></div>
   <div class="a-card a-modal-card" id="mergeModal" hidden>
     <button type="button" class="a-modal-close" id="closeMergeModalBtn">&times;</button>
@@ -32,12 +33,14 @@
     <aside class="a-sidebar">
       <h1 class="a-sidebar-title"><img src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals" class="a-sidebar-logo"></h1>
       <nav class="a-nav">
-        <button class="a-tab is-active" data-tab="overview">Overview</button>
-        <button class="a-tab" data-tab="requests">Incoming Requests <span id="requestsBadge"></span></button>
+        <button class="a-tab is-active" data-tab="pending">Pending Payments <span id="pendingBadge"></span></button>
+        <button class="a-tab" data-tab="swaps">Swap Requests <span id="swapsBadge"></span></button>
+        <button class="a-tab" data-tab="overview">Overview</button>
+        <button class="a-tab" data-tab="requests">Legacy Requests <span id="requestsBadge"></span></button>
         <button class="a-tab" data-tab="rentals">Rentals</button>
         <button class="a-tab" data-tab="renters">Renters</button>
         <button class="a-tab" data-tab="games">Games</button>
-        <button class="a-tab" data-tab="add-game">Add Game</button>
+        <button class="a-tab" data-tab="settings">Settings</button>
       </nav>
       <div class="a-sidebar-bottom">
         <div class="a-user-row">
@@ -63,7 +66,46 @@
       </div>
     </div>
     <div class="a-wrap">
-    <div class="a-panel is-active" id="panel-overview">
+    <div class="a-panel is-active" id="panel-pending">
+      <div class="a-card">
+        <h2>Pending payments</h2>
+        <p class="a-hint">Customer already picked a game on the public site and got a GCash reference on the payment screen -- their slot is already held for <span id="pendingHoldMinutesHint">30</span> minutes. Match the ref code below to their Messenger screenshot, then click Confirm Paid. Nothing else to fill in.</p>
+        <div class="a-table-wrap">
+        <table class="a-table" id="pendingTable">
+          <thead>
+            <tr>
+              <th>Game</th><th>Slot</th><th>Plan</th><th>Amount</th><th>Ref Code</th>
+              <th>Renter</th><th>Code</th><th>Waiting</th><th>Hold</th><th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        </div>
+        <p class="a-empty" id="pendingEmpty" hidden>No pending payments right now.</p>
+      </div>
+    </div>
+
+    <div class="a-panel" id="panel-swaps">
+      <div class="a-card">
+        <h2>Swap requests</h2>
+        <p class="a-hint" id="swapsMigrationHint" hidden>Run migration_16 to enable swap requests.</p>
+        <p class="a-hint">Customer self-served a swap on the public site -- the new slot is already held for them. Approve to finish the swap (send the new game's credentials on Messenger right after), or decline to release the hold.</p>
+        <div class="a-table-wrap" id="swapsTableWrap">
+        <table class="a-table" id="swapsTable">
+          <thead>
+            <tr>
+              <th>Renter</th><th>From</th><th>To</th><th>Ends</th><th>Swaps</th>
+              <th>Ref Code</th><th>Waiting</th><th>Hold</th><th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        </div>
+        <p class="a-empty" id="swapsEmpty" hidden>No swap requests waiting.</p>
+      </div>
+    </div>
+
+    <div class="a-panel" id="panel-overview">
       <div class="a-stat-grid">
         <div class="a-stat-card">
           <span class="a-stat-label">Confirmed Revenue</span>
@@ -106,11 +148,8 @@
 
     <div class="a-panel" id="panel-requests">
       <div class="a-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
-          <h2 style="margin:0;">Requests from the site</h2>
-          <button type="button" class="a-btn a-btn-primary" id="openBlankNewRentalBtn">+ New Rental</button>
-        </div>
-        <p class="a-hint">Someone clicked through the rental wizard on the public site. Match it to their Messenger message, then hit "Use this" to jump into New Rental with the game/slot/plan already filled in.</p>
+        <h2 style="margin:0 0 1rem;">Legacy requests from the site</h2>
+        <p class="a-hint">Historical inbox from before the self-serve rent flow -- new customer requests now land straight in Pending Payments. Match a row here to their Messenger message, then hit "Use this" to jump into New Rental with the game/slot/plan already filled in.</p>
         <div class="a-table-wrap">
         <table class="a-table" id="requestsTable">
           <thead><tr><th>Game</th><th>Requester</th><th>Slot</th><th>Plan</th><th>Amount</th><th>When</th><th></th></tr></thead>
@@ -123,7 +162,10 @@
 
     <div class="a-panel" id="panel-rentals">
       <div class="a-card">
-        <h2>All rentals</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+          <h2 style="margin:0;">All rentals</h2>
+          <button type="button" class="a-btn a-btn-primary" id="openBlankNewRentalBtn">+ New Rental</button>
+        </div>
         <div class="a-field" style="max-width:320px;margin-bottom:0.9rem;"><input id="rentalsSearch" type="text" placeholder="Search game, renter, or slot..."></div>
         <div class="a-chip-row" id="rentalsFilterRow">
           <button type="button" class="a-chip is-active" data-filter="all">All</button>
@@ -246,7 +288,7 @@
         </div>
         <div class="a-table-wrap">
         <table class="a-table" id="rentersTable">
-          <thead><tr><th>Name</th><th>Messenger</th><th>Note</th><th>Added</th><th>Account</th><th>Total Paid</th><th>Rentals</th><th>Active Now</th><th></th></tr></thead>
+          <thead><tr><th>Name</th><th>Messenger</th><th>Note</th><th>Added</th><th>Account</th><th>Tracking code</th><th>Total Paid</th><th>Rentals</th><th>Active Now</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
         </div>
@@ -256,7 +298,10 @@
 
     <div class="a-panel" id="panel-games">
       <div class="a-card">
-        <h2>Games (live catalog status)</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+          <h2 style="margin:0;">Games (live catalog status)</h2>
+          <button type="button" class="a-btn a-btn-primary" id="openAddGameBtn">+ Add Game</button>
+        </div>
         <p class="a-hint">Changing these here updates the public site immediately -- use this only for manual overrides outside the normal rental flow.</p>
         <div class="a-field" style="max-width:280px;margin-bottom:1rem;"><input id="gamesSearch" type="text" placeholder="Search games..."></div>
         <div class="a-table-wrap">
@@ -270,6 +315,7 @@
 
     <div class="a-panel" id="panel-add-game">
       <div class="a-card">
+        <button type="button" class="a-modal-close" id="closeAddGameModalBtn" hidden>&times;</button>
         <h2>Add game</h2>
         <form id="addGameForm">
           <div class="a-form-row">
@@ -321,6 +367,33 @@
           </div>
           <button type="submit" class="a-btn a-btn-primary" id="addGameBtn">Add game</button>
           <p class="a-error" id="addGameError"></p>
+        </form>
+      </div>
+    </div>
+
+    <div class="a-panel" id="panel-settings">
+      <div class="a-card">
+        <h2>Payment &amp; flow settings</h2>
+        <p class="a-hint" id="settingsMigrationHint" hidden>Run migration_14 to enable settings.</p>
+        <form id="settingsForm">
+          <div class="a-form-row">
+            <div class="a-field">
+              <label for="setGcashNumber">GCash number</label>
+              <input id="setGcashNumber" type="text" placeholder="e.g. 09XX XXX XXXX">
+            </div>
+            <div class="a-field"><label for="setGcashName">GCash account name</label><input id="setGcashName" type="text"></div>
+          </div>
+          <p class="a-hint" style="color:var(--a-red);margin-top:-0.4rem;">Careful -- the GCash number and name above are exactly what every customer on the public site is told to pay to. Double-check before saving.</p>
+          <div class="a-form-row">
+            <div class="a-field"><label for="setMessengerUrl">Messenger URL</label><input id="setMessengerUrl" type="url" placeholder="https://m.me/..."></div>
+            <div class="a-field"><label for="setHoldMinutes">Hold minutes (unpaid rental)</label><input id="setHoldMinutes" type="number" min="1"></div>
+          </div>
+          <div class="a-form-row">
+            <div class="a-field"><label for="setSwapLimit">Swap limit (per rental)</label><input id="setSwapLimit" type="number" min="0"></div>
+          </div>
+          <button type="submit" class="a-btn a-btn-primary" id="saveSettingsBtn">Save settings</button>
+          <p class="a-error" id="settingsError"></p>
+          <p class="a-hint" id="settingsSavedHint" hidden>Saved.</p>
         </form>
       </div>
     </div>

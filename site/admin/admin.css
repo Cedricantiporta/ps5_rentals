@@ -190,6 +190,21 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
 .a-pill-linked { background: var(--a-blue); }
 .a-pill-anon { background: var(--a-panel-2); color: var(--a-text-2); }
 
+/* ---- self-serve rent flow: Pending Payments / Swap Requests / tracking
+   codes (RENT-FLOW-CONTRACT.md, CONTRACT-AMENDMENT-1.md) ---- */
+.a-pending-cover { width: 28px; height: 28px; object-fit: cover; border-radius: 6px; vertical-align: middle; margin-right: 0.5rem; }
+.a-refcode-btn {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 700; font-size: 0.92rem;
+  background: var(--a-panel-2); border: none; border-radius: 0.5rem; color: var(--a-text);
+  padding: 0.3rem 0.6rem; cursor: pointer; letter-spacing: .03em;
+}
+.a-refcode-btn:hover { background: #e4e4e7; }
+.a-code-actions { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.a-copy-msg-btn { font-size: 0.72rem; white-space: nowrap; }
+.a-text-3 { color: var(--a-text-3); }
+.a-text-red { color: var(--a-red); font-weight: 700; }
+.a-live-since, .a-live-hold { font-variant-numeric: tabular-nums; }
+
 .a-chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
 .a-chip {
   background: var(--a-panel-2); border: none; color: var(--a-text-2); padding: 0.45rem 0.9rem;

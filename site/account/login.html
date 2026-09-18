@@ -16,29 +16,49 @@
 <section class="section-2"><div class="padding-global"><div class="container-large">
   <div class="padding-section-large"></div>
   <div class="rc-root">
-    <div class="rc-account-wrap">
-      <div class="rc-account-card">
-        <img class="rc-account-logo" src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals">
-        <h1 class="rc-account-title" id="rcAccountTitle">Sign in to your account</h1>
-        <p class="rc-account-sub" id="rcAccountSub">Check your active rentals, history and swap chains.</p>
+    <div class="rc-account-wrap rc-account-wide">
+      <div class="rc-account-split">
+        <div class="rc-account-card rc-account-pane">
+          <img class="rc-account-logo" src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals">
+          <h1 class="rc-account-title" id="rcAccountTitle">Sign in to your account</h1>
+          <p class="rc-account-sub" id="rcAccountSub">Check your active rentals, history and swap chains.</p>
 
-        <form id="rcAccountForm">
-          <div class="rc-account-field">
-            <label for="rcEmail">Email</label>
-            <input id="rcEmail" type="email" autocomplete="username" required autofocus>
-          </div>
-          <div class="rc-account-field">
-            <label for="rcPassword">Password</label>
-            <input id="rcPassword" type="password" autocomplete="current-password" required minlength="6">
-          </div>
-          <button type="submit" class="rc-account-btn" id="rcAccountSubmit">Sign In</button>
-          <p class="rc-account-error" id="rcAccountError"></p>
-          <p class="rc-account-notice" id="rcAccountNotice"></p>
-        </form>
+          <form id="rcAccountForm">
+            <div class="rc-account-field">
+              <label for="rcEmail">Email</label>
+              <input id="rcEmail" type="email" autocomplete="username" required autofocus>
+            </div>
+            <div class="rc-account-field">
+              <label for="rcPassword">Password</label>
+              <input id="rcPassword" type="password" autocomplete="current-password" required minlength="6">
+            </div>
+            <button type="submit" class="rc-account-btn" id="rcAccountSubmit">Sign In</button>
+            <p class="rc-account-error" id="rcAccountError"></p>
+            <p class="rc-account-notice" id="rcAccountNotice"></p>
+          </form>
 
-        <p class="rc-account-switch" id="rcAccountSwitch">
-          New here? <button type="button" id="rcAccountModeBtn">Create an account</button>
-        </p>
+          <p class="rc-account-switch" id="rcAccountSwitch">
+            New here? <button type="button" id="rcAccountModeBtn">Create an account</button>
+          </p>
+        </div>
+
+        <div class="rc-account-divider"><span>OR</span></div>
+
+        <div class="rc-account-card rc-account-pane">
+          <h1 class="rc-account-title">Track your rental</h1>
+          <p class="rc-account-sub">No account needed. Enter the code from your rent confirmation to see your rentals and swap games.</p>
+
+          <form id="rcTrackForm">
+            <div class="rc-account-field">
+              <label for="rcTrackCode">Tracking code</label>
+              <input id="rcTrackCode" type="text" placeholder="JD-XXXXXX or R-XXXXXX" autocomplete="off" required>
+            </div>
+            <button type="submit" class="rc-account-btn" id="rcTrackSubmit">View My Rentals</button>
+            <p class="rc-account-error" id="rcTrackError"></p>
+          </form>
+
+          <p class="rc-account-switch">Lost your code? It's on your rent confirmation and on Messenger.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -65,9 +85,12 @@
   var switchWrap = document.getElementById('rcAccountSwitch');
   var modeBtn = document.getElementById('rcAccountModeBtn');
 
-  // Already signed in? Go straight to the portal.
+  // Already signed in? Go straight to the portal. Otherwise, if a tracking
+  // code is already remembered (auto-login, see shared.js/track.js), skip
+  // straight to the guest portal instead of asking them to type it again.
   RCAccount.getSession().then(function (session) {
-    if (session) window.location.href = '/account/';
+    if (session) { window.location.href = '/account/'; return; }
+    if (RCAccount.loadGuestCode()) window.location.href = '/account/track.html';
   });
 
   function renderMode() {
@@ -135,6 +158,25 @@
       errEl.textContent = (err && err.message) ? err.message : 'Something went wrong. Please try again.';
     });
   });
+
+  // ---- guest tracking-code path: no account, no password. Just remember
+  // the code and hand off to track.html, which does the actual lookup. ----
+  var trackForm = document.getElementById('rcTrackForm');
+  var trackInput = document.getElementById('rcTrackCode');
+  var trackErr = document.getElementById('rcTrackError');
+  if (trackForm) {
+    trackForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var code = RCAccount.normalizeTrackingCode(trackInput.value);
+      if (!code) {
+        trackErr.textContent = 'Enter the tracking code from your rent confirmation.';
+        return;
+      }
+      trackErr.textContent = '';
+      RCAccount.saveGuestCode(code);
+      window.location.href = '/account/track.html';
+    });
+  }
 })();
 </script>
 </body></html>

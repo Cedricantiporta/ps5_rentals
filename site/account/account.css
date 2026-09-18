@@ -42,6 +42,53 @@ body > .footer { flex: none; }
   padding: 2rem;
 }
 
+/* login.html: sign-in and the guest tracking-code path shown side by side,
+   equal weight -- most customers will only ever use the tracking path, so
+   it must never read like an afterthought bolted under the "real" form. */
+.rc-account-split {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 1.5rem;
+}
+.rc-account-split .rc-account-pane {
+  display: flex;
+  flex-direction: column;
+}
+.rc-account-split .rc-account-pane form { margin-top: auto; }
+.rc-account-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: var(--rc-text-3);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+}
+.rc-account-divider::before,
+.rc-account-divider::after {
+  content: '';
+  flex: 1;
+  width: 1px;
+  background: var(--rc-border-2);
+}
+@media (max-width: 767px) {
+  .rc-account-split {
+    grid-template-columns: 1fr;
+  }
+  .rc-account-divider {
+    flex-direction: row;
+    padding: 0 0.5rem;
+  }
+  .rc-account-divider::before,
+  .rc-account-divider::after {
+    height: 1px;
+    width: auto;
+  }
+}
+
 .rc-account-logo { width: 160px; margin: 0 auto 1.5rem; display: block; }
 [data-theme="light"] .rc-account-logo { filter: invert(1); }
 
@@ -160,6 +207,16 @@ body > .footer { flex: none; }
 }
 .rc-account-signout:hover { background: var(--rc-panel-2); }
 
+.rc-track-code-pill {
+  font-size: 0.85rem;
+  color: var(--rc-text-2);
+}
+.rc-track-code-pill strong {
+  color: var(--rc-text);
+  font-family: monospace;
+  letter-spacing: .03em;
+}
+
 .rc-account-loading {
   text-align: center;
   color: var(--rc-text-2);
@@ -199,6 +256,42 @@ body > .footer { flex: none; }
 .rc-swap-history-item { font-size: 0.78rem; color: var(--rc-text-2); }
 .rc-swap-history-item strong { color: var(--rc-text); }
 
+/* ---- guest tracking portal (track.html) ---- */
+
+.rc-rental-meta { font-size: 0.78rem; color: var(--rc-text-2); }
+.rc-rental-meta strong { color: var(--rc-text); font-family: monospace; letter-spacing: .02em; }
+
+.rc-rental-swap-btn {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  border: 1px solid var(--rc-border-2); background: transparent; color: var(--rc-text);
+  border-radius: 999px; padding: 0.5rem 0.95rem; font-size: 0.8rem; font-weight: 800; cursor: pointer;
+  margin-top: 0.15rem;
+}
+.rc-rental-swap-btn:hover:not(:disabled) { background: var(--rc-panel-2); }
+.rc-rental-swap-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.rc-rental-swap-reason { font-size: 0.75rem; color: var(--rc-text-3); margin: -0.2rem 0 0; line-height: 1.4; }
+
+.rc-swap-pending {
+  display: inline-flex; align-items: center; gap: 0.4rem; align-self: flex-start;
+  font-size: 0.78rem; font-weight: 700; color: var(--rc-amber);
+  background: var(--rc-panel-2); border-radius: 999px; padding: 0.4rem 0.85rem;
+}
+
+/* swap picker (a game list mounted inside the shared .rc-modal from
+   catalog.css, so it looks like the rest of the site's modals) */
+.rc-swap-game-list { display: flex; flex-direction: column; gap: 0.6rem; max-height: 46vh; overflow-y: auto; }
+.rc-swap-game-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  background: var(--rc-panel); border: 1px solid var(--rc-border-2); border-radius: 0.85rem; padding: 0.6rem;
+}
+.rc-swap-game-cover { width: 48px; height: 48px; border-radius: 0.5rem; object-fit: cover; flex: none; background: #1c1e28; }
+.rc-swap-game-title { flex: 1; min-width: 0; font-size: 0.88rem; font-weight: 700; margin: 0; color: var(--rc-text); }
+.rc-swap-game-slots { display: flex; gap: 0.5rem; flex: none; }
+.rc-swap-game-slots .rc-slot-option { min-width: 92px; padding: 0.45rem 0.65rem; border-radius: 0.6rem; background: var(--rc-panel-2); border: none; cursor: pointer; text-align: left; }
+.rc-swap-game-slots .rc-slot-option-name { font-size: 0.72rem; }
+.rc-swap-game-slots .rc-slot-option-price { font-size: 0.65rem; }
+
 .rc-account-empty {
   text-align: center;
   padding: 3.5rem 1.5rem;
@@ -218,4 +311,7 @@ body > .footer { flex: none; }
   .rc-account-card { padding: 1.5rem 1.25rem; }
   .rc-rental-card { flex-direction: column; }
   .rc-rental-cover { width: 100%; height: 140px; }
+  .rc-swap-game-row { flex-wrap: wrap; }
+  .rc-swap-game-slots { width: 100%; }
+  .rc-swap-game-slots .rc-slot-option { flex: 1; }
 }
