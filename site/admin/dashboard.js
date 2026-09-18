@@ -2,7 +2,17 @@
   'use strict';
 
   var supabase = window.rcSupabase;
-  var state = { games: [], renters: [], rentals: [], requests: [], swapFromRental: null, activeRequestId: null, amountManuallyEdited: false, rentalsFilter: 'all', rentalsSearch: '', gamesSortByRented: false, rentersFilter: 'all', mergeRemoveId: null };
+  var state = {
+    games: [], renters: [], rentals: [], requests: [], swapFromRental: null, activeRequestId: null,
+    amountManuallyEdited: false, rentalsFilter: 'all', rentalsSearch: '', gamesSortByRented: false,
+    rentersFilter: 'all', mergeRemoveId: null,
+    // Self-serve rent flow additions (RENT-FLOW-CONTRACT.md / CONTRACT-AMENDMENT-1.md).
+    // settings/swapRequests may not exist in the live DB yet -- see the
+    // *Available flags, checked before rendering their panels so a missing
+    // table degrades to a "run this migration" hint instead of an error.
+    settings: {}, settingsAvailable: true,
+    swapRequests: [], swapRequestsAvailable: true
+  };
 
   function $(id) { return document.getElementById(id); }
   var MESSENGER_ICON = '<svg class="a-msg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Has a Messenger link"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
@@ -66,12 +76,14 @@
 
   // ---- topbar (section title + live-refresh indicator) ----
   var TAB_META = {
+    pending: { title: 'Pending Payments', desc: 'Self-serve rentals awaiting GCash confirmation -- the main admin queue.' },
+    swaps: { title: 'Swap Requests', desc: 'Customer-submitted game swaps waiting for approval.' },
     overview: { title: 'Overview', desc: 'Snapshot of revenue, active rentals, and renters.' },
-    requests: { title: 'Incoming Requests', desc: 'New rental requests submitted from the public site, waiting to be matched.' },
+    requests: { title: 'Legacy Requests', desc: 'Historical rental requests from before the self-serve flow, waiting to be matched.' },
     rentals: { title: 'Rentals', desc: 'Every rental -- active, pending, and past.' },
     renters: { title: 'Renters', desc: 'Renter profiles, Messenger links, and lifetime spend.' },
     games: { title: 'Games', desc: 'Live catalog status -- changes here go out to the public site immediately.' },
-    'add-game': { title: 'Add Game', desc: 'Add a new title to the rental catalog.' }
+    settings: { title: 'Settings', desc: 'GCash details, Messenger link, hold time, and swap limit shown to customers.' }
   };
   function setTopbarSection(tabKey) {
     var meta = TAB_META[tabKey];
@@ -89,9 +101,13 @@
   }
 
   // ---- tabs ----
+  // NOTE: 'add-game' is deliberately not a .a-tab anymore -- it moved behind
+  // an "+ Add Game" button on the Games tab that opens it as a modal (same
+  // pattern as New Rental below), so it never shows up in this loop.
   Array.prototype.forEach.call(document.querySelectorAll('.a-tab'), function (tab) {
     tab.addEventListener('click', function () {
       closeNewRentalModal();
+      closeAddGameModal();
       Array.prototype.forEach.call(document.querySelectorAll('.a-tab'), function (t) { t.classList.remove('is-active'); });
       Array.prototype.forEach.call(document.querySelectorAll('.a-panel'), function (p) { p.classList.remove('is-active'); });
       tab.classList.add('is-active');
@@ -100,7 +116,7 @@
     });
   });
 
-  // ---- New Rental as a popup (used by Incoming Requests' "Use this" so
+  // ---- New Rental as a popup (used by Legacy Requests' "Use this" so
   // the admin doesn't lose their place on that tab) ----
   function openNewRentalModal() {
     $('panel-new-rental').classList.add('is-modal-open');
@@ -120,25 +136,73 @@
     openNewRentalModal();
   });
 
+  // ---- Add Game as a popup (moved off the sidebar -- same modal pattern
+  // as New Rental, opened from a button on the Games tab instead) ----
+  function openAddGameModal() {
+    $('panel-add-game').classList.add('is-modal-open');
+    $('addGameBackdrop').hidden = false;
+    $('closeAddGameModalBtn').hidden = false;
+  }
+  function closeAddGameModal() {
+    $('panel-add-game').classList.remove('is-modal-open');
+    $('addGameBackdrop').hidden = true;
+    $('closeAddGameModalBtn').hidden = true;
+  }
+  $('addGameBackdrop').addEventListener('click', closeAddGameModal);
+  $('closeAddGameModalBtn').addEventListener('click', closeAddGameModal);
+  $('openAddGameBtn').addEventListener('click', openAddGameModal);
+
   $('signOutBtn').addEventListener('click', function () { window.rcSignOut(); });
 
   // ---- data loading ----
   function loadAll() {
     return Promise.all([
       supabase.from('games').select('*').order('title'),
-      supabase.from('renters').select('*').order('name'),
-      supabase.from('rentals').select('*, games(id,title,slug), renters(id,name)').order('created_at', { ascending: false }),
-      supabase.from('rental_requests').select('*').eq('handled', false).order('created_at', { ascending: false })
+      // Newest first: a renter the owner just created (or who just signed up)
+      // is the one they're about to act on. populateRenterSelect() re-sorts a
+      // copy by name, so the dropdown stays alphabetical for scanning.
+      supabase.from('renters').select('*').order('created_at', { ascending: false }),
+      // Embed nested games/renters with '*' rather than naming columns --
+      // ref_code/swap_count/hold_expires_at/public_code may not exist yet
+      // (see RENT-FLOW-CONTRACT.md), and naming an unknown column anywhere
+      // in a server-side select errors the WHOLE query, taking the
+      // dashboard down (this exact bug bit site/assets/catalog.js's
+      // loadGames() before -- see the comment there). '*' always works
+      // regardless of which columns exist.
+      supabase.from('rentals').select('*, games(*), renters(*)').order('created_at', { ascending: false }),
+      supabase.from('rental_requests').select('*').eq('handled', false).order('created_at', { ascending: false }),
+      // `settings` (migration_14) and `swap_requests` (migration_16,
+      // CONTRACT-AMENDMENT-1.md) may not exist in the live DB at all yet --
+      // a query against a table that doesn't exist resolves with
+      // `res.error` set (PostgREST/PostgREST-over-fetch doesn't throw), so
+      // it's safe to run these in the same Promise.all as everything else;
+      // one failing does not reject the others. Checked via *Available
+      // flags below instead of letting the error propagate.
+      supabase.from('settings').select('*'),
+      supabase.from('swap_requests').select('*').order('created_at', { ascending: false })
     ]).then(function (results) {
       state.games = (results[0].data || []);
       state.renters = (results[1].data || []);
       state.rentals = (results[2].data || []);
       state.requests = (results[3].data || []);
+
+      var settingsRes = results[4];
+      state.settingsAvailable = !settingsRes.error;
+      state.settings = {};
+      (settingsRes.data || []).forEach(function (row) { state.settings[row.key] = row.value; });
+
+      var swapReqRes = results[5];
+      state.swapRequestsAvailable = !swapReqRes.error;
+      state.swapRequests = swapReqRes.data || [];
+
+      renderPending();
+      renderSwaps();
       renderRentals();
       renderRenters();
       renderGames();
       renderRequests();
       renderOverview();
+      renderSettings();
       populateRenterSelect();
       populateGameOptions();
       updateSlotHintAndAmount();
@@ -194,6 +258,345 @@
     });
   }
 
+  // ---- shared: clipboard copy + live "time since" / "time left" cells
+  // (self-serve rent flow -- Pending Payments and Swap Requests tabs) ----
+  function copyToClipboard(text) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text); return; }
+    } catch (e) { /* fall through to legacy path below */ }
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch (e) { /* clipboard unsupported -- nothing more we can do */ }
+  }
+  function flashCopied(btn) {
+    var original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(function () { btn.textContent = original; }, 1200);
+  }
+  // Ref-code copy buttons (Pending Payments, Swap Requests) and the
+  // public-code "Copy message" action (Pending Payments, Swap Requests,
+  // Renters) are rendered in several different tables -- one delegated
+  // listener covers all of them instead of re-wiring per table.
+  document.addEventListener('click', function (e) {
+    var copyBtn = e.target.closest('.a-refcode-btn[data-copy]');
+    if (copyBtn) { copyToClipboard(copyBtn.getAttribute('data-copy')); flashCopied(copyBtn); return; }
+    var msgBtn = e.target.closest('.a-copy-msg-btn[data-copy-msg]');
+    if (msgBtn) { copyToClipboard(msgBtn.getAttribute('data-copy-msg')); flashCopied(msgBtn); }
+  });
+
+  // Customer's tracking code (renters.public_code) is auto-saved on their
+  // device at rent time, so the admin normally never needs it -- but it
+  // comes up (cleared browser, new phone, asking on Messenger), so every
+  // place we show it also offers a one-click "Copy message" with a
+  // ready-to-paste Messenger line pointing them back to it.
+  function siteAccountUrl() {
+    var origin = (window.location && window.location.origin) || '';
+    // Guard against file:// (this repo's own test harness) or an opaque
+    // 'null' origin -- fall back to a real, readable example URL rather
+    // than copying garbage into the admin's Messenger message.
+    if (origin.indexOf('http') === 0) return origin + '/account/';
+    return 'https://ps5-rentals.vercel.app/account/';
+  }
+  function publicCodeMessage(code) {
+    return 'Your June Digitals tracking code is ' + code + ' -- open ' + siteAccountUrl() +
+      ' and enter it to see your rentals and request a swap.';
+  }
+  // renter may be missing entirely (embed came back null) or simply not
+  // have a public_code yet (pre-migration_14, or a pre-existing renter row
+  // that hasn't been backfilled) -- both render as a plain dash, never an
+  // empty cell or a thrown error.
+  function publicCodeCell(renter) {
+    var code = renter && renter.public_code;
+    if (!code) return '<span class="a-text-3">&mdash;</span>';
+    var msg = publicCodeMessage(code);
+    return '<span class="a-code-actions">' +
+      '<button type="button" class="a-refcode-btn" data-copy="' + esc(code) + '" title="Click to copy the code">' + esc(code) + '</button>' +
+      '<button type="button" class="a-link-btn a-copy-msg-btn" data-copy-msg="' + esc(msg) + '" title="Copy a ready-to-paste Messenger message">Copy message</button>' +
+      '</span>';
+  }
+  function timeSinceLabel(iso) {
+    var ms = Date.now() - new Date(iso).getTime();
+    if (!(ms >= 0)) return 'just now';
+    var mins = Math.floor(ms / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    var hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ' + (mins % 60) + 'm ago';
+    return Math.floor(hrs / 24) + 'd ago';
+  }
+  function countdownLabel(msLeft) {
+    var totalSecs = Math.max(0, Math.floor(msLeft / 1000));
+    var mins = Math.floor(totalSecs / 60);
+    var secs = totalSecs % 60;
+    return mins + ':' + (secs < 10 ? '0' : '') + secs + ' left';
+  }
+  // Ticks the "waiting"/"hold" cells in any table rendered with
+  // data-created-at / data-hold-expires on its <tr> and .a-live-since /
+  // .a-live-hold cells inside it -- called once per render and then once a
+  // second from the same setInterval(tickLiveClocks, 1000) that already
+  // drove the topbar's "Updated Xs ago" text.
+  function updateLiveCountdownCells(tableSelector) {
+    var rows = document.querySelectorAll(tableSelector + ' tbody tr');
+    Array.prototype.forEach.call(rows, function (tr) {
+      var createdAt = tr.getAttribute('data-created-at');
+      var holdExp = tr.getAttribute('data-hold-expires');
+      var sinceCell = tr.querySelector('.a-live-since');
+      var holdCell = tr.querySelector('.a-live-hold');
+      if (sinceCell) sinceCell.textContent = createdAt ? timeSinceLabel(createdAt) : '--';
+      if (holdCell) {
+        if (!holdExp) {
+          holdCell.textContent = 'No hold set';
+          holdCell.className = 'a-live-hold a-text-3';
+        } else {
+          var msLeft = new Date(holdExp).getTime() - Date.now();
+          if (msLeft <= 0) {
+            holdCell.textContent = 'Expired';
+            holdCell.className = 'a-live-hold a-text-red';
+          } else {
+            holdCell.textContent = countdownLabel(msLeft);
+            holdCell.className = 'a-live-hold';
+          }
+        }
+      }
+    });
+  }
+
+  // ---- pending payments tab (the new main queue -- see
+  // RENT-FLOW-CONTRACT.md decision #1). Source: rentals where
+  // status='pending', newest first. Filters out queue_position rows --
+  // those are pre-reserve reservations for 'upcoming' games, a separate
+  // older flow still driven from the Rentals tab (Confirm Payment /
+  // Activate honoring queue order); this queue is only the ordinary
+  // self-serve pending rentals the new create_rental_hold RPC writes. ----
+  function pendingRows() {
+    return state.rentals.filter(function (r) { return r.status === 'pending' && r.queue_position == null; })
+      .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+  }
+  function renderPending() {
+    var tbody = document.querySelector('#pendingTable tbody');
+    tbody.innerHTML = '';
+    var rows = pendingRows();
+    $('pendingEmpty').hidden = rows.length > 0;
+    var badge = $('pendingBadge');
+    badge.textContent = rows.length ? '(' + rows.length + ')' : '';
+    if (state.settings.hold_minutes) $('pendingHoldMinutesHint').textContent = state.settings.hold_minutes;
+    rows.forEach(function (r) {
+      var game = r.games || {};
+      var renter = r.renters || {};
+      var tr = document.createElement('tr');
+      tr.setAttribute('data-created-at', r.created_at || '');
+      tr.setAttribute('data-hold-expires', r.hold_expires_at || '');
+      var cover = game.cover ? '<img class="a-pending-cover" src="' + esc(game.cover) + '" alt="">' : '';
+      var refCode = r.ref_code
+        ? '<button type="button" class="a-refcode-btn" data-copy="' + esc(r.ref_code) + '" title="Click to copy">' + esc(r.ref_code) + '</button>'
+        : '<span class="a-text-3" title="Pre-migration row -- ref_code not backfilled yet">&mdash;</span>';
+      var linked = renter.auth_user_id
+        ? '<span class="a-pill a-pill-linked" title="Signed-in customer account">Linked</span>' : '';
+      tr.innerHTML =
+        '<td>' + cover + esc(game.title) + '</td>' +
+        '<td>' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + '</td>' +
+        '<td>' + (r.plan === 'weekly' ? 'Weekly' : 'Monthly') + '</td>' +
+        '<td>₱' + (r.amount != null ? r.amount : 0) + '</td>' +
+        '<td>' + refCode + '</td>' +
+        '<td>' + esc(renter.name) + ' ' + linked + '</td>' +
+        '<td>' + publicCodeCell(renter) + '</td>' +
+        '<td class="a-live-since">--</td>' +
+        '<td class="a-live-hold">--</td>' +
+        '<td class="a-actions-cell">' +
+          '<button type="button" class="a-btn a-btn-green" data-action="confirm-paid" data-id="' + r.id + '">Confirm Paid</button> ' +
+          '<button type="button" class="a-btn a-btn-red" data-action="decline" data-id="' + r.id + '">Decline</button>' +
+        '</td>';
+      tbody.appendChild(tr);
+    });
+    updateLiveCountdownCells('#pendingTable');
+  }
+
+  function confirmPending(rental) {
+    var input = window.prompt('GCash reference number (optional -- leave blank and click OK to skip):', rental.gcash_ref || '');
+    if (input === null) return; // admin cancelled -- do nothing
+    var patch = { status: 'active', payment_status: 'paid' };
+    // hold_expires_at only exists once migration_14 has run -- guard with
+    // hasOwnProperty (present as an explicit key, even when null, whenever
+    // the column exists) rather than assuming it's there, same reasoning
+    // as the select-side guidance: an unknown column in the update payload
+    // 400s the whole request just as badly as one in a filter.
+    if (Object.prototype.hasOwnProperty.call(rental, 'hold_expires_at')) patch.hold_expires_at = null;
+    var ref = input.trim();
+    if (ref) patch.gcash_ref = ref;
+    // IMPORTANT: do NOT touch games.*_available/*_available_at here. The
+    // slot was already soft-held (flipped unavailable) the moment
+    // create_rental_hold created this pending row -- flipping it again on
+    // confirm would be a second, redundant "close" that has no matching
+    // "open" and desyncs the slot from reality the next time this rental
+    // legitimately frees up. Confirming payment only changes the rental's
+    // own status/payment_status.
+    supabase.from('rentals').update(patch).eq('id', rental.id).then(function (res) {
+      if (res.error) { alert(res.error.message); return; }
+      loadAll();
+    });
+  }
+
+  function declinePending(rental) {
+    var ok = window.confirm('Decline this pending payment and free the slot? This cannot be undone from here.');
+    if (!ok) return;
+    supabase.from('rentals').update({ status: 'cancelled' }).eq('id', rental.id).then(function (res) {
+      if (res.error) { alert(res.error.message); return; }
+      // Declining is the one case where we DO free the slot -- nobody is
+      // going to pay for it, so the hold this pending row was placed on
+      // needs to be released back to the public site.
+      setGameSlotAvailable(rental.game_id, rental.slot, true).then(function (res2) {
+        if (res2.error) { alert(res2.error.message); return; }
+        loadAll();
+      });
+    });
+  }
+
+  document.querySelector('#pendingTable tbody').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-action]');
+    if (!btn) return; // copy buttons are handled by the delegated listener above
+    var id = Number(btn.getAttribute('data-id'));
+    var rental = state.rentals.filter(function (r) { return r.id === id; })[0];
+    if (!rental) return;
+    var action = btn.getAttribute('data-action');
+    if (action === 'confirm-paid') confirmPending(rental);
+    else if (action === 'decline') declinePending(rental);
+  });
+
+  // ---- swap requests tab (CONTRACT-AMENDMENT-1.md -- swaps no longer
+  // auto-approve; the customer's submit_swap_request RPC soft-holds the
+  // target slot and drops a pending row here for the admin). swap_requests
+  // may not exist yet (migration_16) -- state.swapRequestsAvailable comes
+  // from loadAll() checking res.error on that query, not from anything in
+  // this render, so a missing table shows a hint instead of erroring. ----
+  function renderSwaps() {
+    var hint = $('swapsMigrationHint');
+    var wrap = $('swapsTableWrap');
+    var badge = $('swapsBadge');
+    if (!state.swapRequestsAvailable) {
+      hint.hidden = false;
+      wrap.style.display = 'none';
+      $('swapsEmpty').hidden = true;
+      badge.textContent = '';
+      return;
+    }
+    hint.hidden = true;
+    wrap.style.display = '';
+    var tbody = document.querySelector('#swapsTable tbody');
+    tbody.innerHTML = '';
+    var rows = state.swapRequests.filter(function (r) { return r.status === 'pending'; })
+      .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+    $('swapsEmpty').hidden = rows.length > 0;
+    badge.textContent = rows.length ? '(' + rows.length + ')' : '';
+    rows.forEach(function (req) {
+      var renter = state.renters.filter(function (r) { return r.id === req.renter_id; })[0] || {};
+      var fromGame = state.games.filter(function (g) { return g.id === req.from_game_id; })[0] || {};
+      var toGame = state.games.filter(function (g) { return g.id === req.to_game_id; })[0] || {};
+      var rental = state.rentals.filter(function (r) { return r.id === req.rental_id; })[0];
+      var tr = document.createElement('tr');
+      tr.setAttribute('data-created-at', req.created_at || '');
+      tr.setAttribute('data-hold-expires', req.hold_expires_at || '');
+      var refCode = req.ref_code
+        ? '<button type="button" class="a-refcode-btn" data-copy="' + esc(req.ref_code) + '" title="Click to copy">' + esc(req.ref_code) + '</button>'
+        : '<span class="a-text-3">&mdash;</span>';
+      var swapsInfo = '&mdash;';
+      if (rental) {
+        var used = rental.swap_count != null ? rental.swap_count : swapsUsed(rental);
+        var limit = planSwapLimit(rental.plan);
+        swapsInfo = used + (limit != null ? ' / ' + limit : '') +
+          (limit != null ? ' <span class="a-text-3">(' + Math.max(0, limit - used) + ' left)</span>' : '');
+      }
+      tr.innerHTML =
+        '<td>' + esc(renter.name || 'Unknown') + '<br>' + publicCodeCell(renter) + '</td>' +
+        '<td>' + (fromGame.cover ? '<img class="a-pending-cover" src="' + esc(fromGame.cover) + '" alt="">' : '') +
+          esc(fromGame.title || 'Unknown') + ' (' + (req.from_slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ')</td>' +
+        '<td>' + (toGame.cover ? '<img class="a-pending-cover" src="' + esc(toGame.cover) + '" alt="">' : '') +
+          esc(toGame.title || 'Unknown') + ' (' + (req.to_slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ')</td>' +
+        '<td>' + (rental ? fmtDate(rental.end_date) : '&mdash;') + '</td>' +
+        '<td>' + swapsInfo + '</td>' +
+        '<td>' + refCode + '</td>' +
+        '<td class="a-live-since">--</td>' +
+        '<td class="a-live-hold">--</td>' +
+        '<td class="a-actions-cell">' +
+          '<button type="button" class="a-btn a-btn-green" data-action="approve-swap" data-id="' + req.id + '">Approve</button> ' +
+          '<button type="button" class="a-btn a-btn-red" data-action="decline-swap" data-id="' + req.id + '">Decline</button>' +
+        '</td>';
+      tbody.appendChild(tr);
+    });
+    updateLiveCountdownCells('#swapsTable');
+  }
+
+  // Both RPCs are admin-only security-definer functions that do all the
+  // slot/rentals bookkeeping atomically server-side -- we only ever call
+  // them here, never flip games.*_available or write to rentals ourselves
+  // for a swap. Doing both would double-free/double-hold the slot.
+  function swapRpcResultError(res) {
+    if (res.error) return res.error.message;
+    var row = res.data && res.data[0];
+    if (row && row.ok === false) {
+      return row.error === 'not_admin'
+        ? 'You are not recognized as an admin for this action.'
+        : ('Could not complete: ' + (row.error || 'unknown error'));
+    }
+    return null;
+  }
+  function approveSwapRequest(req) {
+    var note = window.prompt('Optional note for this approval (leave blank and press OK to skip):', '');
+    if (note === null) return;
+    supabase.rpc('approve_swap_request', { p_id: req.id, p_note: note.trim() || null }).then(function (res) {
+      var err = swapRpcResultError(res);
+      if (err) { alert(err); return; }
+      loadAll();
+    });
+  }
+  function declineSwapRequest(req) {
+    var ok = window.confirm('Decline this swap request and release the held slot back to the public site?');
+    if (!ok) return;
+    var note = window.prompt('Optional note for this decline (leave blank and press OK to skip):', '');
+    if (note === null) return;
+    supabase.rpc('decline_swap_request', { p_id: req.id, p_note: note.trim() || null }).then(function (res) {
+      var err = swapRpcResultError(res);
+      if (err) { alert(err); return; }
+      loadAll();
+    });
+  }
+  document.querySelector('#swapsTable tbody').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-action]');
+    if (!btn) return; // copy buttons are handled by the delegated listener above
+    var id = Number(btn.getAttribute('data-id'));
+    var req = state.swapRequests.filter(function (r) { return r.id === id; })[0];
+    if (!req) return;
+    var action = btn.getAttribute('data-action');
+    if (action === 'approve-swap') approveSwapRequest(req);
+    else if (action === 'decline-swap') declineSwapRequest(req);
+  });
+
+  // A rental created by an approved swap request still needs its new
+  // game's credentials sent on Messenger -- that's the admin's only
+  // remaining manual step (CONTRACT-AMENDMENT-1.md). Keyed off an actual
+  // *approved* swap_requests row rather than guessing from the rental's
+  // own age, so this only fires for swaps that went through the real
+  // approval queue (not a plain admin-initiated Swap Game from the
+  // Rentals tab, where the admin already knows and just did it).
+  function approvedSwapRequestFor(rental) {
+    if (rental.swapped_from_rental_id == null) return null;
+    return state.swapRequests.filter(function (sr) {
+      return sr.status === 'approved' && sr.rental_id === rental.swapped_from_rental_id;
+    })[0];
+  }
+  function needsCredentialsHint(rental) {
+    var sr = approvedSwapRequestFor(rental);
+    if (!sr || !sr.handled_at) return false;
+    return (Date.now() - new Date(sr.handled_at).getTime()) / 3600000 < 24;
+  }
+
   // ---- incoming requests tab ----
   // rental_requests.renter_id doesn't exist in the live DB until
   // migration_13_request_identity.sql is applied -- req.renter_id is simply
@@ -233,6 +636,15 @@
         ) + '</td>';
       tbody.appendChild(tr);
     });
+    // Legacy Requests is historical-only now (new requests land straight in
+    // Pending Payments as real `rentals` rows) -- once there is nothing
+    // left in the old inbox, collapse the nav tab so it stops adding noise.
+    // If it was the active tab when it emptied out, fall back to Pending
+    // Payments instead of leaving the admin on a hidden tab.
+    var requestsTab = document.querySelector('.a-tab[data-tab="requests"]');
+    var wasActiveAndNowEmpty = state.requests.length === 0 && requestsTab.classList.contains('is-active');
+    requestsTab.hidden = state.requests.length === 0;
+    if (wasActiveAndNowEmpty) document.querySelector('.a-tab[data-tab="pending"]').click();
   }
 
   document.querySelector('#requestsTable tbody').addEventListener('click', function (e) {
@@ -323,9 +735,17 @@
     return chain;
   }
   function swapsUsed(rental) { return swapChain(rental).length - 1; }
-  // Site copy promises Weekly = 1 swap, Monthly = multiple -- only Weekly
-  // is actually capped.
-  function swapLimitReached(rental) { return rental.plan === 'weekly' && swapsUsed(rental) >= 1; }
+  // The allowance lives in settings (swap_limit_weekly / swap_limit_monthly,
+  // see migration_14), so the admin app and the DB's submit_swap_request()
+  // agree on one number instead of each enforcing its own. Falls back to the
+  // old hardcoded rule (weekly capped at 1, monthly uncapped) only when
+  // settings aren't readable -- e.g. before migration_14 is applied.
+  function swapLimitReached(rental) {
+    var limit = planSwapLimit(rental.plan);
+    var used = rental.swap_count != null ? rental.swap_count : swapsUsed(rental);
+    if (limit == null) return rental.plan === 'weekly' && used >= 1;
+    return used >= limit;
+  }
   function paymentPill(p) {
     return '<span class="a-pill ' + (p === 'paid' ? 'a-pill-paid' : 'a-pill-pending') + '">' + esc(p) + '</span>';
   }
@@ -400,7 +820,12 @@
         }
         var usedSoFar = swapsUsed(r);
         if (swapLimitReached(r)) {
-          actions += '<button type="button" class="a-menu-item" disabled title="Weekly plan includes 1 swap, already used">Swap limit reached</button>';
+          var reachedLimit = planSwapLimit(r.plan);
+          actions += '<button type="button" class="a-menu-item" disabled title="' +
+            esc(reachedLimit != null
+              ? 'This ' + r.plan + ' rental includes ' + reachedLimit + ' swap' + (reachedLimit === 1 ? '' : 's') + ', all used'
+              : 'Swap allowance already used') +
+            '">Swap limit reached</button>';
         } else {
           var cooldownHours = swapCooldownHoursLeft(r);
           if (cooldownHours > 0) {
@@ -417,8 +842,28 @@
         }
       }
       var isQueued = r.status === 'pending' && r.queue_position != null;
+      // A rental created by request_swap/approve_swap_request carries
+      // swapped_from_rental_id -- badge it "Swapped" (this column already
+      // exists today, unlike swap_count/the swap_requests join below, so
+      // this badge always shows regardless of migration state) plus how
+      // many swaps it's used against the plan's limit, when swap_count is
+      // available, and a "Needs credentials" cue for the ~24h window after
+      // an *approved* swap request while the admin still owes the customer
+      // the new game's login on Messenger.
+      var swapInfo = '';
+      if (r.swapped_from_rental_id != null) {
+        swapInfo += ' <span class="a-pill a-pill-swap" title="Created by a swap -- old rental ended, this one carries the same end date">Swapped</span>';
+        if (r.swap_count != null) {
+          var swapLimitVal = planSwapLimit(r.plan);
+          swapInfo += ' <span class="a-hint" style="display:inline;margin:0;">(' + r.swap_count + ' swap' + (r.swap_count === 1 ? '' : 's') +
+            (swapLimitVal != null ? ', ' + Math.max(0, swapLimitVal - r.swap_count) + ' left' : '') + ')</span>';
+        }
+        if (needsCredentialsHint(r)) {
+          swapInfo += ' <span class="a-pill a-pill-pending" title="Approved swap -- send the new game\'s credentials on Messenger">Needs credentials</span>';
+        }
+      }
       tr.innerHTML =
-        '<td>' + esc(game.title) + '</td>' +
+        '<td>' + esc(game.title) + swapInfo + '</td>' +
         '<td>' + esc(renter.name) + ' ' + messengerIcon(renterObj && renterObj.messenger_url) + '</td>' +
         '<td>' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + '</td>' +
         '<td>' + (r.plan === 'weekly' ? 'Weekly' : 'Monthly') + ' (₱<span data-amount-display>' + r.amount + '</span>' +
@@ -580,9 +1025,14 @@
   // ---- new rental tab ----
   function populateRenterSelect() {
     var sel = $('renterSelect');
+    // state.renters arrives newest-first for the Renters list; a dropdown is
+    // scanned by name, so sort a copy rather than mutating shared state.
+    var byName = state.renters.slice().sort(function (a, b) {
+      return String(a.name || '').localeCompare(String(b.name || ''));
+    });
     var current = sel.value;
     sel.innerHTML = '<option value="__new">+ New renter</option>' +
-      state.renters.map(function (r) {
+      byName.map(function (r) {
         return '<option value="' + r.id + '">' + esc(r.name) + (r.auth_user_id ? ' (linked account)' : '') + '</option>';
       }).join('');
     sel.value = current || '__new';
@@ -814,6 +1264,15 @@
     });
   });
 
+  // Swap allowance is per plan (weekly rentals get fewer than monthly ones),
+  // with the flat swap_limit as the fallback for anything unconfigured.
+  function planSwapLimit(plan) {
+    var st = state.settings || {};
+    var v = st['swap_limit_' + String(plan || '').toLowerCase()];
+    if (v === undefined || v === null || v === '') v = st.swap_limit;
+    return (v === undefined || v === null || v === '') ? null : Number(v);
+  }
+
   function renderRenters() {
     var tbody = document.querySelector('#rentersTable tbody');
     tbody.innerHTML = '';
@@ -840,12 +1299,22 @@
       menuItems += '<button type="button" class="a-menu-item" data-action="edit-messenger-link" data-id="' + r.id + '">' +
         (r.messenger_url ? 'Edit Messenger link' : 'Add Messenger link') + '</button>';
       menuItems += '<button type="button" class="a-menu-item" data-action="merge" data-id="' + r.id + '">Merge into another renter&hellip;</button>';
+      if (r.public_code) {
+        menuItems += '<button type="button" class="a-menu-item" data-copy="' + esc(welcomeLink(r.public_code)) + '">Copy welcome link</button>';
+      }
+      if (r.auth_user_id) {
+        menuItems += '<button type="button" class="a-menu-item a-menu-item-danger" data-action="unregister" data-id="' + r.id + '">Remove account registration</button>';
+      }
+      if (theirRentals.length === 0) {
+        menuItems += '<button type="button" class="a-menu-item a-menu-item-danger" data-action="delete-renter" data-id="' + r.id + '">Delete renter</button>';
+      }
       var accountCell = r.auth_user_id
         ? '<span class="a-pill a-pill-linked" title="Has a customer-portal account">Linked</span>'
         : '—';
       tr.innerHTML = '<td>' + esc(r.name) + ' ' + messengerIcon(r.messenger_url) + '</td><td>' + esc(r.messenger_name) + '</td>' +
         '<td>' + esc(r.contact_note) + '</td><td>' + fmtDate((r.created_at || '').slice(0, 10)) + '</td>' +
         '<td>' + accountCell + '</td>' +
+        '<td>' + publicCodeCell(r) + '</td>' +
         '<td>₱' + totalPaid.toLocaleString() + '</td>' +
         '<td>' + theirRentals.length + '</td>' +
         '<td>' + (activeNow ? '<span class="a-pill a-pill-active">' + activeNow + '</span>' : '—') + '</td>' +
@@ -854,7 +1323,64 @@
     });
   }
 
+  // The onboarding page a customer lands on after the owner confirms their
+  // GCash payment: it welcomes them, hands over their tracking code with a
+  // copy button, explains the rules and swapping, then drops them into their
+  // rentals with the code already saved. The code travels in the URL so the
+  // customer never has to type it.
+  function welcomeLink(code) {
+    var origin = 'https://ps5-rentals.vercel.app';
+    try {
+      if (window.location.origin && window.location.origin.indexOf('http') === 0) origin = window.location.origin;
+    } catch (err) { /* ignore -- fall back to the production origin */ }
+    return origin + '/welcome/?code=' + encodeURIComponent(code);
+  }
+
   document.querySelector('#rentersTable tbody').addEventListener('click', function (e) {
+    // Unlinks the customer's portal login from this renter WITHOUT touching
+    // their rental history. Deleting the auth.users row itself needs the
+    // service-role key, which this browser app deliberately does not have --
+    // so the confirm text tells the owner where to finish the job.
+    var unregBtn = e.target.closest('button[data-action="unregister"]');
+    if (unregBtn) {
+      var uid = Number(unregBtn.getAttribute('data-id'));
+      var ur = state.renters.filter(function (r) { return r.id === uid; })[0];
+      if (!ur) return;
+      if (!window.confirm(
+        'Remove the account registration for ' + ur.name + '?\n\n' +
+        'Their rentals, history and tracking code all stay exactly as they are -- ' +
+        'only the email login stops being attached to this renter.\n\n' +
+        'If they sign up again with the same email they will get a NEW, empty renter ' +
+        'row, so use Merge afterwards if that happens. To free the email address ' +
+        'entirely, also delete the user in Supabase: Authentication -> Users.'
+      )) return;
+      supabase.from('renters').update({ auth_user_id: null }).eq('id', uid).then(function (res) {
+        if (res.error) { alert(res.error.message); return; }
+        loadAll();
+      });
+      return;
+    }
+
+    // Only offered when the renter has zero rentals -- the FK on rentals is
+    // `on delete restrict`, so a delete with history would fail at the DB
+    // anyway. Checked again here in case the list is stale.
+    var delBtn = e.target.closest('button[data-action="delete-renter"]');
+    if (delBtn) {
+      var did = Number(delBtn.getAttribute('data-id'));
+      var dr = state.renters.filter(function (r) { return r.id === did; })[0];
+      if (!dr) return;
+      if (renterRentals(did).length) {
+        alert('This renter has rentals, so they cannot be deleted. Merge them into another renter instead.');
+        return;
+      }
+      if (!window.confirm('Permanently delete the renter "' + dr.name + '"? This cannot be undone.')) return;
+      supabase.from('renters').delete().eq('id', did).then(function (res) {
+        if (res.error) { alert(res.error.message); return; }
+        loadAll();
+      });
+      return;
+    }
+
     var editBtn = e.target.closest('button[data-action="edit-messenger-link"]');
     if (editBtn) {
       var id = Number(editBtn.getAttribute('data-id'));
@@ -1065,6 +1591,7 @@
         if (res.error) throw res.error;
         $('addGameForm').reset();
         $('gReservationRow').hidden = true;
+        closeAddGameModal();
         loadAll();
       }).catch(function (err) {
         $('addGameError').textContent = err.message || 'Failed to add game.';
@@ -1072,7 +1599,65 @@
     });
   }
 
+  // ---- settings tab (migration_14 -- `settings` key/value table driving
+  // the customer-facing payment screen). Table may not exist yet;
+  // state.settingsAvailable is set in loadAll() from res.error, so a
+  // missing table shows a plain hint instead of an empty/broken form. ----
+  function renderSettings() {
+    var hint = $('settingsMigrationHint');
+    var form = $('settingsForm');
+    if (!state.settingsAvailable) {
+      hint.hidden = false;
+      form.style.display = 'none';
+      return;
+    }
+    hint.hidden = true;
+    form.style.display = '';
+    $('settingsSavedHint').hidden = true;
+    $('setGcashNumber').value = state.settings.gcash_number || '';
+    $('setGcashName').value = state.settings.gcash_name || '';
+    $('setMessengerUrl').value = state.settings.messenger_url || '';
+    $('setHoldMinutes').value = state.settings.hold_minutes || '';
+    $('setSwapLimit').value = state.settings.swap_limit || '';
+    $('setSwapLimitWeekly').value = state.settings.swap_limit_weekly || '';
+    $('setSwapLimitMonthly').value = state.settings.swap_limit_monthly || '';
+  }
+  $('settingsForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    $('settingsError').textContent = '';
+    $('settingsSavedHint').hidden = true;
+    // gcash_number/gcash_name here are exactly what get_public_settings()
+    // hands the public site to show every customer on the payment screen
+    // -- a typo here is a typo on every rental until the next save.
+    var rows = [
+      { key: 'gcash_number', value: $('setGcashNumber').value.trim() },
+      { key: 'gcash_name', value: $('setGcashName').value.trim() },
+      { key: 'messenger_url', value: $('setMessengerUrl').value.trim() },
+      { key: 'hold_minutes', value: String(Number($('setHoldMinutes').value) || 30) },
+      { key: 'swap_limit', value: String(Number($('setSwapLimit').value) || 2) },
+      { key: 'swap_limit_weekly', value: String(Number($('setSwapLimitWeekly').value) || 1) },
+      { key: 'swap_limit_monthly', value: String(Number($('setSwapLimitMonthly').value) || 3) }
+    ];
+    var btn = $('saveSettingsBtn');
+    btn.disabled = true;
+    supabase.from('settings').upsert(rows, { onConflict: 'key' }).then(function (res) {
+      btn.disabled = false;
+      if (res.error) { $('settingsError').textContent = res.error.message; return; }
+      $('settingsSavedHint').hidden = false;
+      loadAll();
+    });
+  });
+
   // ---- boot ----
+  // Ticks every live-updating on-screen clock: the topbar's "Updated Xs
+  // ago" text, plus the Pending Payments / Swap Requests "waiting" and
+  // "hold" countdown cells -- same setInterval(_, 1000) pattern the
+  // topbar already used, just driving more cells now.
+  function tickLiveClocks() {
+    updateLiveText();
+    updateLiveCountdownCells('#pendingTable');
+    updateLiveCountdownCells('#swapsTable');
+  }
   window.rcRequireAuth().then(function (session) {
     if (!session) return;
     $('whoami').textContent = session.user.email;
@@ -1082,8 +1667,6 @@
     // public site in real time -- poll instead of requiring a manual refresh
     // to notice a new one.
     setInterval(loadAll, 5000);
-    // Ticks the topbar's "Updated Xs ago" text between polls so the refresh
-    // cadence is visible instead of silent.
-    setInterval(updateLiveText, 1000);
+    setInterval(tickLiveClocks, 1000);
   });
 })();

@@ -33,7 +33,24 @@ a { color: inherit; }
 .a-sidebar-bottom span { font-size: 0.78rem; color: var(--a-text-2); word-break: break-all; }
 
 .a-main { flex: 1; min-width: 0; }
-.a-wrap { max-width: 1100px; margin: 0 auto; padding: 2.25rem 2rem 4rem; }
+.a-wrap { max-width: none; margin: 0; padding: 1.5rem 1.75rem 4rem; }
+
+/* Top-level panels are the page, not a card floating on it: they fill the
+   whole main column and keep filling it on a widescreen monitor, instead of
+   being pinned to a 1100px column with dead space either side. The boxed
+   .a-card look is kept for anything inside a modal (.a-panel.is-modal-open,
+   see below) and for cards nested inside another card, where the border is
+   doing real work separating content. */
+.a-main { background: var(--a-panel); }
+.a-panel:not(.is-modal-open) > .a-card {
+  border: 0; border-radius: 0; box-shadow: none;
+  padding: 0; margin-bottom: 2.5rem; background: transparent;
+}
+.a-panel:not(.is-modal-open) > .a-card:last-child { margin-bottom: 0; }
+/* The table then needs its own edge, since it no longer sits on a card. */
+.a-panel:not(.is-modal-open) > .a-card .a-table-wrap {
+  border: 1px solid var(--a-border); border-radius: var(--a-radius); overflow: hidden;
+}
 
 .a-topbar {
   position: sticky; top: 0; z-index: 5;
@@ -189,6 +206,21 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
 
 .a-pill-linked { background: var(--a-blue); }
 .a-pill-anon { background: var(--a-panel-2); color: var(--a-text-2); }
+
+/* ---- self-serve rent flow: Pending Payments / Swap Requests / tracking
+   codes (RENT-FLOW-CONTRACT.md, CONTRACT-AMENDMENT-1.md) ---- */
+.a-pending-cover { width: 28px; height: 28px; object-fit: cover; border-radius: 6px; vertical-align: middle; margin-right: 0.5rem; }
+.a-refcode-btn {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 700; font-size: 0.92rem;
+  background: var(--a-panel-2); border: none; border-radius: 0.5rem; color: var(--a-text);
+  padding: 0.3rem 0.6rem; cursor: pointer; letter-spacing: .03em;
+}
+.a-refcode-btn:hover { background: #e4e4e7; }
+.a-code-actions { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.a-copy-msg-btn { font-size: 0.72rem; white-space: nowrap; }
+.a-text-3 { color: var(--a-text-3); }
+.a-text-red { color: var(--a-red); font-weight: 700; }
+.a-live-since, .a-live-hold { font-variant-numeric: tabular-nums; }
 
 .a-chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.1rem; }
 .a-chip {

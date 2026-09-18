@@ -1,0 +1,104 @@
+/* Onboarding page (/welcome/). Uses the shared --rc-* tokens from
+   catalog.css, so light mode and dark mode both come for free.
+
+   Two exceptions below: --rc-green and the DON'T red are tuned for a dark
+   background, and both wash out on the light theme's near-white panels, so
+   they get darker values under [data-theme="light"]. */
+
+.jd-welcome {
+  --jd-green: var(--rc-green);
+  --jd-red: #ff6b6b;
+  --jd-red-bg: #ff4d4d26;
+}
+[data-theme="light"] .jd-welcome {
+  --jd-green: #14853f;
+  --jd-red: #c0271f;
+  --jd-red-bg: #c0271f1a;
+}
+
+.jd-welcome { max-width: 680px; margin: 0 auto; color: var(--rc-text); }
+
+.jd-hero { text-align: center; margin-bottom: 32px; }
+.jd-hero-badge {
+  display: inline-block; padding: 6px 14px; border-radius: 999px;
+  background: color-mix(in srgb, var(--jd-green) 16%, transparent);
+  color: var(--jd-green); font-size: 11px; font-weight: 700;
+  letter-spacing: .12em; margin-bottom: 16px;
+}
+.jd-hero-title { font-size: 34px; line-height: 1.15; margin: 0 0 10px; }
+.jd-hero-sub { color: var(--rc-text-2); font-size: 15px; margin: 0; }
+
+.jd-card {
+  position: relative; background: var(--rc-panel);
+  border: 1px solid var(--rc-border); border-radius: 14px;
+  padding: 24px 22px; margin-bottom: 16px;
+}
+.jd-card-id { border-color: var(--rc-blue); box-shadow: 0 0 0 3px var(--rc-blue-glow); }
+.jd-step-num {
+  position: absolute; top: -12px; left: 20px;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--rc-blue); color: #fff;
+  font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.jd-card-title { font-size: 19px; margin: 4px 0 8px; }
+.jd-card-sub { color: var(--rc-text-2); font-size: 14px; line-height: 1.55; margin: 0 0 16px; }
+
+/* The code itself is the payload of this whole page -- make it impossible
+   to miss and trivial to copy. */
+.jd-code-box {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--rc-panel-2); border: 1px dashed var(--rc-border);
+  border-radius: 10px; padding: 16px 18px;
+}
+.jd-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 26px; font-weight: 700; letter-spacing: .06em;
+  color: var(--rc-text); flex: 1 1 auto; word-break: break-all;
+}
+.jd-copy-btn {
+  flex: 0 0 auto; padding: 10px 18px; border-radius: 8px;
+  border: 0; background: var(--rc-blue); color: #fff;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.jd-copy-btn.is-copied { background: var(--jd-green); }
+.jd-code-hint { color: var(--rc-text-3); font-size: 12.5px; margin: 10px 0 0; }
+
+.jd-rental-list { display: flex; flex-direction: column; gap: 12px; }
+.jd-rental { display: flex; gap: 14px; align-items: center; }
+.jd-rental-cover { width: 54px; height: 72px; object-fit: cover; border-radius: 6px; flex: 0 0 auto; }
+.jd-rental-cover-blank { background: var(--rc-panel-2); }
+.jd-rental-title { font-size: 15px; font-weight: 600; }
+.jd-rental-sub { color: var(--rc-text-2); font-size: 13px; margin-top: 2px; }
+.jd-rental-days { color: var(--jd-green); font-size: 13px; font-weight: 600; margin-top: 4px; }
+
+.jd-steps { margin: 0; padding-left: 20px; color: var(--rc-text-2); font-size: 14.5px; line-height: 1.65; }
+.jd-steps li { margin-bottom: 9px; }
+.jd-steps strong { color: var(--rc-text); }
+
+.jd-rules { list-style: none; margin: 0; padding: 0; font-size: 14.5px; line-height: 1.6; color: var(--rc-text-2); }
+.jd-rules li { display: flex; gap: 10px; align-items: baseline; margin-bottom: 10px; }
+.jd-rule-ok, .jd-rule-no {
+  flex: 0 0 auto; font-size: 10.5px; font-weight: 700; letter-spacing: .08em;
+  padding: 3px 8px; border-radius: 5px;
+}
+.jd-rule-ok { background: color-mix(in srgb, var(--jd-green) 18%, transparent); color: var(--jd-green); }
+.jd-rule-no { background: var(--jd-red-bg); color: var(--jd-red); }
+
+.jd-note { color: var(--rc-text-3); font-size: 13px; margin: 14px 0 0; line-height: 1.55; }
+.jd-note a { color: var(--rc-blue); }
+
+.jd-cta { text-align: center; margin-top: 28px; }
+.jd-cta-btn {
+  display: block; width: 100%; padding: 16px; border-radius: 10px;
+  background: var(--rc-blue); color: #fff; font-size: 16px; font-weight: 700;
+  text-decoration: none;
+}
+.jd-cta-link { display: inline-block; margin-top: 14px; color: var(--rc-text-2); font-size: 14px; }
+
+@media (max-width: 479px) {
+  .jd-hero-title { font-size: 27px; }
+  .jd-card { padding: 22px 16px; }
+  .jd-code { font-size: 21px; }
+  .jd-copy-btn { width: 100%; }
+}
