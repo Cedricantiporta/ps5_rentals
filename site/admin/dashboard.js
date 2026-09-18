@@ -735,9 +735,17 @@
     return chain;
   }
   function swapsUsed(rental) { return swapChain(rental).length - 1; }
-  // Site copy promises Weekly = 1 swap, Monthly = multiple -- only Weekly
-  // is actually capped.
-  function swapLimitReached(rental) { return rental.plan === 'weekly' && swapsUsed(rental) >= 1; }
+  // The allowance lives in settings (swap_limit_weekly / swap_limit_monthly,
+  // see migration_14), so the admin app and the DB's submit_swap_request()
+  // agree on one number instead of each enforcing its own. Falls back to the
+  // old hardcoded rule (weekly capped at 1, monthly uncapped) only when
+  // settings aren't readable -- e.g. before migration_14 is applied.
+  function swapLimitReached(rental) {
+    var limit = planSwapLimit(rental.plan);
+    var used = rental.swap_count != null ? rental.swap_count : swapsUsed(rental);
+    if (limit == null) return rental.plan === 'weekly' && used >= 1;
+    return used >= limit;
+  }
   function paymentPill(p) {
     return '<span class="a-pill ' + (p === 'paid' ? 'a-pill-paid' : 'a-pill-pending') + '">' + esc(p) + '</span>';
   }
@@ -812,7 +820,12 @@
         }
         var usedSoFar = swapsUsed(r);
         if (swapLimitReached(r)) {
-          actions += '<button type="button" class="a-menu-item" disabled title="Weekly plan includes 1 swap, already used">Swap limit reached</button>';
+          var reachedLimit = planSwapLimit(r.plan);
+          actions += '<button type="button" class="a-menu-item" disabled title="' +
+            esc(reachedLimit != null
+              ? 'This ' + r.plan + ' rental includes ' + reachedLimit + ' swap' + (reachedLimit === 1 ? '' : 's') + ', all used'
+              : 'Swap allowance already used') +
+            '">Swap limit reached</button>';
         } else {
           var cooldownHours = swapCooldownHoursLeft(r);
           if (cooldownHours > 0) {

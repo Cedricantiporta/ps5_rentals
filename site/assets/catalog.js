@@ -371,6 +371,7 @@
   function openModal(slug, pushHistory) {
     var g = findGame(slug);
     if (!g) return;
+    loadPublicSettings();
     state.modalGame = g;
     state.plan = 'weekly';
     state.slot = null;
@@ -814,6 +815,37 @@
     });
   }
 
+  // Swap allowance is configurable per plan in the admin Settings tab, so
+  // the wizard must not hardcode it -- the owner changing the number would
+  // silently make this copy a lie. publicSettings is filled in by a single
+  // get_public_settings() call the first time a game modal opens; until it
+  // resolves (or if the RPC isn't deployed yet) we fall back to the wording
+  // the site shipped with, which matches the seeded defaults.
+  var publicSettings = null;
+  var publicSettingsLoading = false;
+  function loadPublicSettings() {
+    if (publicSettings || publicSettingsLoading) return;
+    var sb = getPublicSupabase();
+    if (!sb) return;
+    publicSettingsLoading = true;
+    sb.rpc('get_public_settings').then(function (res) {
+      publicSettingsLoading = false;
+      if (!res || res.error || !res.data || !res.data[0]) return;
+      publicSettings = res.data[0];
+      // The plan step may already be on screen with the fallback copy.
+      if (state.step === 'plan') renderModal();
+    }, function () { publicSettingsLoading = false; });
+  }
+  function swapsCopy(plan) {
+    var n = publicSettings && publicSettings['swap_limit_' + plan];
+    if (n === undefined || n === null || n === '') {
+      return plan === 'weekly' ? '1 swap' : 'multiple swaps';
+    }
+    n = Number(n);
+    if (!n) return 'no swaps';
+    return n + ' swap' + (n === 1 ? '' : 's');
+  }
+
   function renderPlanStep(g) {
     var upcoming = g.status === 'upcoming';
     return '' +
@@ -824,13 +856,13 @@
         '<button type="button" class="rc-plan-card rc-plan-weekly" data-plan="weekly">' +
           '<span class="rc-plan-name">Weekly</span>' +
           '<span class="rc-plan-price">' + peso(g.trophy.weekly) + '</span>' +
-          '<span class="rc-plan-desc">7 days · 1 swap · 24h cooldown after completed swap</span>' +
+          '<span class="rc-plan-desc">7 days · ' + swapsCopy('weekly') + ' · 24h cooldown after completed swap</span>' +
           '<span class="rc-plan-tap">Tap to choose</span>' +
         '</button>' +
         '<button type="button" class="rc-plan-card rc-plan-monthly" data-plan="monthly">' +
           '<span class="rc-plan-name">Monthly</span>' +
           '<span class="rc-plan-price">' + peso(g.trophy.monthly) + '</span>' +
-          '<span class="rc-plan-desc">30 days · multiple swaps · 24h cooldown after completed swap</span>' +
+          '<span class="rc-plan-desc">30 days · ' + swapsCopy('monthly') + ' · 24h cooldown after completed swap</span>' +
           '<span class="rc-plan-tap">Tap to choose</span>' +
         '</button>' +
       '</div>';
