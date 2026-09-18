@@ -565,13 +565,20 @@
   // log the first person out of their own rentals. localStorage throws in
   // private-browsing modes, so this must never break the payment screen.
   var TRACK_CODE_KEY = 'rc-track-code';
-  function saveTrackCodeIfAbsent(code) {
+  function loadTrackCode() {
+    try { return localStorage.getItem(TRACK_CODE_KEY) || null; } catch (e) { return null; }
+  }
+  // Always store the code the server just handed back for THIS rental. The
+  // earlier "don't overwrite" rule protected a shared device but broke the
+  // common case: a guest renting a second time kept their first code and
+  // their new rental was invisible on the tracking page. Since the stored
+  // code is now sent to create_rental_hold (migration_18), the server
+  // normally returns the SAME code back, so this rewrites like for like --
+  // and when it genuinely differs, the person who just paid on this device
+  // is the one whose code should win.
+  function saveTrackCode(code) {
     if (!code) return;
-    try {
-      if (!localStorage.getItem(TRACK_CODE_KEY)) {
-        localStorage.setItem(TRACK_CODE_KEY, code);
-      }
-    } catch (e) {}
+    try { localStorage.setItem(TRACK_CODE_KEY, code); } catch (e) {}
   }
 
   function buildModalHeader(g) {
@@ -716,8 +723,27 @@
     if (!sb) { renderModal(); finalizeRental(slotKey); return; }
 
     getSignedInRenterId().then(function (renterId) {
-      return sb.rpc('create_rental_hold', {
-        p_game_slug: g.slug, p_slot: slotKey, p_plan: state.plan, p_renter_id: renterId || null
+      var args = {
+        p_game_slug: g.slug, p_slot: slotKey, p_plan: state.plan,
+        p_renter_id: renterId || null
+      };
+      // p_public_code lets a returning guest keep one renter row and one
+      // tracking code across rentals (migration_18). Harmless when absent or
+      // stale -- the server falls back to creating a renter. Ignored for a
+      // signed-in customer, whose p_renter_id takes priority.
+      var code = loadTrackCode();
+      if (!code) return sb.rpc('create_rental_hold', args);
+      args.p_public_code = code;
+      return sb.rpc('create_rental_hold', args).then(function (res) {
+        // Before migration_18 the function has six arguments, so passing a
+        // seventh means PostgREST can't resolve it at all. Retry without the
+        // code rather than dropping the customer back to Messenger -- losing
+        // the renter-reuse nicety beats losing the rental.
+        if (res && res.error) {
+          delete args.p_public_code;
+          return sb.rpc('create_rental_hold', args);
+        }
+        return res;
       });
     }).then(function (res) {
       if (state.modalGame !== g) return; // stale response -- customer moved on
@@ -734,7 +760,7 @@
       }
       state.hold = row;
       state.holdError = null;
-      saveTrackCodeIfAbsent(row.public_code);
+      saveTrackCode(row.public_code);
       state.step = 'payment';
       renderModal();
       pushStepState();
