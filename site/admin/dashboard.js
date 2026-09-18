@@ -158,7 +158,10 @@
   function loadAll() {
     return Promise.all([
       supabase.from('games').select('*').order('title'),
-      supabase.from('renters').select('*').order('name'),
+      // Newest first: a renter the owner just created (or who just signed up)
+      // is the one they're about to act on. populateRenterSelect() re-sorts a
+      // copy by name, so the dropdown stays alphabetical for scanning.
+      supabase.from('renters').select('*').order('created_at', { ascending: false }),
       // Embed nested games/renters with '*' rather than naming columns --
       // ref_code/swap_count/hold_expires_at/public_code may not exist yet
       // (see RENT-FLOW-CONTRACT.md), and naming an unknown column anywhere
@@ -1009,9 +1012,14 @@
   // ---- new rental tab ----
   function populateRenterSelect() {
     var sel = $('renterSelect');
+    // state.renters arrives newest-first for the Renters list; a dropdown is
+    // scanned by name, so sort a copy rather than mutating shared state.
+    var byName = state.renters.slice().sort(function (a, b) {
+      return String(a.name || '').localeCompare(String(b.name || ''));
+    });
     var current = sel.value;
     sel.innerHTML = '<option value="__new">+ New renter</option>' +
-      state.renters.map(function (r) {
+      byName.map(function (r) {
         return '<option value="' + r.id + '">' + esc(r.name) + (r.auth_user_id ? ' (linked account)' : '') + '</option>';
       }).join('');
     sel.value = current || '__new';
@@ -1269,6 +1277,15 @@
       menuItems += '<button type="button" class="a-menu-item" data-action="edit-messenger-link" data-id="' + r.id + '">' +
         (r.messenger_url ? 'Edit Messenger link' : 'Add Messenger link') + '</button>';
       menuItems += '<button type="button" class="a-menu-item" data-action="merge" data-id="' + r.id + '">Merge into another renter&hellip;</button>';
+      if (r.public_code) {
+        menuItems += '<button type="button" class="a-menu-item" data-copy="' + esc(welcomeLink(r.public_code)) + '">Copy welcome link</button>';
+      }
+      if (r.auth_user_id) {
+        menuItems += '<button type="button" class="a-menu-item a-menu-item-danger" data-action="unregister" data-id="' + r.id + '">Remove account registration</button>';
+      }
+      if (theirRentals.length === 0) {
+        menuItems += '<button type="button" class="a-menu-item a-menu-item-danger" data-action="delete-renter" data-id="' + r.id + '">Delete renter</button>';
+      }
       var accountCell = r.auth_user_id
         ? '<span class="a-pill a-pill-linked" title="Has a customer-portal account">Linked</span>'
         : '—';
@@ -1284,7 +1301,64 @@
     });
   }
 
+  // The onboarding page a customer lands on after the owner confirms their
+  // GCash payment: it welcomes them, hands over their tracking code with a
+  // copy button, explains the rules and swapping, then drops them into their
+  // rentals with the code already saved. The code travels in the URL so the
+  // customer never has to type it.
+  function welcomeLink(code) {
+    var origin = 'https://ps5-rentals.vercel.app';
+    try {
+      if (window.location.origin && window.location.origin.indexOf('http') === 0) origin = window.location.origin;
+    } catch (err) { /* ignore -- fall back to the production origin */ }
+    return origin + '/welcome/?code=' + encodeURIComponent(code);
+  }
+
   document.querySelector('#rentersTable tbody').addEventListener('click', function (e) {
+    // Unlinks the customer's portal login from this renter WITHOUT touching
+    // their rental history. Deleting the auth.users row itself needs the
+    // service-role key, which this browser app deliberately does not have --
+    // so the confirm text tells the owner where to finish the job.
+    var unregBtn = e.target.closest('button[data-action="unregister"]');
+    if (unregBtn) {
+      var uid = Number(unregBtn.getAttribute('data-id'));
+      var ur = state.renters.filter(function (r) { return r.id === uid; })[0];
+      if (!ur) return;
+      if (!window.confirm(
+        'Remove the account registration for ' + ur.name + '?\n\n' +
+        'Their rentals, history and tracking code all stay exactly as they are -- ' +
+        'only the email login stops being attached to this renter.\n\n' +
+        'If they sign up again with the same email they will get a NEW, empty renter ' +
+        'row, so use Merge afterwards if that happens. To free the email address ' +
+        'entirely, also delete the user in Supabase: Authentication -> Users.'
+      )) return;
+      supabase.from('renters').update({ auth_user_id: null }).eq('id', uid).then(function (res) {
+        if (res.error) { alert(res.error.message); return; }
+        loadAll();
+      });
+      return;
+    }
+
+    // Only offered when the renter has zero rentals -- the FK on rentals is
+    // `on delete restrict`, so a delete with history would fail at the DB
+    // anyway. Checked again here in case the list is stale.
+    var delBtn = e.target.closest('button[data-action="delete-renter"]');
+    if (delBtn) {
+      var did = Number(delBtn.getAttribute('data-id'));
+      var dr = state.renters.filter(function (r) { return r.id === did; })[0];
+      if (!dr) return;
+      if (renterRentals(did).length) {
+        alert('This renter has rentals, so they cannot be deleted. Merge them into another renter instead.');
+        return;
+      }
+      if (!window.confirm('Permanently delete the renter "' + dr.name + '"? This cannot be undone.')) return;
+      supabase.from('renters').delete().eq('id', did).then(function (res) {
+        if (res.error) { alert(res.error.message); return; }
+        loadAll();
+      });
+      return;
+    }
+
     var editBtn = e.target.closest('button[data-action="edit-messenger-link"]');
     if (editBtn) {
       var id = Number(editBtn.getAttribute('data-id'));
