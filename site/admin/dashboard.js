@@ -15,8 +15,103 @@
   };
 
   function $(id) { return document.getElementById(id); }
+
+  // ---- generic modal system (replaces every native alert()/confirm()/
+  // prompt() with a styled modal that matches the rest of the app, instead
+  // of the browser's own native dialog box). Built fresh here rather than
+  // tied to any one #panel-*, since it's used from all over the dashboard --
+  // markup is injected into <body> once, on first use, and reused after
+  // that. Same visual language as the existing .a-modal-backdrop /
+  // .a-modal-card pattern (see admin.css), just a smaller generic card. ----
+  var gm = { resolve: null, mode: null };
+  function ensureGenericModalDom() {
+    if ($('genericModalBackdrop')) return;
+    var host = document.createElement('div');
+    host.innerHTML =
+      '<div class="a-modal-backdrop" id="genericModalBackdrop" hidden></div>' +
+      '<div class="a-card a-modal-card a-generic-modal" id="genericModal" hidden>' +
+        '<p class="a-generic-modal-msg" id="genericModalMsg"></p>' +
+        '<div class="a-field" id="genericModalInputWrap" hidden><input type="text" id="genericModalInput"></div>' +
+        '<div class="a-generic-modal-actions">' +
+          '<button type="button" class="a-btn" id="genericModalCancelBtn">Cancel</button>' +
+          '<button type="button" class="a-btn a-btn-primary" id="genericModalOkBtn">OK</button>' +
+        '</div>' +
+      '</div>';
+    while (host.firstChild) document.body.appendChild(host.firstChild);
+
+    $('genericModalBackdrop').addEventListener('click', function () { finishGenericModal(false); });
+    $('genericModalCancelBtn').addEventListener('click', function () { finishGenericModal(false); });
+    $('genericModalOkBtn').addEventListener('click', function () { finishGenericModal(true); });
+    $('genericModalInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); finishGenericModal(true); }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !$('genericModal').hidden) finishGenericModal(false);
+    });
+  }
+  function finishGenericModal(accepted) {
+    if (!gm.resolve) return; // nothing open (or already resolved) -- ignore
+    var mode = gm.mode;
+    var resolve = gm.resolve;
+    gm.resolve = null;
+    gm.mode = null;
+    $('genericModalBackdrop').hidden = true;
+    $('genericModal').hidden = true;
+    if (mode === 'alert') { resolve(true); return; }
+    if (mode === 'confirm') { resolve(!!accepted); return; }
+    // mode === 'prompt': mirror native prompt()'s null-on-cancel contract.
+    resolve(accepted ? $('genericModalInput').value : null);
+  }
+  function openGenericModal(mode, message, opts) {
+    ensureGenericModalDom();
+    opts = opts || {};
+    gm.mode = mode;
+    var msgEl = $('genericModalMsg');
+    msgEl.textContent = message; // .a-generic-modal-msg has white-space:pre-line, so \n still breaks lines
+    var inputWrap = $('genericModalInputWrap');
+    var input = $('genericModalInput');
+    var cancelBtn = $('genericModalCancelBtn');
+    var okBtn = $('genericModalOkBtn');
+    okBtn.className = 'a-btn ' + (opts.danger ? 'a-btn-red' : 'a-btn-primary');
+    okBtn.textContent = opts.okLabel || (mode === 'alert' ? 'OK' : 'Confirm');
+    cancelBtn.textContent = opts.cancelLabel || 'Cancel';
+    cancelBtn.hidden = mode === 'alert';
+    if (mode === 'prompt') {
+      inputWrap.hidden = false;
+      input.type = opts.inputType || 'text';
+      input.value = opts.defaultValue != null ? opts.defaultValue : '';
+      input.placeholder = opts.placeholder || '';
+    } else {
+      inputWrap.hidden = true;
+    }
+    $('genericModalBackdrop').hidden = false;
+    $('genericModal').hidden = false;
+    // Focus the input (prompt) or the primary action (alert/confirm) --
+    // not a full focus trap, but Tab still cycles between Cancel/OK/input
+    // since they're the only focusable elements in the modal.
+    setTimeout(function () {
+      if (mode === 'prompt') { input.focus(); input.select(); } else { okBtn.focus(); }
+    }, 0);
+    return new Promise(function (resolve) { gm.resolve = resolve; });
+  }
+  // showAlert(message, opts) -- one message, one OK button.
+  function showAlert(message, opts) { return openGenericModal('alert', message, opts); }
+  // showConfirm(message, opts) -- Cancel/Confirm (or opts.okLabel, e.g.
+  // "Decline"), opts.danger for a destructive action's red confirm button.
+  // Returns a Promise<boolean>.
+  function showConfirm(message, opts) { return openGenericModal('confirm', message, opts); }
+  // showPrompt(message, opts) -- Cancel/OK plus a text input. opts.defaultValue,
+  // opts.placeholder, opts.inputType. Resolves with the string entered, or
+  // null on cancel (matches native prompt()'s contract exactly).
+  function showPrompt(message, opts) { return openGenericModal('prompt', message, opts); }
+
   var MESSENGER_ICON = '<svg class="a-msg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Has a Messenger link"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
   function messengerIcon(url) { return url ? MESSENGER_ICON : ''; }
+  // Inline "copy" / "copied" icons for icon-only copy buttons (no external
+  // icon library -- same house style as MESSENGER_ICON above: lucide-style
+  // 24x24 viewBox, currentColor stroke).
+  var COPY_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+  var CHECK_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>';
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function todayISO() { return new Date().toISOString().slice(0, 10); }
   function addDaysISO(iso, days) {
@@ -288,6 +383,23 @@
     } catch (e) { /* clipboard unsupported -- nothing more we can do */ }
   }
   function flashCopied(btn) {
+    // Icon-only buttons (e.g. the copy-message button) give feedback by
+    // briefly swapping their icon for a checkmark instead of replacing
+    // text that isn't there; text buttons (e.g. the ref-code button) keep
+    // the original "Copied!" text swap.
+    if (btn.classList.contains('a-icon-btn')) {
+      var originalTitle = btn.getAttribute('title');
+      var originalHtml = btn.innerHTML;
+      btn.innerHTML = CHECK_ICON;
+      btn.classList.add('is-copied');
+      btn.setAttribute('title', 'Copied!');
+      setTimeout(function () {
+        btn.innerHTML = originalHtml;
+        btn.classList.remove('is-copied');
+        if (originalTitle != null) btn.setAttribute('title', originalTitle);
+      }, 1200);
+      return;
+    }
     var original = btn.textContent;
     btn.textContent = 'Copied!';
     setTimeout(function () { btn.textContent = original; }, 1200);
@@ -330,7 +442,7 @@
     var msg = publicCodeMessage(code);
     return '<span class="a-code-actions">' +
       '<button type="button" class="a-refcode-btn" data-copy="' + esc(code) + '" title="Click to copy the code">' + esc(code) + '</button>' +
-      '<button type="button" class="a-link-btn a-copy-msg-btn" data-copy-msg="' + esc(msg) + '" title="Copy a ready-to-paste Messenger message">Copy message</button>' +
+      '<button type="button" class="a-icon-btn a-copy-msg-btn" data-copy-msg="' + esc(msg) + '" title="Copy a ready-to-paste Messenger message with this code">' + COPY_ICON + '</button>' +
       '</span>';
   }
   function timeSinceLabel(iso) {
@@ -431,41 +543,43 @@
   }
 
   function confirmPending(rental) {
-    var input = window.prompt('GCash reference number (optional -- leave blank and click OK to skip):', rental.gcash_ref || '');
-    if (input === null) return; // admin cancelled -- do nothing
-    var patch = { status: 'active', payment_status: 'paid' };
-    // hold_expires_at only exists once migration_14 has run -- guard with
-    // hasOwnProperty (present as an explicit key, even when null, whenever
-    // the column exists) rather than assuming it's there, same reasoning
-    // as the select-side guidance: an unknown column in the update payload
-    // 400s the whole request just as badly as one in a filter.
-    if (Object.prototype.hasOwnProperty.call(rental, 'hold_expires_at')) patch.hold_expires_at = null;
-    var ref = input.trim();
-    if (ref) patch.gcash_ref = ref;
-    // IMPORTANT: do NOT touch games.*_available/*_available_at here. The
-    // slot was already soft-held (flipped unavailable) the moment
-    // create_rental_hold created this pending row -- flipping it again on
-    // confirm would be a second, redundant "close" that has no matching
-    // "open" and desyncs the slot from reality the next time this rental
-    // legitimately frees up. Confirming payment only changes the rental's
-    // own status/payment_status.
-    supabase.from('rentals').update(patch).eq('id', rental.id).then(function (res) {
-      if (res.error) { alert(res.error.message); return; }
-      loadAll();
+    showPrompt('GCash reference number (optional -- leave blank and click OK to skip):', { defaultValue: rental.gcash_ref || '' }).then(function (input) {
+      if (input === null) return; // admin cancelled -- do nothing
+      var patch = { status: 'active', payment_status: 'paid' };
+      // hold_expires_at only exists once migration_14 has run -- guard with
+      // hasOwnProperty (present as an explicit key, even when null, whenever
+      // the column exists) rather than assuming it's there, same reasoning
+      // as the select-side guidance: an unknown column in the update payload
+      // 400s the whole request just as badly as one in a filter.
+      if (Object.prototype.hasOwnProperty.call(rental, 'hold_expires_at')) patch.hold_expires_at = null;
+      var ref = input.trim();
+      if (ref) patch.gcash_ref = ref;
+      // IMPORTANT: do NOT touch games.*_available/*_available_at here. The
+      // slot was already soft-held (flipped unavailable) the moment
+      // create_rental_hold created this pending row -- flipping it again on
+      // confirm would be a second, redundant "close" that has no matching
+      // "open" and desyncs the slot from reality the next time this rental
+      // legitimately frees up. Confirming payment only changes the rental's
+      // own status/payment_status.
+      supabase.from('rentals').update(patch).eq('id', rental.id).then(function (res) {
+        if (res.error) { showAlert(res.error.message); return; }
+        loadAll();
+      });
     });
   }
 
   function declinePending(rental) {
-    var ok = window.confirm('Decline this pending payment and free the slot? This cannot be undone from here.');
-    if (!ok) return;
-    supabase.from('rentals').update({ status: 'cancelled' }).eq('id', rental.id).then(function (res) {
-      if (res.error) { alert(res.error.message); return; }
-      // Declining is the one case where we DO free the slot -- nobody is
-      // going to pay for it, so the hold this pending row was placed on
-      // needs to be released back to the public site.
-      setGameSlotAvailable(rental.game_id, rental.slot, true).then(function (res2) {
-        if (res2.error) { alert(res2.error.message); return; }
-        loadAll();
+    showConfirm('Decline this pending payment and free the slot? This cannot be undone from here.', { okLabel: 'Decline', danger: true }).then(function (ok) {
+      if (!ok) return;
+      supabase.from('rentals').update({ status: 'cancelled' }).eq('id', rental.id).then(function (res) {
+        if (res.error) { showAlert(res.error.message); return; }
+        // Declining is the one case where we DO free the slot -- nobody is
+        // going to pay for it, so the hold this pending row was placed on
+        // needs to be released back to the public site.
+        setGameSlotAvailable(rental.game_id, rental.slot, true).then(function (res2) {
+          if (res2.error) { showAlert(res2.error.message); return; }
+          loadAll();
+        });
       });
     });
   }
@@ -559,23 +673,26 @@
     return null;
   }
   function approveSwapRequest(req) {
-    var note = window.prompt('Optional note for this approval (leave blank and press OK to skip):', '');
-    if (note === null) return;
-    supabase.rpc('approve_swap_request', { p_id: req.id, p_note: note.trim() || null }).then(function (res) {
-      var err = swapRpcResultError(res);
-      if (err) { alert(err); return; }
-      loadAll();
+    showPrompt('Optional note for this approval (leave blank and press OK to skip):', { defaultValue: '' }).then(function (note) {
+      if (note === null) return;
+      supabase.rpc('approve_swap_request', { p_id: req.id, p_note: note.trim() || null }).then(function (res) {
+        var err = swapRpcResultError(res);
+        if (err) { showAlert(err); return; }
+        loadAll();
+      });
     });
   }
   function declineSwapRequest(req) {
-    var ok = window.confirm('Decline this swap request and release the held slot back to the public site?');
-    if (!ok) return;
-    var note = window.prompt('Optional note for this decline (leave blank and press OK to skip):', '');
-    if (note === null) return;
-    supabase.rpc('decline_swap_request', { p_id: req.id, p_note: note.trim() || null }).then(function (res) {
-      var err = swapRpcResultError(res);
-      if (err) { alert(err); return; }
-      loadAll();
+    showConfirm('Decline this swap request and release the held slot back to the public site?', { okLabel: 'Decline', danger: true }).then(function (ok) {
+      if (!ok) return;
+      showPrompt('Optional note for this decline (leave blank and press OK to skip):', { defaultValue: '' }).then(function (note) {
+        if (note === null) return;
+        supabase.rpc('decline_swap_request', { p_id: req.id, p_note: note.trim() || null }).then(function (res) {
+          var err = swapRpcResultError(res);
+          if (err) { showAlert(err); return; }
+          loadAll();
+        });
+      });
     });
   }
   document.querySelector('#swapsTable tbody').addEventListener('click', function (e) {
@@ -799,11 +916,14 @@
             var ren = state.renters.filter(function (x) { return x.id === r.renter_id; })[0];
             return '#' + r.queue_position + ' (' + (ren ? ren.name : 'unknown') + ')';
           }).join(', ');
-          var ok = window.confirm(
+          showConfirm(
             'This renter is #' + rental.queue_position + ' in the queue for this slot -- ' + aheadNames +
             ' is still ahead of them and hasn\'t been activated or cancelled yet. Activate this one anyway?'
-          );
-          if (!ok) return;
+          ).then(function (ok) {
+            if (!ok) return;
+            activateRental(rental);
+          });
+          return;
         }
       }
       activateRental(rental);
@@ -812,18 +932,21 @@
     else if (action === 'end') setRentalStatus(rental, 'ended', true);
     else if (action === 'end-override') {
       var left = daysLeft(rental.end_date);
-      var ok = window.confirm(
-        'This rental still has ' + left + ' day' + (left === 1 ? '' : 's') + ' remaining. End it early anyway?'
-      );
-      if (ok) setRentalStatus(rental, 'ended', true);
+      showConfirm(
+        'This rental still has ' + left + ' day' + (left === 1 ? '' : 's') + ' remaining. End it early anyway?',
+        { okLabel: 'End Early', danger: true }
+      ).then(function (ok) {
+        if (ok) setRentalStatus(rental, 'ended', true);
+      });
     } else if (action === 'edit-amount') {
-      var input = window.prompt('Amount actually paid (₱) for this rental:', rental.amount);
-      if (input === null) return;
-      var newAmount = Number(input);
-      if (!(newAmount >= 0)) { alert('Enter a valid non-negative number.'); return; }
-      supabase.from('rentals').update({ amount: newAmount }).eq('id', id).then(function (res) {
-        if (res.error) { alert(res.error.message); return; }
-        loadAll();
+      showPrompt('Amount actually paid (₱) for this rental:', { defaultValue: rental.amount, inputType: 'number' }).then(function (input) {
+        if (input === null) return;
+        var newAmount = Number(input);
+        if (!(newAmount >= 0)) { showAlert('Enter a valid non-negative number.'); return; }
+        supabase.from('rentals').update({ amount: newAmount }).eq('id', id).then(function (res) {
+          if (res.error) { showAlert(res.error.message); return; }
+          loadAll();
+        });
       });
     } else if (action === 'swap') {
       startSwap(rental);
@@ -833,10 +956,10 @@
         var g = r.games || {};
         return (i + 1) + '. ' + (g.title || 'Unknown') + ' (' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ')' + (i === chain.length - 1 ? ' -- current' : '');
       });
-      window.alert('Swap history for this rental (' + (chain.length - 1) + ' swap' + (chain.length - 1 === 1 ? '' : 's') + '):\n\n' + lines.join('\n'));
+      showAlert('Swap history for this rental (' + (chain.length - 1) + ' swap' + (chain.length - 1 === 1 ? '' : 's') + '):\n\n' + lines.join('\n'));
     } else if (action === 'confirm-payment') {
       supabase.from('rentals').update({ payment_status: 'paid' }).eq('id', id).then(function (res) {
-        if (res.error) { alert(res.error.message); return; }
+        if (res.error) { showAlert(res.error.message); return; }
         loadAll();
       });
     }
@@ -855,11 +978,11 @@
     supabase.from('rentals').update({
       status: 'active', payment_status: 'paid', start_date: start, end_date: end
     }).eq('id', rental.id).then(function (res) {
-      if (res.error) { alert(res.error.message); return; }
+      if (res.error) { showAlert(res.error.message); return; }
       // Slot frees up the day after the rental's end date -- shown on the
       // public site as a "Xd left" countdown instead of a flat FULL.
       return setGameSlotAvailable(rental.game_id, rental.slot, false, addDaysISO(end, 1)).then(function (res2) {
-        if (res2.error) { alert(res2.error.message); return; }
+        if (res2.error) { showAlert(res2.error.message); return; }
         return incrementTimesRented(rental.game_id).then(function () {
           return resolveQueueSlot(rental).then(loadAll);
         });
@@ -869,9 +992,9 @@
 
   function setRentalStatus(rental, status, freeSlot) {
     supabase.from('rentals').update({ status: status }).eq('id', rental.id).then(function (res) {
-      if (res.error) { alert(res.error.message); return; }
+      if (res.error) { showAlert(res.error.message); return; }
       if (freeSlot) return setGameSlotAvailable(rental.game_id, rental.slot, true).then(function (res2) {
-        if (res2.error) { alert(res2.error.message); return; }
+        if (res2.error) { showAlert(res2.error.message); return; }
         return resolveQueueSlot(rental).then(loadAll);
       });
       return resolveQueueSlot(rental).then(loadAll);
@@ -1015,12 +1138,12 @@
   // renter/end-date so the remaining paid time carries over) ----
   function startSwap(rental) {
     if (swapLimitReached(rental)) {
-      alert('This is a Weekly rental -- it already used its 1 included swap.');
+      showAlert('This is a Weekly rental -- it already used its 1 included swap.');
       return;
     }
     var cooldownHours = swapCooldownHoursLeft(rental);
     if (cooldownHours > 0) {
-      alert('This rental started less than 24 hours ago. Swap available in ' + cooldownHours + ' more hour' + (cooldownHours === 1 ? '' : 's') + '.');
+      showAlert('This rental started less than 24 hours ago. Swap available in ' + cooldownHours + ' more hour' + (cooldownHours === 1 ? '' : 's') + '.');
       return;
     }
     var renter = state.renters.filter(function (r) { return r.id === rental.renter_id; })[0];
@@ -1240,17 +1363,20 @@
       var uid = Number(unregBtn.getAttribute('data-id'));
       var ur = state.renters.filter(function (r) { return r.id === uid; })[0];
       if (!ur) return;
-      if (!window.confirm(
+      showConfirm(
         'Remove the account registration for ' + ur.name + '?\n\n' +
         'Their rentals, history and tracking code all stay exactly as they are -- ' +
         'only the email login stops being attached to this renter.\n\n' +
         'If they sign up again with the same email they will get a NEW, empty renter ' +
         'row, so use Merge afterwards if that happens. To free the email address ' +
-        'entirely, also delete the user in Supabase: Authentication -> Users.'
-      )) return;
-      supabase.from('renters').update({ auth_user_id: null }).eq('id', uid).then(function (res) {
-        if (res.error) { alert(res.error.message); return; }
-        loadAll();
+        'entirely, also delete the user in Supabase: Authentication -> Users.',
+        { okLabel: 'Remove', danger: true }
+      ).then(function (ok) {
+        if (!ok) return;
+        supabase.from('renters').update({ auth_user_id: null }).eq('id', uid).then(function (res) {
+          if (res.error) { showAlert(res.error.message); return; }
+          loadAll();
+        });
       });
       return;
     }
@@ -1264,13 +1390,15 @@
       var dr = state.renters.filter(function (r) { return r.id === did; })[0];
       if (!dr) return;
       if (renterRentals(did).length) {
-        alert('This renter has rentals, so they cannot be deleted. Merge them into another renter instead.');
+        showAlert('This renter has rentals, so they cannot be deleted. Merge them into another renter instead.');
         return;
       }
-      if (!window.confirm('Permanently delete the renter "' + dr.name + '"? This cannot be undone.')) return;
-      supabase.from('renters').delete().eq('id', did).then(function (res) {
-        if (res.error) { alert(res.error.message); return; }
-        loadAll();
+      showConfirm('Permanently delete the renter "' + dr.name + '"? This cannot be undone.', { okLabel: 'Delete', danger: true }).then(function (ok) {
+        if (!ok) return;
+        supabase.from('renters').delete().eq('id', did).then(function (res) {
+          if (res.error) { showAlert(res.error.message); return; }
+          loadAll();
+        });
       });
       return;
     }
@@ -1280,14 +1408,15 @@
       var id = Number(editBtn.getAttribute('data-id'));
       var renter = state.renters.filter(function (r) { return r.id === id; })[0];
       if (!renter) return;
-      var input = window.prompt(
+      showPrompt(
         'Messenger conversation link for ' + renter.name + ' (paste the URL from your address bar while viewing their thread in Messenger/Business Suite):',
-        renter.messenger_url || 'https://www.facebook.com/messages/t/'
-      );
-      if (input === null) return;
-      supabase.from('renters').update({ messenger_url: input.trim() || null }).eq('id', id).then(function (res) {
-        if (res.error) { alert(res.error.message); return; }
-        loadAll();
+        { defaultValue: renter.messenger_url || 'https://www.facebook.com/messages/t/' }
+      ).then(function (input) {
+        if (input === null) return;
+        supabase.from('renters').update({ messenger_url: input.trim() || null }).eq('id', id).then(function (res) {
+          if (res.error) { showAlert(res.error.message); return; }
+          loadAll();
+        });
       });
       return;
     }
@@ -1436,7 +1565,7 @@
       if (sel.value === 'true') patch[slot + '_available_at'] = null;
     } else patch[slot + '_reservation_status'] = sel.value;
     supabase.from('games').update(patch).eq('id', gameId).then(function (res) {
-      if (res.error) alert(res.error.message);
+      if (res.error) showAlert(res.error.message);
       loadAll();
     });
   });
