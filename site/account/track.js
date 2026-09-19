@@ -34,7 +34,10 @@
     loading: document.getElementById('rcLoading'),
     failState: document.getElementById('rcFailState'),
     rentalsWrap: document.getElementById('rcRentalsWrap'),
-    grid: document.getElementById('rcGuestGrid')
+    activeGrid: document.getElementById('rcGuestActiveGrid'),
+    activeEmpty: document.getElementById('rcGuestActiveEmpty'),
+    historyGrid: document.getElementById('rcGuestHistoryGrid'),
+    historyEmpty: document.getElementById('rcGuestHistoryEmpty')
   };
 
   var currentCode = '';
@@ -106,19 +109,20 @@
 
   // ---- rendering ----
 
-  function daysLeftLabel(r) {
-    var n = r.days_left;
-    if (n === null || n === undefined) return '';
-    if (n < 0) return 'Ended ' + Math.abs(n) + 'd ago';
-    if (n === 0) return 'Ends today';
-    return n + 'd left';
-  }
-
+  // Active Rentals: a tall, portrait "card" -- big cover art with a large
+  // focal days-left badge overlaid on it, matching the signed-in portal's
+  // card style (see RCAccount.daysLeftBig / index.html).
   function renderGuestCard(r) {
     var status = RCAccount.statusInfo(r.status);
     var payment = RCAccount.paymentInfo(r.payment_status);
     var swapsLeft = Math.max(0, SWAP_LIMIT - (r.swap_count || 0));
-    var daysLine = daysLeftLabel(r);
+
+    var big = r.days_left !== null && r.days_left !== undefined ? RCAccount.daysLeftBig(r.days_left) : null;
+    var daysBadge = big ?
+      '<div class="rc-rental-days-badge ' + big.cls + '">' +
+        '<span class="rc-rental-days-num">' + RCAccount.esc(big.num) + '</span>' +
+        '<span class="rc-rental-days-label">' + RCAccount.esc(big.label) + '</span>' +
+      '</div>' : '';
 
     var swapBlock;
     if (r.pending_swap_id) {
@@ -133,8 +137,11 @@
     }
 
     return '' +
-      '<div class="rc-rental-card">' +
-        '<img class="rc-rental-cover" loading="lazy" src="' + RCAccount.esc(r.game_cover || '') + '" alt="' + RCAccount.esc(r.game_title || '') + '">' +
+      '<div class="rc-rental-card" data-game-slug="' + RCAccount.esc(r.game_slug || '') + '">' +
+        '<div class="rc-rental-cover-wrap">' +
+          '<img class="rc-rental-cover" loading="lazy" src="' + RCAccount.esc(r.game_cover || '') + '" alt="' + RCAccount.esc(r.game_title || '') + '">' +
+          daysBadge +
+        '</div>' +
         '<div class="rc-rental-body">' +
           '<p class="rc-rental-title">' + RCAccount.esc(r.game_title || 'Unknown game') + '</p>' +
           '<div class="rc-rental-tags">' +
@@ -145,7 +152,6 @@
           '</div>' +
           '<div class="rc-rental-dates">' +
             '<strong>' + RCAccount.fmtDate(r.start_date) + '</strong> &ndash; <strong>' + RCAccount.fmtDate(r.end_date) + '</strong>' +
-            (r.status === 'active' && daysLine ? ' &middot; ' + daysLine : '') +
           '</div>' +
           '<div class="rc-rental-meta">Ref code <strong>' + RCAccount.esc(r.ref_code || '') + '</strong> &middot; Swaps left ' + swapsLeft + '</div>' +
           swapBlock +
@@ -153,17 +159,70 @@
       '</div>';
   }
 
-  function renderRentals(rows) {
-    els.grid.innerHTML = rows.map(renderGuestCard).join('');
+  // History: deliberately NOT the big card style -- a compact "receipt
+  // list" row (tiny cover, essentials only, no swap controls) so a past
+  // rental never reads as prominent/urgent the way an Active one does.
+  function renderGuestHistoryRow(r) {
+    var status = RCAccount.statusInfo(r.status);
+    var payment = RCAccount.paymentInfo(r.payment_status);
+
+    return '' +
+      '<div class="rc-rental-history-row" data-game-slug="' + RCAccount.esc(r.game_slug || '') + '">' +
+        '<img class="rc-rental-history-cover" loading="lazy" src="' + RCAccount.esc(r.game_cover || '') + '" alt="">' +
+        '<div class="rc-rental-history-info">' +
+          '<p class="rc-rental-history-title">' + RCAccount.esc(r.game_title || 'Unknown game') + '</p>' +
+          '<div class="rc-rental-history-meta">' +
+            '<span>' + RCAccount.fmtDate(r.start_date) + ' &ndash; ' + RCAccount.fmtDate(r.end_date) + '</span>' +
+            '<span class="rc-rental-pill ' + status.cls + '">' + status.label + '</span>' +
+            '<span class="rc-rental-pill ' + payment.cls + '">' + payment.label + '</span>' +
+            '<span>Ref <strong>' + RCAccount.esc(r.ref_code || '') + '</strong></span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
   }
 
-  els.grid.addEventListener('click', function (e) {
+  function renderRentals(rows) {
+    var activeRows = rows.filter(function (r) { return r.status === 'active' || r.status === 'pending'; });
+    var historyRows = rows.filter(function (r) { return r.status === 'ended' || r.status === 'cancelled'; });
+    els.activeGrid.innerHTML = activeRows.map(renderGuestCard).join('');
+    els.historyGrid.innerHTML = historyRows.map(renderGuestHistoryRow).join('');
+    show(els.activeEmpty, activeRows.length === 0);
+    show(els.historyEmpty, historyRows.length === 0);
+  }
+
+  // Single delegated click handler shared by both grids: a dedicated
+  // "Swap Game" button keeps doing what it always did (opens the swap
+  // wizard), while a click anywhere else on a card/row opens the game's
+  // rent/swap modal via window.RCCatalog.openModal (see comment below) --
+  // the early `return` after handling the swap button means the two never
+  // both fire for the same click.
+  function handleRentalGridClick(e) {
     var btn = e.target.closest('.rc-rental-swap-btn');
-    if (!btn || btn.disabled) return;
-    var id = btn.getAttribute('data-rental-id');
-    var rental = currentRentals.filter(function (r) { return String(r.rental_id) === String(id); })[0];
-    if (rental) openSwapModal(rental);
-  });
+    if (btn) {
+      if (btn.disabled) return;
+      var id = btn.getAttribute('data-rental-id');
+      var rental = currentRentals.filter(function (r) { return String(r.rental_id) === String(id); })[0];
+      if (rental) openSwapModal(rental);
+      return;
+    }
+
+    // Click-to-open-modal: opens the SAME game's rent/swap modal so a
+    // customer can rent again, extend, or start a fresh swap through the
+    // normal catalog flow. Depends on window.RCCatalog.openModal(slug), a
+    // hook a parallel agent is adding to site/assets/catalog.js (this page
+    // already loads catalog.js + catalog.css). That work may not be merged
+    // into main yet, so this checks for the hook every time and no-ops
+    // silently if it's missing rather than erroring.
+    var item = e.target.closest('.rc-rental-card, .rc-rental-history-row');
+    if (!item) return;
+    var slug = item.getAttribute('data-game-slug');
+    if (!slug) return;
+    if (typeof window.RCCatalog !== 'undefined' && window.RCCatalog.openModal) {
+      window.RCCatalog.openModal(slug);
+    }
+  }
+  els.activeGrid.addEventListener('click', handleRentalGridClick);
+  els.historyGrid.addEventListener('click', handleRentalGridClick);
 
   // ---- swap games list (copied from assets/catalog.js's loadGames(), not
   // imported -- this file only owns site/account/. Keeps the same

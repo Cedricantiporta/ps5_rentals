@@ -26,6 +26,15 @@
         <button type="button" class="rc-account-signout" id="rcSignOutBtn">Sign Out</button>
       </div>
 
+      <div class="rc-profile-card" id="rcProfileCard" style="display:none">
+        <span class="rc-avatar-circle" id="rcProfileAvatar"></span>
+        <div class="rc-profile-info">
+          <p class="rc-profile-name" id="rcProfileName"></p>
+          <p class="rc-profile-sub">Your profile</p>
+        </div>
+        <button type="button" class="rc-profile-edit-btn" id="rcEditProfileBtn">Edit Profile</button>
+      </div>
+
       <div class="rc-account-loading" id="rcLoading">Loading your rentals...</div>
 
       <div id="rcErrorState" style="display:none">
@@ -61,7 +70,7 @@
         <p class="rc-account-sub" id="rcActiveEmpty" style="display:none;text-align:left;margin-bottom:2rem;">No active rentals right now.</p>
 
         <div class="rc-section-label"><h3>History</h3></div>
-        <div class="rc-rental-grid" id="rcHistoryGrid"></div>
+        <div class="rc-rental-history-list" id="rcHistoryGrid"></div>
         <p class="rc-account-sub" id="rcHistoryEmpty" style="display:none;text-align:left;">No past rentals yet.</p>
       </div>
 
@@ -86,6 +95,239 @@
     RCAccount.signOut();
   });
 
+  // ---- profile (display name + avatar) ----
+  //
+  // renters.display_name / renters.avatar_id come from migration_19, which
+  // may not be applied yet -- ensureRenter()/the renters select() both
+  // already treat missing columns as undefined rather than erroring (see
+  // shared.js), so every helper here is written to accept undefined/null
+  // for either field and degrade to a sensible default instead of showing
+  // "undefined" or throwing.
+  //
+  // Avatar picker: since the owner hasn't supplied real art yet, this is a
+  // small hardcoded set of slugs with a distinct color + emoji glyph each,
+  // used purely as a placeholder. Each option also tries to load the real
+  // file at /assets/avatars/<slug>.png; the moment the owner drops files at
+  // these exact paths, the <img> stops 404ing and the glyph fallback is
+  // never shown again -- no code changes needed.
+  //
+  // EXACT SLUGS THE OWNER NEEDS TO SUPPLY ART FOR (one .png each, square,
+  // at /assets/avatars/<slug>.png):
+  //   controller-blue, controller-red, ghost, trophy, star, rocket, crown, flame
+  var AVATAR_OPTIONS = [
+    { slug: 'controller-blue', label: 'Blue Controller', color: '#2562ff', glyph: '🎮' },
+    { slug: 'controller-red', label: 'Red Controller', color: '#ff4d4f', glyph: '🎮' },
+    { slug: 'ghost', label: 'Ghost', color: '#a06bff', glyph: '👻' },
+    { slug: 'trophy', label: 'Trophy', color: '#ffab2e', glyph: '🏆' },
+    { slug: 'star', label: 'Star', color: '#2fd876', glyph: '⭐' },
+    { slug: 'rocket', label: 'Rocket', color: '#ff8a3d', glyph: '🚀' },
+    { slug: 'crown', label: 'Crown', color: '#e0b400', glyph: '👑' },
+    { slug: 'flame', label: 'Flame', color: '#ff5b3d', glyph: '🔥' }
+  ];
+  function avatarOption(slug) {
+    var i;
+    for (i = 0; i < AVATAR_OPTIONS.length; i++) {
+      if (AVATAR_OPTIONS[i].slug === slug) return AVATAR_OPTIONS[i];
+    }
+    return null;
+  }
+
+  function initials(name) {
+    var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
+  // Renders the contents of an .rc-avatar-circle span: a chosen avatar's
+  // real image (with an inline onerror fallback to its glyph, since no
+  // real files exist yet) when avatarId matches a known option, otherwise
+  // an initials circle derived from the display label.
+  function avatarInnerHtml(avatarId, displayLabel) {
+    var opt = avatarId ? avatarOption(avatarId) : null;
+    if (opt) {
+      return '<img src="/assets/avatars/' + RCAccount.esc(opt.slug) + '.png" alt=""' +
+        ' onerror="this.style.display=\'none\'">' +
+        '<span class="rc-avatar-glyph">' + opt.glyph + '</span>';
+    }
+    return '<span class="rc-avatar-glyph">' + RCAccount.esc(initials(displayLabel)) + '</span>';
+  }
+  function avatarBg(avatarId) {
+    var opt = avatarId ? avatarOption(avatarId) : null;
+    return opt ? opt.color : '';
+  }
+
+  function displayNameFor(renter) {
+    if (!renter) return 'Customer';
+    return (renter.display_name && String(renter.display_name).trim()) ||
+      (renter.name && String(renter.name).trim()) ||
+      (renter.public_code ? 'Customer ' + renter.public_code : 'Customer');
+  }
+
+  var currentRenter = null;
+
+  function renderProfileCard(renter) {
+    currentRenter = renter;
+    var label = displayNameFor(renter);
+    var avatarEl = document.getElementById('rcProfileAvatar');
+    avatarEl.innerHTML = avatarInnerHtml(renter.avatar_id, label);
+    avatarEl.style.background = avatarBg(renter.avatar_id) || 'var(--rc-blue)';
+    document.getElementById('rcProfileName').textContent = label;
+    show('rcProfileCard', true);
+  }
+
+  function profileErrorMessage(error) {
+    switch (error) {
+      case 'name_too_long': return 'Keep it under 40 characters.';
+      case 'not_signed_in': return 'Your session expired. Please refresh the page and sign in again.';
+      default: return "Profile editing isn't available yet — check back soon.";
+    }
+  }
+
+  function ensureProfileModal() {
+    if (document.getElementById('rcProfileOverlay')) return;
+    var overlay = document.createElement('div');
+    overlay.className = 'rc-modal-overlay';
+    overlay.id = 'rcProfileOverlay';
+    overlay.innerHTML =
+      '<div class="rc-modal" id="rcProfileModal">' +
+        '<button type="button" class="rc-modal-close" id="rcProfileCloseX" aria-label="Close">' + RCAccount.icon('x') + '</button>' +
+        '<div class="rc-modal-body" id="rcProfileBody"></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeProfileModal(); });
+    document.getElementById('rcProfileCloseX').addEventListener('click', closeProfileModal);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeProfileModal();
+    });
+  }
+
+  function openProfileModal() {
+    ensureProfileModal();
+    document.getElementById('rcProfileOverlay').classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    renderProfileForm();
+  }
+
+  function closeProfileModal() {
+    var overlay = document.getElementById('rcProfileOverlay');
+    if (overlay) overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  function renderProfileForm() {
+    var body = document.getElementById('rcProfileBody');
+    var renter = currentRenter || {};
+    var nameVal = renter.display_name || '';
+    var selectedAvatar = renter.avatar_id || '';
+
+    body.innerHTML =
+      '<h2 class="rc-modal-title">Edit Profile</h2>' +
+      '<div class="rc-profile-field">' +
+        '<label for="rcProfileNameInput">Display name</label>' +
+        '<input id="rcProfileNameInput" type="text" maxlength="40" placeholder="' + RCAccount.esc(displayNameFor(renter)) + '" value="' + RCAccount.esc(nameVal) + '">' +
+        '<p class="rc-profile-field-count" id="rcProfileNameCount"></p>' +
+      '</div>' +
+      '<label style="display:block;font-size:0.8rem;font-weight:700;color:var(--rc-text-2);margin-bottom:0.4rem;">Avatar</label>' +
+      '<div class="rc-avatar-picker" id="rcAvatarPicker">' +
+        AVATAR_OPTIONS.map(function (opt) {
+          return '<button type="button" class="rc-avatar-option' + (opt.slug === selectedAvatar ? ' is-selected' : '') + '" data-slug="' + opt.slug + '" title="' + RCAccount.esc(opt.label) + '">' +
+            '<span class="rc-avatar-circle" style="background:' + opt.color + '">' +
+              '<img src="/assets/avatars/' + opt.slug + '.png" alt="" onerror="this.style.display=\'none\'">' +
+              '<span class="rc-avatar-glyph">' + opt.glyph + '</span>' +
+            '</span>' +
+          '</button>';
+        }).join('') +
+      '</div>' +
+      '<button type="button" class="rc-modal-cta" id="rcProfileSaveBtn">Save Profile</button>' +
+      '<button type="button" class="rc-account-signout" id="rcProfileCancelBtn" style="width:100%;margin-top:0.6rem;">Cancel</button>' +
+      '<p class="rc-account-error" id="rcProfileError"></p>';
+
+    var state = { avatarId: selectedAvatar };
+    var nameInput = document.getElementById('rcProfileNameInput');
+    var countEl = document.getElementById('rcProfileNameCount');
+    function updateCount() { countEl.textContent = nameInput.value.length + '/40'; }
+    updateCount();
+    nameInput.addEventListener('input', updateCount);
+
+    Array.prototype.forEach.call(document.querySelectorAll('#rcAvatarPicker .rc-avatar-option'), function (btn) {
+      btn.addEventListener('click', function () {
+        state.avatarId = btn.getAttribute('data-slug');
+        Array.prototype.forEach.call(document.querySelectorAll('#rcAvatarPicker .rc-avatar-option'), function (b) {
+          b.classList.toggle('is-selected', b === btn);
+        });
+      });
+    });
+
+    document.getElementById('rcProfileCancelBtn').addEventListener('click', closeProfileModal);
+    document.getElementById('rcProfileSaveBtn').addEventListener('click', function () {
+      saveProfile(nameInput.value, state.avatarId);
+    });
+  }
+
+  function saveProfile(rawName, avatarId) {
+    var btn = document.getElementById('rcProfileSaveBtn');
+    var errEl = document.getElementById('rcProfileError');
+    var name = String(rawName || '').trim();
+    if (name.length > 40) {
+      errEl.textContent = 'Keep it under 40 characters.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    errEl.textContent = '';
+
+    var opts = {
+      displayName: name || null,
+      clearDisplayName: !name,
+      avatarId: avatarId || null,
+      clearAvatar: !avatarId
+    };
+
+    RCAccount.updateMyProfile(opts).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = 'Save Profile';
+      if (!res || !res.ok) {
+        errEl.textContent = profileErrorMessage(res && res.error);
+        return;
+      }
+      currentRenter.display_name = res.display_name;
+      currentRenter.avatar_id = res.avatar_id;
+      renderProfileCard(currentRenter);
+      closeProfileModal();
+    });
+  }
+
+  document.getElementById('rcEditProfileBtn').addEventListener('click', openProfileModal);
+
+  // ---- click-to-open-modal ----
+  //
+  // Depends on window.RCCatalog.openModal(slug), a hook a parallel agent is
+  // adding to site/assets/catalog.js (this page already loads catalog.js +
+  // catalog.css). That work may not be merged into main yet, so this checks
+  // for the hook every time and no-ops silently if it's missing rather than
+  // erroring -- clicking a rental card should never break just because the
+  // hook hasn't landed.
+  function wireCardClicks(gridId) {
+    var grid = document.getElementById(gridId);
+    if (!grid) return;
+    grid.addEventListener('click', function (e) {
+      // The "Swapped N times" <details> inside a card/row has its own
+      // click-to-expand behavior; don't hijack it into opening the modal.
+      if (e.target.closest('.rc-swap-history')) return;
+      var item = e.target.closest('.rc-rental-card, .rc-rental-history-row');
+      if (!item) return;
+      var slug = item.getAttribute('data-game-slug');
+      if (!slug) return;
+      if (typeof window.RCCatalog !== 'undefined' && window.RCCatalog.openModal) {
+        window.RCCatalog.openModal(slug);
+      }
+    });
+  }
+  wireCardClicks('rcActiveGrid');
+  wireCardClicks('rcHistoryGrid');
+
   function wasSwapped(rentalId, rentals) {
     return rentals.some(function (r) { return r.swapped_from_rental_id === rentalId; });
   }
@@ -98,7 +340,24 @@
     return terminal.map(function (r) { return RCAccount.swapChain(r, rentals); });
   }
 
-  function renderCard(chain) {
+  // Builds the "Swapped N times" <details> shared by both the big Active
+  // card and the compact History row.
+  function swapHistoryNote(chain) {
+    if (chain.length <= 1) return '';
+    var items = chain.slice(0, -1).map(function (leg) {
+      var g = leg.games || {};
+      return '<div class="rc-swap-history-item"><strong>' + RCAccount.esc(g.title || 'Unknown game') + '</strong> — ' +
+        RCAccount.slotName(leg.slot) + ', ' + RCAccount.fmtDate(leg.start_date) + ' to ' + RCAccount.fmtDate(leg.end_date) + '</div>';
+    }).join('');
+    var n = chain.length - 1;
+    return '<details class="rc-swap-history"><summary>Swapped ' + n + ' time' + (n > 1 ? 's' : '') + '</summary>' +
+      '<div class="rc-swap-history-list">' + items + '</div></details>';
+  }
+
+  // Active Rentals: a tall, portrait "card" -- big cover art with a large
+  // focal days-left badge overlaid on it, per the owner's "more bigger
+  // better X days left" note.
+  function renderActiveCard(chain) {
     var current = chain[chain.length - 1];
     var game = current.games || {};
     var status = RCAccount.statusInfo(current.status);
@@ -106,21 +365,21 @@
     var chainStart = chain[0].start_date;
     var endDate = current.end_date;
 
-    var swapNote = '';
-    if (chain.length > 1) {
-      var items = chain.slice(0, -1).map(function (leg) {
-        var g = leg.games || {};
-        return '<div class="rc-swap-history-item"><strong>' + RCAccount.esc(g.title || 'Unknown game') + '</strong> — ' +
-          RCAccount.slotName(leg.slot) + ', ' + RCAccount.fmtDate(leg.start_date) + ' to ' + RCAccount.fmtDate(leg.end_date) + '</div>';
-      }).join('');
-      var n = chain.length - 1;
-      swapNote = '<details class="rc-swap-history"><summary>Swapped ' + n + ' time' + (n > 1 ? 's' : '') + '</summary>' +
-        '<div class="rc-swap-history-list">' + items + '</div></details>';
-    }
+    // A brand-new "pending" rental has no meaningful end date yet, so the
+    // days-left badge is skipped there.
+    var big = current.status !== 'pending' ? RCAccount.daysLeftBig(RCAccount.daysLeft(endDate)) : null;
+    var daysBadge = big ?
+      '<div class="rc-rental-days-badge ' + big.cls + '">' +
+        '<span class="rc-rental-days-num">' + RCAccount.esc(big.num) + '</span>' +
+        '<span class="rc-rental-days-label">' + RCAccount.esc(big.label) + '</span>' +
+      '</div>' : '';
 
     return '' +
-      '<div class="rc-rental-card">' +
-        '<img class="rc-rental-cover" loading="lazy" src="' + RCAccount.esc(game.cover || '') + '" alt="' + RCAccount.esc(game.title || '') + '">' +
+      '<div class="rc-rental-card" data-game-slug="' + RCAccount.esc(game.slug || '') + '">' +
+        '<div class="rc-rental-cover-wrap">' +
+          '<img class="rc-rental-cover" loading="lazy" src="' + RCAccount.esc(game.cover || '') + '" alt="' + RCAccount.esc(game.title || '') + '">' +
+          daysBadge +
+        '</div>' +
         '<div class="rc-rental-body">' +
           '<p class="rc-rental-title">' + RCAccount.esc(game.title || 'Unknown game') + '</p>' +
           '<div class="rc-rental-tags">' +
@@ -131,9 +390,34 @@
           '</div>' +
           '<div class="rc-rental-dates">' +
             '<strong>' + RCAccount.fmtDate(chainStart) + '</strong> – <strong>' + RCAccount.fmtDate(endDate) + '</strong>' +
-            (current.status === 'active' ? ' &middot; ' + RCAccount.daysLeftLabel(endDate) : '') +
           '</div>' +
-          swapNote +
+          swapHistoryNote(chain) +
+        '</div>' +
+      '</div>';
+  }
+
+  // History: deliberately NOT the big card style -- a compact "receipt
+  // list" row (tiny cover, essentials only) so a past rental never reads
+  // as prominent/urgent the way an Active one does.
+  function renderHistoryRow(chain) {
+    var current = chain[chain.length - 1];
+    var game = current.games || {};
+    var status = RCAccount.statusInfo(current.status);
+    var payment = RCAccount.paymentInfo(current.payment_status);
+    var chainStart = chain[0].start_date;
+    var endDate = current.end_date;
+
+    return '' +
+      '<div class="rc-rental-history-row" data-game-slug="' + RCAccount.esc(game.slug || '') + '">' +
+        '<img class="rc-rental-history-cover" loading="lazy" src="' + RCAccount.esc(game.cover || '') + '" alt="">' +
+        '<div class="rc-rental-history-info">' +
+          '<p class="rc-rental-history-title">' + RCAccount.esc(game.title || 'Unknown game') + '</p>' +
+          '<div class="rc-rental-history-meta">' +
+            '<span>' + RCAccount.fmtDate(chainStart) + ' – ' + RCAccount.fmtDate(endDate) + '</span>' +
+            '<span class="rc-rental-pill ' + status.cls + '">' + status.label + '</span>' +
+            '<span class="rc-rental-pill ' + payment.cls + '">' + payment.label + '</span>' +
+          '</div>' +
+          swapHistoryNote(chain) +
         '</div>' +
       '</div>';
   }
@@ -161,8 +445,8 @@
       return new Date(b[b.length - 1].end_date) - new Date(a[a.length - 1].end_date);
     });
 
-    document.getElementById('rcActiveGrid').innerHTML = activeChains.map(renderCard).join('');
-    document.getElementById('rcHistoryGrid').innerHTML = historyChains.map(renderCard).join('');
+    document.getElementById('rcActiveGrid').innerHTML = activeChains.map(renderActiveCard).join('');
+    document.getElementById('rcHistoryGrid').innerHTML = historyChains.map(renderHistoryRow).join('');
     show('rcActiveEmpty', activeChains.length === 0);
     show('rcHistoryEmpty', historyChains.length === 0);
     show('rcRentalsWrap', true);
@@ -195,6 +479,8 @@
         show('rcUnlinkedState', true);
         return;
       }
+
+      renderProfileCard(renter);
 
       sb.from('rentals').select('*, games(id, slug, title, cover, platform)').eq('renter_id', renter.id)
         .order('created_at', { ascending: false })

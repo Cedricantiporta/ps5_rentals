@@ -21,15 +21,28 @@
    tall, on both desktop and mobile -- !important beats the shared
    stylesheet's own breakpoint rules without needing to repeat this per
    breakpoint. */
-.navbar .padding-global.is-navbar { padding-left: 1rem !important; padding-top: 0.55rem !important; padding-bottom: 0.55rem !important; }
+.navbar .padding-global.is-navbar { padding-left: 1rem !important; padding-right: 1.25rem !important; padding-top: 0.55rem !important; padding-bottom: 0.55rem !important; }
 
 .navbar { background-color: #000 !important; background-image: none !important; }
 .navbar_list { background-color: #0a0a0a !important; }
 
 /* push nav links to the right of the topbar (next to the hamburger), and
    stop them from being forced to uppercase (frog's .text-sm default) */
-.nav_wrap { flex: 1 1 auto; justify-content: flex-end !important; margin-right: 1.5rem; }
+.nav_wrap { flex: 1 1 auto; justify-content: flex-end !important; margin-right: 1rem; }
 .navbar_list .text-sm { text-transform: none !important; }
+
+/* Horizontal compactness pass: the shared stylesheet's own gaps are quite
+   wide (Home/Library/How It Works sit 4rem apart, and the theme
+   toggle/account button/hamburger cluster is spaced 1.25rem apart) --
+   tighten both moderately so the bar reads as compact without the links
+   touching or shrinking touch targets. Unscoped (no media query) so this
+   applies at every width where the desktop nav_mobile list is shown
+   (>=992px -- below that .w-nav's own default CSS hides .w-nav-menu
+   entirely in favor of the custom .rc-menu-btn/.rc-drawer, so it never
+   conflicts with the shared stylesheet's own mobile/tablet navbar_list
+   rules, which only matter while that Webflow list is visible). */
+.navbar_list { grid-column-gap: 2rem; grid-row-gap: 2rem; }
+.nav_buttons-wrap { grid-column-gap: 0.75rem; grid-row-gap: 0.75rem; }
 
 /* white underline under the nav link matching the current page */
 .navbar_list a.link { position: relative; }

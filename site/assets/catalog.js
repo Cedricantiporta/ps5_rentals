@@ -96,7 +96,9 @@
     'chevron-right': '<path d="m9 18 6-6-6-6"/>',
     'refresh-cw': '<path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/>',
     zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
-    'message-circle': '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>'
+    'message-circle': '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+    x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    share: '<path d="M7 17 17 7"/><path d="M7 7h10v10"/>'
   };
   function icon(name, cls) {
     var paths = ICON_PATHS[name] || '';
@@ -286,16 +288,74 @@
     return t.content.firstElementChild;
   }
 
+  // Infinite strip: the prev/next arrows should never dead-end at a real
+  // boundary (see scrollByAmount in wireToolbar, which does the actual
+  // wrap-around jump) -- so "can this strip scroll" no longer depends on
+  // scrollLeft/maxScroll, just on whether there's more than one card to
+  // loop between. Looping a single card would be meaningless, so 0/1 cards
+  // still hide/disable the arrows exactly like before.
   function updateStripEdges() {
     var wrap = document.querySelector('.rc-strip-wrap');
     var track = document.getElementById('rcComingSoonTrack');
     if (!wrap || !track) return;
-    var maxScroll = track.scrollWidth - track.clientWidth;
-    var EDGE_BUFFER = 24;
-    var atStart = track.scrollLeft <= EDGE_BUFFER;
-    var atEnd = track.scrollLeft >= maxScroll - EDGE_BUFFER;
-    wrap.classList.toggle('can-scroll-left', !atStart && maxScroll > 0);
-    wrap.classList.toggle('can-scroll-right', !atEnd && maxScroll > 0);
+    var canScroll = track.children.length > 1;
+    wrap.classList.toggle('can-scroll-left', canScroll);
+    wrap.classList.toggle('can-scroll-right', canScroll);
+  }
+
+  // Dot pagination lives in a plain sibling <div> after .rc-strip-wrap,
+  // created on demand -- there is no static markup for it in index.html
+  // (this file owns catalog.js/.css only, not the page HTML), so the first
+  // renderComingSoon() call builds it once and every later call just
+  // refreshes its contents.
+  function ensureStripDotsEl() {
+    var dots = document.getElementById('rcComingSoonDots');
+    if (dots) return dots;
+    var wrap = document.querySelector('.rc-strip-wrap');
+    if (!wrap || !wrap.parentNode) return null;
+    dots = document.createElement('div');
+    dots.className = 'rc-strip-dots';
+    dots.id = 'rcComingSoonDots';
+    wrap.parentNode.insertBefore(dots, wrap.nextSibling);
+    return dots;
+  }
+
+  // Highlights whichever card is nearest the strip's current scroll
+  // position -- called after every programmatic scroll (arrows, dot clicks)
+  // and on the track's own native scroll event (drag, trackpad, touch), so
+  // the indicator tracks the strip regardless of how it was moved.
+  function updateStripDots() {
+    var track = document.getElementById('rcComingSoonTrack');
+    var dots = document.getElementById('rcComingSoonDots');
+    if (!track || !dots || !track.children.length) return;
+    var pos = track.scrollLeft;
+    var best = 0, bestDist = Infinity;
+    Array.prototype.forEach.call(track.children, function (card, i) {
+      var dist = Math.abs(card.offsetLeft - pos);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    });
+    Array.prototype.forEach.call(dots.children, function (dot, i) {
+      dot.classList.toggle('is-active', i === best);
+    });
+  }
+
+  function scrollToStripCard(index) {
+    var track = document.getElementById('rcComingSoonTrack');
+    if (!track || !track.children[index]) return;
+    track.scrollTo({ left: track.children[index].offsetLeft, behavior: 'smooth' });
+  }
+
+  // A resting "peek" -- the first card sits with ~20% of its left edge
+  // already scrolled out of view, rather than flush against the viewport
+  // edge, as a carousel affordance that there's more to scroll (per owner
+  // feedback). Applied both on initial render and whenever the infinite
+  // loop wraps back around to the start (see scrollByAmount) so it's a
+  // stable resting look, not a one-off load state that disappears the first
+  // time someone loops back to card 1.
+  function stripPeekOffset(track) {
+    var first = track.children[0];
+    if (!first) return 0;
+    return first.getBoundingClientRect().width * 0.2;
   }
 
   function renderComingSoon() {
@@ -311,20 +371,21 @@
       var n = reservationInfo(g.nontrophy.reservationStatus);
       return '' +
         '<div class="rc-soon-card" data-slug="' + g.slug + '">' +
-          '<div class="rc-card-cover-wrap">' +
+          '<div class="rc-soon-cover-wrap">' +
             '<span class="rc-badge rc-badge-upcoming">Pre-Reserve</span>' +
             '<img class="rc-soon-cover" loading="lazy" src="' + (g.cover || '') + '" alt="' + g.title + '"/>' +
           '</div>' +
           '<div class="rc-soon-body">' +
-            '<div class="rc-card-top">' +
-              '<p class="rc-soon-title">' + g.title + '</p>' +
-              platformBadge(g.platform) +
-              '<p class="rc-soon-date">Release: ' + releaseDateLabel(g.releaseDate) + '</p>' +
+            (g.genre[0] ? '<span class="rc-soon-genre">' + g.genre[0] + '</span>' : '') +
+            '<p class="rc-soon-title">' + g.title + '</p>' +
+            '<p class="rc-soon-desc">' + platformBadge(g.platform) + ' Releases ' + releaseDateLabel(g.releaseDate) + '</p>' +
+            '<div class="rc-soon-status">' +
+              '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('trophy') + ' Trophy' + helpBadge(TROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
+              '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('user') + ' Non-Trophy' + helpBadge(NONTROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
             '</div>' +
-            '<div class="rc-card-bottom">' +
-              '<div class="rc-slot-row"><span class="rc-slot-label">Trophy' + helpBadge(TROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
-              '<div class="rc-slot-row"><span class="rc-slot-label">Non-Trophy' + helpBadge(NONTROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
-              '<div class="rc-soon-prices"><span>Wk <b>' + peso(g.trophy.weekly) + '</b></span><span>Mo <b>' + peso(g.trophy.monthly) + '</b></span></div>' +
+            '<div class="rc-soon-price-row">' +
+              '<div class="rc-soon-price-box"><span class="rc-price-label">Weekly</span><span class="rc-price-value">' + peso(g.trophy.weekly) + '</span></div>' +
+              '<div class="rc-soon-price-box"><span class="rc-price-label">Monthly</span><span class="rc-price-value">' + peso(g.trophy.monthly) + '</span></div>' +
             '</div>' +
           '</div>' +
         '</div>';
@@ -332,8 +393,24 @@
     Array.prototype.forEach.call(track.children, function (card) {
       card.addEventListener('click', function () { openModal(card.getAttribute('data-slug')); });
     });
-    track.scrollLeft = 0;
+    track.scrollLeft = stripPeekOffset(track);
     updateStripEdges();
+
+    var dotsEl = ensureStripDotsEl();
+    if (dotsEl) {
+      if (upcoming.length > 1) {
+        dotsEl.style.display = '';
+        dotsEl.innerHTML = upcoming.map(function (g, i) {
+          return '<button type="button" class="rc-strip-dot' + (i === 0 ? ' is-active' : '') + '" data-index="' + i + '" aria-label="Go to ' + String(g.title).replace(/"/g, '&quot;') + '"></button>';
+        }).join('');
+        Array.prototype.forEach.call(dotsEl.children, function (dot) {
+          dot.addEventListener('click', function () { scrollToStripCard(Number(dot.getAttribute('data-index'))); });
+        });
+      } else {
+        dotsEl.style.display = 'none';
+        dotsEl.innerHTML = '';
+      }
+    }
   }
 
   function renderGrid() {
@@ -1326,14 +1403,40 @@
     var prevBtn = document.getElementById('rcSoonPrev');
     var nextBtn = document.getElementById('rcSoonNext');
     if (track && prevBtn && nextBtn) {
+      // Infinite, no-dead-end strip: a normal scrollBy would just clamp at
+      // the real start/end (the old behaviour the owner asked to remove).
+      // Instead, when a click would go past a boundary, jump straight to
+      // the opposite end -- a plain hard cut, not a seamless marquee, which
+      // the owner explicitly said is fine ("no dead end" not "seamless").
       var scrollByAmount = function (dir) {
-        var cardWidth = track.firstElementChild ? track.firstElementChild.getBoundingClientRect().width + 16 : 220;
-        track.scrollBy({ left: dir * cardWidth, behavior: 'smooth' });
+        var cards = track.children;
+        if (cards.length < 2) return; // nothing to loop between
+        var trackStyle = window.getComputedStyle(track);
+        var gap = parseFloat(trackStyle.columnGap || trackStyle.gap) || 0;
+        var cardWidth = cards[0].getBoundingClientRect().width + gap;
+        var maxScroll = track.scrollWidth - track.clientWidth;
+        var EDGE = 4;
+        // The strip's resting "start" position is the peek offset, not a
+        // literal 0 (see stripPeekOffset) -- so "at the start" for wrap-
+        // around purposes means at-or-before that peeked position, not
+        // at-or-before 0. Using EDGE alone here would let a "prev" click
+        // from the resting position clamp to 0 (a real dead end) instead of
+        // wrapping to the last card.
+        var peek = stripPeekOffset(track);
+        if (dir > 0 && track.scrollLeft >= maxScroll - EDGE) {
+          track.scrollLeft = peek;
+        } else if (dir < 0 && track.scrollLeft <= peek + EDGE) {
+          track.scrollLeft = maxScroll;
+        } else {
+          track.scrollBy({ left: dir * cardWidth, behavior: 'smooth' });
+        }
+        updateStripDots();
       };
       prevBtn.addEventListener('click', function () { scrollByAmount(-1); });
       nextBtn.addEventListener('click', function () { scrollByAmount(1); });
-      track.addEventListener('scroll', updateStripEdges, { passive: true });
+      track.addEventListener('scroll', updateStripDots, { passive: true });
       window.addEventListener('resize', updateStripEdges);
+      window.addEventListener('resize', updateStripDots);
 
       // mouse users have no touch/trackpad gesture to scroll a horizontal
       // strip with -- let them click-and-drag it like a native carousel.
@@ -1567,4 +1670,70 @@
   } else {
     init();
   }
+
+  // ---- Portable "open game modal" hook (window.RCCatalog) ----
+  // Lets a page other than index.html/the game-detail pages open this
+  // site's rent/swap modal without duplicating its markup or wizard logic
+  // (e.g. site/account/* opening a past rental's game so the customer can
+  // rent again or swap).
+  //
+  // To use this from another page:
+  //   1. Include, in this order, the same things any page with this modal
+  //      already has:
+  //        <link rel="stylesheet" href="/assets/catalog.css">
+  //        <script>window.RC_PUBLIC_CONFIG = { SUPABASE_URL: '...', SUPABASE_ANON_KEY: '...' };</script>
+  //        the supabase-js CDN <script> tag
+  //        <script src="/assets/catalog.js"></script>
+  //   2. Call: window.RCCatalog.openModal('some-game-slug')
+  //
+  // That's it -- the page does NOT need to already contain the modal's
+  // static #rcModalOverlay/#rcModalBody markup (see ensureModalShell below),
+  // and does NOT need to have rendered a catalog grid/coming-soon strip on
+  // its own (loadGames() is called fresh here and state.games is filled in
+  // before the modal opens, whether or not init()'s own load already ran).
+  // This is purely additive: index.html and the game-detail pages, which
+  // already have the static markup and already call init() -> loadGames()
+  // on their own, behave exactly as before.
+
+  // The modal markup is normally static HTML baked into index.html
+  // (#rcModalOverlay > .rc-modal > share/close buttons, #rcModalCover,
+  // #rcModalBody) that this file merely queries by id. A page that never
+  // copied that boilerplate has none of it, so build the same structure by
+  // hand and append it to <body> -- everything downstream (openModal,
+  // renderModal, wirePaymentStep, etc.) only ever looks these ids up via
+  // document.getElementById/querySelector, so it can't tell the difference.
+  function ensureModalShell() {
+    if (document.getElementById('rcModalOverlay')) return;
+    var overlay = el(
+      '<div id="rcModalOverlay" class="rc-modal-overlay">' +
+        '<div class="rc-modal">' +
+          '<button type="button" class="rc-modal-share" id="rcModalShare" aria-label="Share this game">' + icon('share') + '</button>' +
+          '<button type="button" class="rc-modal-close" id="rcModalClose" aria-label="Close">' + icon('x') + '</button>' +
+          '<img id="rcModalCover" class="rc-modal-cover" src="" alt=""/>' +
+          '<div class="rc-modal-body" id="rcModalBody"></div>' +
+        '</div>' +
+      '</div>'
+    );
+    document.body.appendChild(overlay);
+    // wireToolbar() normally wires the overlay backdrop-click/close-button
+    // handlers, but wireToolbar() bails out immediately on a page with no
+    // #rcSearch (i.e. no catalog toolbar) -- exactly the kind of page this
+    // hook targets -- so wire them here instead.
+    overlay.addEventListener('click', function (e) {
+      if (e.target.id === 'rcModalOverlay') hardCloseOverlay('modal');
+    });
+    document.getElementById('rcModalClose').addEventListener('click', function () { hardCloseOverlay('modal'); });
+    // Share stays hidden (display:none in catalog.css) same as on the
+    // pages that already ship this markup -- see wireShareModal's comment.
+  }
+
+  window.RCCatalog = {
+    openModal: function (slug) {
+      ensureModalShell();
+      loadGames().then(function (games) {
+        state.games = games;
+        openModal(slug, true);
+      }).catch(function (err) { console.error('RCCatalog.openModal failed', err); });
+    }
+  };
 })();

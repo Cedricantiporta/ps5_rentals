@@ -105,6 +105,42 @@
     });
   }
 
+  // Calls the update_my_profile() RPC (see
+  // supabase/migration_19_customer_profile.sql) so a signed-in customer can
+  // set their display name and/or avatar slug. Same fail-soft contract as
+  // ensureRenter(): never throws, always resolves to an object the caller
+  // can check .ok/.error on. If the migration hasn't been applied yet the
+  // RPC won't exist (PostgREST answers with a 404/PGRST202) and this
+  // resolves to { ok: false, error: 'unavailable' } instead of rejecting,
+  // so callers can show a single "not available yet" message for both that
+  // case and an RPC-reported error.
+  //
+  // opts: { displayName, avatarId, clearDisplayName, clearAvatar }. Pass
+  // displayName/avatarId as null (or omit) to leave that field unchanged;
+  // pass the matching clear* flag as true to explicitly reset it to null.
+  function updateMyProfile(opts) {
+    opts = opts || {};
+    var sb = getClient();
+    if (!sb) return Promise.resolve({ ok: false, error: 'unavailable' });
+    return sb.rpc('update_my_profile', {
+      p_display_name: opts.displayName != null ? opts.displayName : null,
+      p_avatar_id: opts.avatarId != null ? opts.avatarId : null,
+      p_clear_display_name: !!opts.clearDisplayName,
+      p_clear_avatar: !!opts.clearAvatar
+    }).then(function (res) {
+      if (res.error) {
+        console.warn('June Digitals: update_my_profile RPC unavailable (migration not applied yet?)', res.error);
+        return { ok: false, error: 'unavailable' };
+      }
+      var row = Array.isArray(res.data) ? res.data[0] : res.data;
+      if (!row) return { ok: false, error: 'unavailable' };
+      return row;
+    }, function (err) {
+      console.warn('June Digitals: update_my_profile call failed', err);
+      return { ok: false, error: 'unavailable' };
+    });
+  }
+
   function signOut() {
     var sb = getClient();
     if (!sb) return Promise.resolve();
@@ -144,6 +180,22 @@
 
   function slotName(slot) { return slot === 'trophy' ? 'Trophy' : 'Non-Trophy'; }
   function planName(plan) { return plan === 'weekly' ? 'Weekly' : 'Monthly'; }
+
+  // Formats an already-computed day-count into the big "X DAYS LEFT" focal
+  // display used by both the signed-in portal (index.html) and the guest
+  // tracking page (track.js), so the two pages read the same way. Takes a
+  // plain number (or null/undefined) rather than a date, so each caller can
+  // feed it whatever it already has -- index.html computes it locally via
+  // daysLeft(), track.js gets it straight from lookup_rentals_by_code's
+  // days_left column. Returns { num, label, cls } for the caller to drop
+  // into a "<big num><small label>" badge; cls is a CSS hook for styling
+  // ended/urgent states (see .rc-rental-days-badge in account.css).
+  function daysLeftBig(n) {
+    if (n === null || n === undefined || isNaN(n)) return { num: '—', label: '', cls: '' };
+    if (n < 0) return { num: 'Ended', label: Math.abs(n) + (Math.abs(n) === 1 ? ' day ago' : ' days ago'), cls: 'is-ended' };
+    if (n === 0) return { num: '0', label: 'Days Left · Ends Today', cls: 'is-urgent' };
+    return { num: String(n), label: n === 1 ? 'Day Left' : 'Days Left', cls: n <= 2 ? 'is-urgent' : '' };
+  }
 
   function statusInfo(status) {
     switch (status) {
@@ -303,6 +355,7 @@
     getSession: getSession,
     requireAuth: requireAuth,
     ensureRenter: ensureRenter,
+    updateMyProfile: updateMyProfile,
     signOut: signOut,
     saveGuestCode: saveGuestCode,
     loadGuestCode: loadGuestCode,
@@ -312,6 +365,7 @@
     fmtDate: fmtDate,
     daysLeft: daysLeft,
     daysLeftLabel: daysLeftLabel,
+    daysLeftBig: daysLeftBig,
     slotName: slotName,
     planName: planName,
     statusInfo: statusInfo,

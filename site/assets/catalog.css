@@ -214,15 +214,26 @@
 .rc-live-dot { display: none; }
 @keyframes rc-pulse { 0% { box-shadow: 0 0 0 0 rgba(47,216,118,.55); } 70% { box-shadow: 0 0 0 6px rgba(47,216,118,0); } 100% { box-shadow: 0 0 0 0 rgba(47,216,118,0); } }
 
-/* coming soon strip */
+/* coming soon strip
+   #rcComingSoonSection is a direct child of <section class="section-2">, not
+   wrapped in the page's usual .padding-global/.container-large -- so its own
+   background already spans the full viewport width. Per owner feedback ("no
+   side margins... on the right and left most"), the section carries NO
+   horizontal padding of its own any more (the colored band must reach the
+   true browser edges on both sides) -- the heading/subtext get their inset
+   back explicitly below, and the strip/cards intentionally bleed all the way
+   to the edges (only the label text keeps a margin; card-to-card gaps are
+   unaffected, see .rc-strip). Scoped to this section only -- .rc-section-sub
+   is shared with other sections (Trusted by the Community etc.) that DO sit
+   inside the normal padded wrapper and must not be touched. */
 #rcComingSoonSection {
   background: linear-gradient(135deg, #123b8f 0%, var(--rc-blue) 100%);
-  border-radius: 0; padding: 1.5rem 1.75rem 2.25rem; margin-top: 1.25rem; margin-bottom: 2.5rem;
+  border-radius: 0; padding: 1.5rem 0 2.25rem; margin-top: 1.25rem; margin-bottom: 2.5rem;
 }
-#rcComingSoonSection .rc-section-label { margin-top: 0; }
+#rcComingSoonSection .rc-section-label { margin-top: 0; padding: 0 1.75rem; }
 #rcComingSoonSection .rc-eyebrow,
 #rcComingSoonSection .rc-section-label h3 { color: #fff; }
-#rcComingSoonSection .rc-section-sub { color: rgba(255,255,255,.75); }
+#rcComingSoonSection .rc-section-sub { color: rgba(255,255,255,.75); padding: 0 1.75rem; }
 
 #rcTestimonials {
   background: linear-gradient(135deg, #123b8f 0%, var(--rc-blue) 100%);
@@ -239,32 +250,68 @@
 .rc-section-label h3 { margin: 0; font-family: var(--_typography---font-family--headers); font-weight: 400; font-size: 1.4rem; }
 .rc-section-sub { color: var(--rc-text-2); font-size: 0.85rem; margin: 0 0 1.1rem; }
 
+/* Cards bleed to the true viewport edges (no side padding on the track
+   itself, see the #rcComingSoonSection comment above) -- gaps BETWEEN cards
+   are unaffected and stay generous per the reference's "editorial" spacing. */
 .rc-strip-wrap { position: relative; }
 .rc-strip {
-  display: flex; gap: 1rem; overflow-x: auto; padding: 0 0 0.75rem; scroll-snap-type: none; cursor: grab;
+  display: flex; gap: 1.5rem; overflow-x: auto; padding: 0 0 0.75rem; scroll-snap-type: none; cursor: grab;
   scrollbar-width: none;
 }
 .rc-strip.is-dragging { cursor: grabbing; user-select: none; scroll-behavior: auto; }
 .rc-strip::-webkit-scrollbar { display: none; }
 
+/* Round, semi-transparent dark circles with a plain chevron -- overlaid
+   directly on the strip's edges (matches the reference's "trending games"
+   carousel), not offset buttons beside it. Never fully "disabled": with more
+   than one card the strip loops forever (see scrollByAmount in catalog.js),
+   so these only ever toggle hidden/shown (0 or 1 card -- see
+   updateStripEdges), not enabled/dimmed. */
+/* Centered on the cover art, not the whole (much taller, text-heavy) card --
+   the card's cover is a fixed 4/3 aspect ratio, so its vertical center sits
+   at roughly a quarter of the full card height (cover + body) at both the
+   desktop (320px) and mobile (~78vw) card widths; centering on the full
+   card height instead would land the buttons on top of the genre tag/title. */
 .rc-strip-nav {
-  position: absolute; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border-radius: 50%;
-  background: #fff; color: #0a0a0a; border: none; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.45); z-index: 4;
+  position: absolute; top: 24%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%;
+  background: rgba(10,10,15,.55); color: #fff; border: 1px solid rgba(255,255,255,.2);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.35); z-index: 4;
   transition: background-color .15s, transform .15s, opacity .2s;
   opacity: 0; pointer-events: none;
 }
-.rc-strip-nav:hover { background: #e6e6e6; }
+.rc-strip-nav .rc-icon { width: 20px; height: 20px; }
+.rc-strip-nav:hover { background: rgba(10,10,15,.82); }
 .rc-strip-nav:active { transform: translateY(-50%) scale(.94); }
-.rc-strip-nav-prev { left: 0; }
-.rc-strip-nav-next { right: 0; }
+.rc-strip-nav-prev { left: 14px; }
+.rc-strip-nav-next { right: 14px; }
 .rc-strip-wrap.can-scroll-left .rc-strip-nav-prev,
 .rc-strip-wrap.can-scroll-right .rc-strip-nav-next {
   opacity: 1; pointer-events: auto;
 }
 
+/* Dot pagination row, built by ensureStripDotsEl() in catalog.js as a plain
+   sibling under .rc-strip-wrap. Sits directly on the section's own
+   permanently-blue background (see #rcComingSoonSection) regardless of site
+   theme, so it uses hardcoded translucent/solid white rather than the
+   --rc-text-* tokens (which flip to dark greys in light mode and would be
+   unreadable against that blue). */
+.rc-strip-dots { display: flex; align-items: center; justify-content: center; gap: 0.45rem; margin-top: 1rem; }
+.rc-strip-dot {
+  width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,.35); border: none; padding: 0;
+  cursor: pointer; transition: width .2s ease, background-color .2s ease;
+}
+.rc-strip-dot:hover { background: rgba(255,255,255,.6); }
+.rc-strip-dot.is-active { width: 24px; background: #fff; }
+
+/* Larger, more editorial card: a near-full-bleed cover, a small accent-color
+   genre tag above the bold title, then a short description line -- still
+   carries every piece of data the old compact card did (cover, title,
+   genre, release date, Trophy/Non-Trophy status, Weekly/Monthly prices),
+   just laid out with more room to breathe per the reference. */
 .rc-soon-card {
-  position: relative; flex: 0 0 280px; border-radius: 1rem;
+  position: relative; flex: 0 0 320px; border-radius: 1.4rem;
   overflow: hidden; background: linear-gradient(180deg, #0a0a0a 0%, #1a233f 100%); border: none;
   cursor: pointer; transition: transform .18s, box-shadow .18s;
   display: flex; flex-direction: column;
@@ -276,12 +323,20 @@
   --rc-text: #0a0a0f; --rc-text-2: #3f3f48; --rc-text-3: #6b6b74;
 }
 .rc-soon-card:hover { transform: translateY(-3px); box-shadow: 0 0 0 2px var(--rc-blue); }
-.rc-soon-cover { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #1c1e28; }
-.rc-soon-body { padding: 0.75rem 0.85rem 0.9rem; display: flex; flex-direction: column; flex: 1; }
-.rc-soon-title { color: var(--rc-text); font-size: 0.92rem; font-weight: 700; line-height: 1.25; margin: 0 0 0.3rem; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.rc-soon-date { font-size: 0.76rem; font-weight: 600; color: var(--rc-text-2); margin: 0.3rem 0 0; }
-.rc-soon-prices { display: flex; gap: 0.5rem; font-size: 0.88rem; font-weight: 600; color: var(--rc-text-2); }
-.rc-soon-prices b { color: var(--rc-text); font-size: 1rem; }
+.rc-soon-cover-wrap { position: relative; overflow: hidden; }
+.rc-soon-cover { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #1c1e28; }
+.rc-soon-body { padding: 1rem 1.15rem 1.2rem; display: flex; flex-direction: column; flex: 1; }
+.rc-soon-genre { color: var(--rc-blue); font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 0.4rem; }
+.rc-soon-title { color: var(--rc-text); font-size: 1.1rem; font-weight: 800; line-height: 1.25; margin: 0 0 0.4rem; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.rc-soon-desc { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; font-size: 0.78rem; font-weight: 600; color: var(--rc-text-2); margin: 0 0 0.9rem; line-height: 1.4; }
+
+.rc-soon-status { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.7rem; }
+
+.rc-soon-price-row { display: flex; gap: 0.6rem; margin-top: auto; }
+.rc-soon-price-box { flex: 1; text-align: center; padding: 0.55rem 0.3rem; border-radius: 0.7rem; background: rgba(255,255,255,.07); }
+[data-theme="light"] .rc-soon-price-box { background: #00000010; }
+.rc-soon-price-box .rc-price-label { display: block; font-size: 0.62rem; font-weight: 700; color: var(--rc-text-2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 0.15rem; }
+.rc-soon-price-box .rc-price-value { font-size: 1.1rem; font-weight: 800; color: var(--rc-text); }
 
 /* badges */
 .rc-badge {
@@ -812,7 +867,7 @@
 
 @media (max-width: 640px) {
   .rc-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-  .rc-soon-card { flex-basis: 220px; }
+  .rc-soon-card { flex-basis: 78vw; max-width: 300px; }
 }
 
 /* testimonials */
@@ -939,8 +994,15 @@
 }
 .rc-drawer-close .rc-icon { width: 16px; height: 16px; }
 .rc-drawer-nav { display: flex; flex-direction: column; }
+/* .rc-drawer is a fixed #0a0a0d dark panel regardless of site theme (no
+   [data-theme="light"] override exists for it) -- var(--rc-text-2) is the
+   wrong token to use here because it flips to a dark grey (#3f3f48) in light
+   mode, which would be nearly invisible against this always-dark background.
+   Use a hardcoded, theme-independent light grey instead (same "muted but
+   legible" range as --rc-text-2's own dark-mode value) so Library/How It
+   Works stay clearly readable in both themes. */
 .rc-drawer-link {
-  padding: 0.95rem 0.15rem; color: var(--rc-text-2); font-weight: 700; font-size: 1.05rem;
+  padding: 0.95rem 0.15rem; color: rgba(255,255,255,.65); font-weight: 700; font-size: 1.05rem;
   text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.07); position: relative;
 }
 .rc-drawer-link.is-current-page { color: #fff; }

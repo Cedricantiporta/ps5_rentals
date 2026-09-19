@@ -223,19 +223,167 @@ body > .footer { flex: none; }
   padding: 3rem 1rem;
 }
 
-.rc-rental-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+/* ---- profile card + editor (index.html only) ---- */
 
-.rc-rental-card {
+.rc-profile-card {
   display: flex;
+  align-items: center;
   gap: 1rem;
   background: var(--rc-panel);
   border: 1px solid var(--rc-border-2);
-  border-radius: 1rem;
-  padding: 1rem;
+  border-radius: 1.1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
 }
-.rc-rental-cover { width: 84px; height: 84px; border-radius: 0.7rem; object-fit: cover; flex: none; background: #1c1e28; }
-.rc-rental-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.45rem; }
-.rc-rental-title { font-size: 1rem; font-weight: 700; margin: 0; color: var(--rc-text); }
+.rc-avatar-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  flex: none;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rc-blue);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: 0.02em;
+}
+/* Real art from the owner lands at /assets/avatars/<slug>.png -- until then
+   this <img> 404s and onerror hides it, revealing the glyph/initials
+   underneath. No code changes needed once files exist. */
+.rc-avatar-circle img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.rc-avatar-glyph { position: relative; z-index: 1; font-size: 1.4rem; line-height: 1; }
+.rc-profile-info { flex: 1; min-width: 0; }
+.rc-profile-name { font-size: 1.05rem; font-weight: 800; color: var(--rc-text); margin: 0; }
+.rc-profile-sub { font-size: 0.8rem; color: var(--rc-text-2); margin: 0.2rem 0 0; }
+.rc-profile-edit-btn {
+  border: 1px solid var(--rc-border-2);
+  background: transparent;
+  color: var(--rc-text);
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex: none;
+}
+.rc-profile-edit-btn:hover { background: var(--rc-panel-2); }
+
+.rc-profile-field { margin-bottom: 1.1rem; text-align: left; }
+.rc-profile-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--rc-text-2);
+  margin-bottom: 0.4rem;
+}
+.rc-profile-field input {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--rc-panel-2);
+  border: 1px solid var(--rc-border-2);
+  border-radius: 0.6rem;
+  padding: 0.75rem 0.9rem;
+  color: var(--rc-text);
+  font-size: 0.95rem;
+}
+.rc-profile-field input:focus { outline: 2px solid var(--rc-blue); outline-offset: 1px; }
+.rc-profile-field-count { font-size: 0.72rem; color: var(--rc-text-3); margin: 0.3rem 0 0; text-align: right; }
+
+.rc-avatar-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  margin: 0.75rem 0 1.25rem;
+}
+.rc-avatar-option {
+  border: 2px solid transparent;
+  background: none;
+  padding: 0.35rem;
+  border-radius: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rc-avatar-option .rc-avatar-circle { width: 48px; height: 48px; font-size: 1.2rem; }
+.rc-avatar-option:hover { background: var(--rc-panel-2); }
+.rc-avatar-option.is-selected { border-color: var(--rc-blue); background: var(--rc-panel-2); }
+@media (max-width: 480px) {
+  .rc-avatar-picker { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Active Rentals: a grid of tall, portrait-oriented cards -- 5 per row on
+   desktop, matching catalog.css's main .rc-grid (also repeat(5, 1fr)) so
+   the portal shares its visual rhythm with the game catalog. Steps down to
+   2 on tablet and 1 on mobile. */
+.rc-rental-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.1rem; margin-bottom: 2.5rem; }
+@media (max-width: 1024px) { .rc-rental-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .rc-rental-grid { grid-template-columns: 1fr; } }
+
+/* Bigger, more "card shaped" rentals: a tall portrait cover with a large
+   focal days-left badge overlaid on it, full details below. Replaces the
+   old compact list-row layout (thumbnail + text side by side). */
+.rc-rental-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--rc-panel);
+  border: 1px solid var(--rc-border-2);
+  border-radius: 1.1rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.rc-rental-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px -14px var(--rc-blue-glow, rgba(37,98,255,.3)); }
+
+.rc-rental-cover-wrap { position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; }
+.rc-rental-cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #1c1e28; }
+
+/* The big, hard-to-miss "days left" focal point. Sits on top of the cover
+   art so it reads first, before title/tags -- per the owner's "more bigger
+   better X days left" note. */
+.rc-rental-days-badge {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 15, 0.82);
+  backdrop-filter: blur(4px);
+  border-radius: 0.9rem;
+  padding: 0.5rem 0.9rem;
+  min-width: 4.6rem;
+  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, .5);
+}
+.rc-rental-days-num {
+  font-family: var(--_typography---font-family--headers);
+  font-size: 1.9rem;
+  font-weight: 400;
+  line-height: 1;
+  color: #fff;
+}
+.rc-rental-days-label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #ffffffcc;
+  text-align: center;
+  margin-top: 0.15rem;
+}
+.rc-rental-days-badge.is-urgent { background: var(--rc-red); }
+.rc-rental-days-badge.is-urgent .rc-rental-days-label { color: #fff; }
+.rc-rental-days-badge.is-ended { background: rgba(20, 20, 24, 0.82); }
+.rc-rental-days-badge.is-ended .rc-rental-days-num { font-size: 1.15rem; font-weight: 700; }
+
+.rc-rental-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.55rem; padding: 1.1rem 1.25rem 1.25rem; }
+.rc-rental-title { font-size: 1.15rem; font-weight: 700; margin: 0; color: var(--rc-text); }
 .rc-rental-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 .rc-rental-tag {
   font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
@@ -245,6 +393,41 @@ body > .footer { flex: none; }
 .rc-rental-pill { font-size: 0.65rem; font-weight: 800; padding: 0.15rem 0.55rem; border-radius: 999px; letter-spacing: .03em; }
 .rc-rental-dates { font-size: 0.8rem; color: var(--rc-text-2); }
 .rc-rental-dates strong { color: var(--rc-text); font-weight: 700; }
+
+/* ---- History: a compact "receipt list", deliberately NOT the big card
+   style above -- one plain row per past rental with a tiny thumbnail and
+   just the essentials, clearly lower visual weight than the Active grid. ---- */
+.rc-rental-history-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2.5rem; }
+.rc-rental-history-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--rc-panel);
+  border: 1px solid var(--rc-border-2);
+  border-radius: 0.8rem;
+  padding: 0.6rem 0.9rem;
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+.rc-rental-history-row:hover { opacity: 0.95; background: var(--rc-panel-2); }
+.rc-rental-history-cover {
+  width: 42px; height: 42px; border-radius: 0.5rem; object-fit: cover; flex: none;
+  background: #1c1e28; filter: grayscale(0.4);
+}
+.rc-rental-history-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.rc-rental-history-title {
+  font-size: 0.86rem; font-weight: 700; margin: 0; color: var(--rc-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.rc-rental-history-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 0.74rem; color: var(--rc-text-2); }
+.rc-rental-history-meta strong { color: var(--rc-text); font-weight: 700; }
+.rc-rental-history-meta .rc-rental-pill { font-size: 0.6rem; padding: 0.1rem 0.45rem; }
+.rc-rental-history-row .rc-swap-history { margin-top: 0.1rem; }
+.rc-rental-history-row .rc-swap-history summary { font-size: 0.72rem; }
+@media (max-width: 480px) {
+  .rc-rental-history-title { max-width: 45vw; }
+}
 
 .rc-swap-history { margin-top: 0.25rem; }
 .rc-swap-history summary {
@@ -309,9 +492,11 @@ body > .footer { flex: none; }
 
 @media (max-width: 480px) {
   .rc-account-card { padding: 1.5rem 1.25rem; }
-  .rc-rental-card { flex-direction: column; }
-  .rc-rental-cover { width: 100%; height: 140px; }
+  .rc-rental-days-badge { padding: 0.4rem 0.7rem; min-width: 3.8rem; }
+  .rc-rental-days-num { font-size: 1.5rem; }
   .rc-swap-game-row { flex-wrap: wrap; }
   .rc-swap-game-slots { width: 100%; }
   .rc-swap-game-slots .rc-slot-option { flex: 1; }
+  .rc-profile-card { flex-wrap: wrap; }
+  .rc-profile-edit-btn { width: 100%; }
 }
