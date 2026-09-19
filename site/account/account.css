@@ -388,7 +388,8 @@ body > .footer { flex: none; }
 /* ---- History: a compact "receipt list", deliberately NOT the big card
    style above -- one plain row per past rental with a tiny thumbnail and
    just the essentials, clearly lower visual weight than the Active grid. ---- */
-.rc-rental-history-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2.5rem; }
+.rc-rental-history-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem 0.85rem; margin-bottom: 2.5rem; }
+@media (max-width: 640px) { .rc-rental-history-list { grid-template-columns: 1fr; } }
 .rc-rental-history-row {
   display: flex;
   align-items: center;
