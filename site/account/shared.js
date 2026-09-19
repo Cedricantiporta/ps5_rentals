@@ -278,25 +278,21 @@
         }
       });
 
-      // Desktop nav profile control: a "Sign in" pill when signed out, an
-      // avatar (first letter of the customer's email) linking to /account/
-      // when signed in. Structure is ours (not Webflow markup), so no
-      // textContent trap here -- just toggle the .is-signed-in class and
-      // fill the avatar initial.
+      // Desktop nav profile control: "Sign in" when signed out, "My Account"
+      // when signed in -- always a text label, never just an avatar.
+      // Structure is ours (not Webflow markup), so no textContent trap here.
       Array.prototype.forEach.call(controls, function (a) {
-        var avatar = a.querySelector('.rc-account-avatar');
+        var label = a.querySelector('.rc-account-label');
         if (session) {
           a.classList.add('is-signed-in');
           a.setAttribute('href', '/account/');
           a.setAttribute('aria-label', 'My Account');
-          if (avatar) {
-            var email = (session.user && session.user.email) || '';
-            avatar.textContent = email ? email.charAt(0).toUpperCase() : 'A';
-          }
+          if (label) label.textContent = 'My Account';
         } else {
           a.classList.remove('is-signed-in');
           a.setAttribute('href', '/account/login.html');
           a.setAttribute('aria-label', 'Sign in');
+          if (label) label.textContent = 'Sign in';
         }
       });
     });

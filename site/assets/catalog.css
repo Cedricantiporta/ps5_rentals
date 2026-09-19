@@ -825,7 +825,9 @@
 .rc-popup-modal-body .rc-modal-title { margin-bottom: 0.3rem; }
 .rc-popup-modal-body .rc-contact-grid { max-width: none; margin: 1.5rem 0 0; }
 
-/* nav account control (sign in button / signed-in avatar) */
+/* nav account control (sign in button / My Account button). Always shows
+   the text label -- it used to shrink to a bare initial-letter avatar once
+   signed in, but the owner wants a "My Account" nav item, not an avatar. */
 .rc-account-btn {
   background: #fff; color: #0a0a0a; border: none; border-radius: 999px; font-weight: 800;
   font-size: 0.8rem; padding: 0.55rem 1.1rem; cursor: pointer; margin-right: 0.75rem; white-space: nowrap;
@@ -833,18 +835,7 @@
 }
 .rc-account-btn:hover { filter: brightness(.94); }
 .rc-account-btn .rc-account-avatar { display: none; }
-.rc-account-btn.is-signed-in {
-  background: none; padding: 0; border-radius: 50%;
-}
-.rc-account-btn.is-signed-in:hover { filter: none; }
-.rc-account-btn.is-signed-in .rc-account-label { display: none; }
-.rc-account-btn.is-signed-in .rc-account-avatar {
-  display: flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #0a0a0a;
-  font-weight: 700; font-size: 0.9rem; flex: none;
-}
-.rc-account-btn.is-signed-in:hover .rc-account-avatar { filter: brightness(.94); }
-@media (max-width: 480px) { .rc-account-btn:not(.is-signed-in) { padding: 0.5rem 0.8rem; font-size: 0.72rem; } }
+@media (max-width: 480px) { .rc-account-btn { padding: 0.5rem 0.8rem; font-size: 0.72rem; } }
 
 /* custom hamburger + slide-in drawer, fully independent of Webflow's own nav toggle */
 .rc-menu-btn {
