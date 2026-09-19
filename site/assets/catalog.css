@@ -172,13 +172,29 @@
 .rc-filter-sep { width: 1px; margin: 0.6rem 0.4rem; background: rgba(255,255,255,.3); }
 .rc-filter-seg { display: flex; flex-direction: column; justify-content: center; padding: 0.35rem 0.9rem; }
 .rc-filter-label { font-size: 0.6rem; font-weight: 700; color: var(--rc-text-3); text-transform: uppercase; letter-spacing: .05em; }
+/* wrapper gives room for a custom chevron (appearance:none drops the
+   native one, inconsistently across browsers, with nothing replacing it)
+   without touching the select's own box -- the chevron is a plain sibling
+   icon, sized/colored like the rest of the toolbar's icons. */
+.rc-filter-select-wrap { position: relative; display: flex; align-items: center; margin-top: 0.1rem; }
 .rc-filter-select {
   appearance: none; border: none; background: transparent; color: var(--rc-text);
-  font-size: 0.88rem; font-weight: 700; cursor: pointer; padding: 0; margin-top: 0.1rem;
+  font-size: 0.88rem; font-weight: 700; cursor: pointer; padding: 0; padding-right: 1rem;
+  border-radius: 0.3rem; transition: color .15s ease;
 }
+.rc-filter-select:hover { color: var(--rc-blue); }
 .rc-filter-select:focus { outline: none; }
+/* keyboard focus gets a visible ring (accessibility); a mouse click still
+   doesn't show one, matching the rest of the toolbar's click affordances. */
+.rc-filter-select:focus-visible { outline: 2px solid var(--rc-blue); outline-offset: 3px; }
 .rc-filter-select option { background: #12141c; color: #fff; }
 [data-theme="light"] .rc-filter-select option { background: #fff; color: #0a0a0f; }
+.rc-filter-chevron {
+  position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  width: 0.65rem; height: 0.65rem; color: var(--rc-text-3); pointer-events: none; transition: color .15s ease;
+}
+.rc-filter-select-wrap:hover .rc-filter-chevron,
+.rc-filter-select:focus-visible ~ .rc-filter-chevron { color: var(--rc-blue); }
 
 .rc-chips {
   display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; max-width: 100%;
