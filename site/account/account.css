@@ -38,7 +38,7 @@ body > .footer { flex: none; }
 .rc-account-card {
   background: var(--rc-panel);
   border: 1px solid var(--rc-border-2);
-  border-radius: 1.25rem;
+  border-radius: 0.9rem;
   padding: 2rem;
 }
 
@@ -120,7 +120,7 @@ body > .footer { flex: none; }
   box-sizing: border-box;
   background: var(--rc-panel-2);
   border: 1px solid var(--rc-border-2);
-  border-radius: 0.6rem;
+  border-radius: 0.43rem;
   padding: 0.75rem 0.9rem;
   color: var(--rc-text);
   font-size: 0.95rem;
@@ -231,7 +231,7 @@ body > .footer { flex: none; }
   gap: 1rem;
   background: var(--rc-panel);
   border: 1px solid var(--rc-border-2);
-  border-radius: 1.1rem;
+  border-radius: 0.79rem;
   padding: 1rem 1.25rem;
   margin-bottom: 1.75rem;
   flex-wrap: wrap;
@@ -286,7 +286,7 @@ body > .footer { flex: none; }
   box-sizing: border-box;
   background: var(--rc-panel-2);
   border: 1px solid var(--rc-border-2);
-  border-radius: 0.6rem;
+  border-radius: 0.43rem;
   padding: 0.75rem 0.9rem;
   color: var(--rc-text);
   font-size: 0.95rem;
@@ -304,7 +304,7 @@ body > .footer { flex: none; }
   border: 2px solid transparent;
   background: none;
   padding: 0.35rem;
-  border-radius: 0.9rem;
+  border-radius: 0.65rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -321,7 +321,7 @@ body > .footer { flex: none; }
    desktop, matching catalog.css's main .rc-grid (also repeat(5, 1fr)) so
    the portal shares its visual rhythm with the game catalog. Steps down to
    2 on tablet and 1 on mobile. */
-.rc-rental-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.1rem; margin-bottom: 2.5rem; }
+.rc-rental-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.1rem; margin-bottom: 2.5rem; }
 @media (max-width: 1024px) { .rc-rental-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 640px) { .rc-rental-grid { grid-template-columns: 1fr; } }
 
@@ -333,14 +333,14 @@ body > .footer { flex: none; }
   flex-direction: column;
   background: var(--rc-panel);
   border: 1px solid var(--rc-border-2);
-  border-radius: 1.1rem;
+  border-radius: 0.79rem;
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .rc-rental-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px -14px var(--rc-blue-glow, rgba(37,98,255,.3)); }
 
-.rc-rental-cover-wrap { position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; }
+.rc-rental-cover-wrap { position: relative; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; }
 .rc-rental-cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #1c1e28; }
 
 /* The big, hard-to-miss "days left" focal point -- plain text below the
@@ -395,7 +395,7 @@ body > .footer { flex: none; }
   gap: 0.85rem;
   background: var(--rc-panel);
   border: 1px solid var(--rc-border-2);
-  border-radius: 0.8rem;
+  border-radius: 0.58rem;
   padding: 0.6rem 0.9rem;
   opacity: 0.7;
   cursor: pointer;
@@ -403,7 +403,7 @@ body > .footer { flex: none; }
 }
 .rc-rental-history-row:hover { opacity: 0.95; background: var(--rc-panel-2); }
 .rc-rental-history-cover {
-  width: 42px; height: 42px; border-radius: 0.5rem; object-fit: cover; flex: none;
+  width: 42px; height: 42px; border-radius: 0.36rem; object-fit: cover; flex: none;
   background: #1c1e28; filter: grayscale(0.4);
 }
 .rc-rental-history-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
@@ -457,12 +457,12 @@ body > .footer { flex: none; }
 .rc-swap-game-list { display: flex; flex-direction: column; gap: 0.6rem; max-height: 46vh; overflow-y: auto; }
 .rc-swap-game-row {
   display: flex; align-items: center; gap: 0.75rem;
-  background: var(--rc-panel); border: 1px solid var(--rc-border-2); border-radius: 0.85rem; padding: 0.6rem;
+  background: var(--rc-panel); border: 1px solid var(--rc-border-2); border-radius: 0.61rem; padding: 0.6rem;
 }
-.rc-swap-game-cover { width: 48px; height: 48px; border-radius: 0.5rem; object-fit: cover; flex: none; background: #1c1e28; }
+.rc-swap-game-cover { width: 48px; height: 48px; border-radius: 0.36rem; object-fit: cover; flex: none; background: #1c1e28; }
 .rc-swap-game-title { flex: 1; min-width: 0; font-size: 0.88rem; font-weight: 700; margin: 0; color: var(--rc-text); }
 .rc-swap-game-slots { display: flex; gap: 0.5rem; flex: none; }
-.rc-swap-game-slots .rc-slot-option { min-width: 92px; padding: 0.45rem 0.65rem; border-radius: 0.6rem; background: var(--rc-panel-2); border: none; cursor: pointer; text-align: left; }
+.rc-swap-game-slots .rc-slot-option { min-width: 92px; padding: 0.45rem 0.65rem; border-radius: 0.43rem; background: var(--rc-panel-2); border: none; cursor: pointer; text-align: left; }
 .rc-swap-game-slots .rc-slot-option-name { font-size: 0.72rem; }
 .rc-swap-game-slots .rc-slot-option-price { font-size: 0.65rem; }
 
@@ -471,7 +471,7 @@ body > .footer { flex: none; }
   padding: 3.5rem 1.5rem;
   color: var(--rc-text-2);
   background: var(--rc-panel);
-  border-radius: 1.25rem;
+  border-radius: 0.9rem;
   border: 1px solid var(--rc-border-2);
 }
 .rc-account-empty .rc-icon-lg { color: var(--rc-text-3); margin-bottom: 0.75rem; }

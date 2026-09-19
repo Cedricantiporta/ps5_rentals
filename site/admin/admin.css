@@ -214,13 +214,13 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
 .a-menu-btn:hover { background: #e4e4e7; }
 .a-menu-list {
   position: fixed; z-index: 40; min-width: 190px; max-width: 260px; background: var(--a-panel); border: 1px solid var(--a-border);
-  border-radius: 0.7rem; box-shadow: 0 8px 24px rgba(0,0,0,.14); padding: 0.35rem; display: flex; flex-direction: column; gap: 0.1rem;
+  border-radius: 0.5rem; box-shadow: 0 8px 24px rgba(0,0,0,.14); padding: 0.35rem; display: flex; flex-direction: column; gap: 0.1rem;
 }
 .a-menu-list[hidden] { display: none; }
 .a-menu-item { white-space: nowrap; }
 .a-menu-item {
   display: block; width: 100%; text-align: left; background: none; border: none; color: var(--a-text);
-  font-size: 0.8125rem; font-weight: 500; padding: 0.42rem 0.6rem; border-radius: 0.45rem; cursor: pointer; text-decoration: none;
+  font-size: 0.8125rem; font-weight: 500; padding: 0.42rem 0.6rem; border-radius: 0.32rem; cursor: pointer; text-decoration: none;
 }
 .a-menu-item:hover { background: var(--a-panel-2); }
 .a-menu-item:disabled { color: var(--a-text-3); cursor: not-allowed; }
@@ -232,7 +232,7 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
 .a-modal-backdrop[hidden] { display: none; }
 .a-panel.is-modal-open {
   display: block; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  z-index: 91; width: 92vw; max-width: 640px; max-height: 85vh; overflow-y: auto; border-radius: 1rem;
+  z-index: 91; width: 92vw; max-width: 640px; max-height: 85vh; overflow-y: auto; border-radius: 0.72rem;
   box-shadow: 0 24px 64px rgba(0,0,0,.32);
 }
 .a-panel.is-modal-open .a-card { box-shadow: none; margin-bottom: 0; }
@@ -247,7 +247,7 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
    open on top of whichever tab is currently active. */
 .a-modal-card {
   position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  z-index: 91; width: 92vw; max-width: 520px; max-height: 85vh; overflow-y: auto; border-radius: 1rem;
+  z-index: 91; width: 92vw; max-width: 520px; max-height: 85vh; overflow-y: auto; border-radius: 0.72rem;
   box-shadow: 0 24px 64px rgba(0,0,0,.32);
 }
 .a-modal-card[hidden] { display: none; }
@@ -267,10 +267,10 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
 
 /* ---- self-serve rent flow: Pending Payments / Swap Requests / tracking
    codes (RENT-FLOW-CONTRACT.md, CONTRACT-AMENDMENT-1.md) ---- */
-.a-pending-cover { width: 28px; height: 28px; object-fit: cover; border-radius: 6px; vertical-align: middle; margin-right: 0.5rem; }
+.a-pending-cover { width: 28px; height: 28px; object-fit: cover; border-radius: 4px; vertical-align: middle; margin-right: 0.5rem; }
 .a-refcode-btn {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-weight: 700; font-size: 0.8125rem;
-  background: var(--a-panel-2); border: none; border-radius: 0.5rem; color: var(--a-text);
+  background: var(--a-panel-2); border: none; border-radius: 0.36rem; color: var(--a-text);
   padding: 0.25rem 0.55rem; cursor: pointer; letter-spacing: .03em;
 }
 .a-refcode-btn:hover { background: #e4e4e7; }
@@ -285,7 +285,7 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
 .a-icon-btn {
   display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;
   background: none; border: none; color: var(--a-text-2); cursor: pointer;
-  padding: 0.3rem; border-radius: 0.4rem; line-height: 0;
+  padding: 0.3rem; border-radius: 0.3rem; line-height: 0;
 }
 .a-icon-btn:hover { background: var(--a-panel-2); color: var(--a-blue); }
 .a-icon-btn.is-copied { color: var(--a-green); }
@@ -303,7 +303,7 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
   background: radial-gradient(circle at 50% 0%, #eef4ff 0%, var(--a-bg) 55%);
 }
 .a-login-box {
-  background: var(--a-panel); border: 1px solid var(--a-border); border-radius: 1.6rem; padding: 2.5rem;
+  background: var(--a-panel); border: 1px solid var(--a-border); border-radius: 1.15rem; padding: 2.5rem;
   width: 100%; max-width: 380px; box-shadow: 0 20px 50px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.04);
 }
 .a-login-logo { height: 30px; width: auto; filter: invert(1); display: block; margin-bottom: 1.5rem; }
