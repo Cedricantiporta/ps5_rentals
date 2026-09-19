@@ -76,8 +76,8 @@
         <table class="a-table" id="pendingTable">
           <thead>
             <tr>
-              <th>Game</th><th>Slot</th><th>Plan</th><th>Amount</th><th>Ref Code</th>
-              <th>Renter</th><th>Code</th><th>Waiting</th><th>Hold</th><th></th>
+              <th data-sort-key="games.title">Game</th><th data-sort-key="slot">Slot</th><th data-sort-key="plan">Plan</th><th data-sort-key="amount">Amount</th><th data-sort-key="ref_code">Ref Code</th>
+              <th data-sort-key="renters.name">Renter</th><th data-sort-key="renters.public_code">Code</th><th data-sort-key="created_at">Waiting</th><th data-sort-key="hold_expires_at">Hold</th><th></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -96,8 +96,8 @@
         <table class="a-table" id="swapsTable">
           <thead>
             <tr>
-              <th>Renter</th><th>From</th><th>To</th><th>Ends</th><th>Swaps</th>
-              <th>Ref Code</th><th>Waiting</th><th>Hold</th><th></th>
+              <th data-sort-key="renterName">Renter</th><th data-sort-key="fromTitle">From</th><th data-sort-key="toTitle">To</th><th data-sort-key="endsDate">Ends</th><th data-sort-key="swapsUsedCount">Swaps</th>
+              <th data-sort-key="ref_code">Ref Code</th><th data-sort-key="created_at">Waiting</th><th data-sort-key="hold_expires_at">Hold</th><th></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -132,7 +132,7 @@
       <div class="a-card">
         <h2>Ending soon</h2>
         <table class="a-table" id="endingSoonTable">
-          <thead><tr><th>Game</th><th>Renter</th><th>Slot</th><th>Time Left</th></tr></thead>
+          <thead><tr><th data-sort-key="games.title">Game</th><th data-sort-key="renters.name">Renter</th><th data-sort-key="slot">Slot</th><th data-sort-key="end_date">Time Left</th></tr></thead>
           <tbody></tbody>
         </table>
         <p class="a-empty" id="endingSoonEmpty" hidden>Nothing ending in the next few days.</p>
@@ -140,7 +140,7 @@
       <div class="a-card">
         <h2>Most rented</h2>
         <table class="a-table" id="mostRentedTable">
-          <thead><tr><th>Game</th><th>Times Rented</th></tr></thead>
+          <thead><tr><th data-sort-key="title">Game</th><th data-sort-key="times_rented">Times Rented</th></tr></thead>
           <tbody></tbody>
         </table>
         <p class="a-empty" id="mostRentedEmpty" hidden>No rentals yet.</p>
@@ -158,8 +158,8 @@
         <table class="a-table" id="rentalsTable">
           <thead>
             <tr>
-              <th>Game</th><th>Renter</th><th>Slot</th><th>Plan</th>
-              <th>Status</th><th>Payment</th><th>Start</th><th>End</th><th>Time Left</th><th></th>
+              <th data-sort-key="games.title">Game</th><th data-sort-key="renters.name">Renter</th><th data-sort-key="slot">Slot</th><th data-sort-key="plan">Plan</th>
+              <th data-sort-key="status">Status</th><th data-sort-key="payment_status">Payment</th><th data-sort-key="start_date">Start</th><th data-sort-key="end_date">End</th><th data-sort-key="end_date">Time Left</th><th data-sort-key="notes" class="a-notes-th">Notes</th><th></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -176,7 +176,7 @@
         <table class="a-table" id="reservationsTable">
           <thead>
             <tr>
-              <th>Game</th><th>Renter</th><th>Slot</th><th>Plan</th><th>Amount</th><th>Queue</th><th>Payment</th><th></th>
+              <th data-sort-key="games.title">Game</th><th data-sort-key="renters.name">Renter</th><th data-sort-key="slot">Slot</th><th data-sort-key="plan">Plan</th><th data-sort-key="amount">Amount</th><th data-sort-key="queue_position">Queue</th><th data-sort-key="payment_status">Payment</th><th data-sort-key="notes" class="a-notes-th">Notes</th><th></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -193,8 +193,8 @@
         <table class="a-table" id="historyTable">
           <thead>
             <tr>
-              <th>Game</th><th>Renter</th><th>Slot</th><th>Plan</th>
-              <th>Status</th><th>Payment</th><th>Start</th><th>End</th>
+              <th data-sort-key="games.title">Game</th><th data-sort-key="renters.name">Renter</th><th data-sort-key="slot">Slot</th><th data-sort-key="plan">Plan</th>
+              <th data-sort-key="status">Status</th><th data-sort-key="payment_status">Payment</th><th data-sort-key="start_date">Start</th><th data-sort-key="end_date">End</th><th data-sort-key="notes" class="a-notes-th">Notes</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -292,7 +292,7 @@
         </div>
         <div class="a-table-wrap">
         <table class="a-table" id="rentersTable">
-          <thead><tr><th>Name</th><th>Messenger</th><th>Note</th><th>Added</th><th>Account</th><th>Tracking code</th><th>Total Paid</th><th>Rentals</th><th>Active Now</th><th></th></tr></thead>
+          <thead><tr><th data-sort-key="name">Name</th><th data-sort-key="messenger_name">Messenger</th><th data-sort-key="contact_note">Note</th><th data-sort-key="created_at">Added</th><th data-sort-key="auth_user_id">Account</th><th data-sort-key="public_code">Tracking code</th><th data-sort-key="_totalPaid">Total Paid</th><th data-sort-key="_rentalsCount">Rentals</th><th data-sort-key="_activeNow">Active Now</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
         </div>
@@ -329,7 +329,7 @@
         <div class="a-field" style="max-width:280px;margin-bottom:1rem;"><input id="gamesSearch" type="text" placeholder="Search games..."></div>
         <div class="a-table-wrap">
         <table class="a-table" id="gamesTable">
-          <thead><tr><th>Title</th><th>Type</th><th>Trophy</th><th>Non-Trophy</th><th id="timesRentedHeader" style="cursor:pointer;" title="Click to sort">Times Rented &#8645;</th></tr></thead>
+          <thead><tr><th data-sort-key="title">Title</th><th data-sort-key="status">Type</th><th>Trophy</th><th>Non-Trophy</th><th data-sort-key="times_rented">Times Rented</th></tr></thead>
           <tbody></tbody>
         </table>
         </div>

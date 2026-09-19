@@ -4,8 +4,12 @@
   var supabase = window.rcSupabase;
   var state = {
     games: [], renters: [], rentals: [], swapFromRental: null,
-    amountManuallyEdited: false, rentalsSearch: '', historySearch: '', gamesSortByRented: false,
+    amountManuallyEdited: false, rentalsSearch: '', historySearch: '',
     rentersFilter: 'all', mergeRemoveId: null,
+    // Per-table click-to-sort state -- keyed by table id, e.g.
+    // { rentalsTable: { key: 'end_date', dir: 'asc' } }. Not persisted
+    // across reloads (see wireTableSort()/sortRows() near the bottom).
+    tableSort: {},
     // Self-serve rent flow additions (RENT-FLOW-CONTRACT.md / CONTRACT-AMENDMENT-1.md).
     // settings/swapRequests may not exist in the live DB yet -- see the
     // *Available flags, checked before rendering their panels so a missing
@@ -111,10 +115,12 @@
 
   var MESSENGER_ICON = '<svg class="a-msg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Has a Messenger link"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
   function messengerIcon(url) { return url ? MESSENGER_ICON : ''; }
-  // Inline "copy" / "copied" icons for icon-only copy buttons (no external
-  // icon library -- same house style as MESSENGER_ICON above: lucide-style
-  // 24x24 viewBox, currentColor stroke).
-  var COPY_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+  // Inline "copied" icon for icon-only copy buttons (no external icon
+  // library -- same house style as MESSENGER_ICON above: lucide-style 24x24
+  // viewBox, currentColor stroke). COPY_ICON (the un-copied state) was
+  // removed along with the last icon-only copy button that used it --
+  // publicCodeCell()'s tracking-code button is a plain text .a-refcode-btn
+  // now, styled/animated the same way the ref-code copy buttons always were.
   var CHECK_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>';
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function todayISO() { return new Date().toISOString().slice(0, 10); }
@@ -342,6 +348,7 @@
       }
     });
     endingSoon.sort(function (a, b) { return daysLeft(a.end_date) - daysLeft(b.end_date); });
+    endingSoon = sortRows('endingSoonTable', endingSoon);
 
     $('statRevenuePaid').textContent = '₱' + paid.toLocaleString();
     $('statRevenuePending').textContent = '₱' + pending.toLocaleString();
@@ -362,6 +369,7 @@
 
     var topGames = state.games.filter(function (g) { return (g.times_rented || 0) > 0; })
       .sort(function (a, b) { return b.times_rented - a.times_rented; }).slice(0, 5);
+    topGames = sortRows('mostRentedTable', topGames);
     var mrTbody = document.querySelector('#mostRentedTable tbody');
     mrTbody.innerHTML = '';
     $('mostRentedEmpty').hidden = topGames.length > 0;
@@ -419,7 +427,12 @@
   document.addEventListener('click', function (e) {
     var copyBtn = e.target.closest('.a-refcode-btn[data-copy]');
     if (copyBtn) { copyToClipboard(copyBtn.getAttribute('data-copy')); flashCopied(copyBtn); return; }
-    var msgBtn = e.target.closest('.a-copy-msg-btn[data-copy-msg]');
+    // [data-copy-msg] (not scoped to a specific class) covers both the
+    // icon-only "Copy message" buttons still used elsewhere and
+    // publicCodeCell()'s tracking-code button, which is a plain
+    // .a-refcode-btn that copies the ready-to-paste message instead of
+    // the bare code.
+    var msgBtn = e.target.closest('[data-copy-msg]');
     if (msgBtn) { copyToClipboard(msgBtn.getAttribute('data-copy-msg')); flashCopied(msgBtn); }
   });
 
@@ -448,9 +461,12 @@
     var code = renter && renter.public_code;
     if (!code) return '<span class="a-text-3">&mdash;</span>';
     var msg = publicCodeMessage(code);
+    // The code itself is the ready-to-paste Messenger message now -- one
+    // button, still labeled with just the short code, but copies the full
+    // message (msg) instead of the bare code. No separate icon-only
+    // "copy message" button anymore.
     return '<span class="a-code-actions">' +
-      '<button type="button" class="a-refcode-btn" data-copy="' + esc(code) + '" title="Click to copy the code">' + esc(code) + '</button>' +
-      '<button type="button" class="a-icon-btn a-copy-msg-btn" data-copy-msg="' + esc(msg) + '" title="Copy a ready-to-paste Messenger message with this code">' + COPY_ICON + '</button>' +
+      '<button type="button" class="a-refcode-btn" data-copy-msg="' + esc(msg) + '" title="Click to copy a ready-to-paste Messenger message">' + esc(code) + '</button>' +
       '</span>';
   }
   function timeSinceLabel(iso) {
@@ -523,7 +539,7 @@
   function renderPending() {
     var tbody = document.querySelector('#pendingTable tbody');
     tbody.innerHTML = '';
-    var rows = pendingRows();
+    var rows = sortRows('pendingTable', pendingRows());
     $('pendingEmpty').hidden = rows.length > 0;
     var badge = $('pendingBadge');
     badge.textContent = rows.length ? '(' + rows.length + ')' : '';
@@ -645,6 +661,22 @@
     var rows = state.swapRequests.filter(function (r) { return r.status === 'pending'; })
       .filter(swapMatchSearch)
       .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+    // swap_requests rows aren't embedded with their renter/game the way
+    // rentals are (see loadAll()) -- attach the looked-up values the
+    // generic sort mechanism needs as plain properties, once here, rather
+    // than teaching sortRows() how to do per-table joins.
+    rows.forEach(function (req) {
+      var renter = state.renters.filter(function (r) { return r.id === req.renter_id; })[0] || {};
+      var fromGame = state.games.filter(function (g) { return g.id === req.from_game_id; })[0] || {};
+      var toGame = state.games.filter(function (g) { return g.id === req.to_game_id; })[0] || {};
+      var rental = state.rentals.filter(function (r) { return r.id === req.rental_id; })[0];
+      req.renterName = renter.name || '';
+      req.fromTitle = fromGame.title || '';
+      req.toTitle = toGame.title || '';
+      req.endsDate = rental ? rental.end_date : null;
+      req.swapsUsedCount = rental ? (rental.swap_count != null ? rental.swap_count : swapsUsed(rental)) : 0;
+    });
+    rows = sortRows('swapsTable', rows);
     $('swapsEmpty').hidden = rows.length > 0;
     badge.textContent = rows.length ? '(' + rows.length + ')' : '';
     rows.forEach(function (req) {
@@ -834,7 +866,7 @@
   function renderRentals() {
     var tbody = document.querySelector('#rentalsTable tbody');
     tbody.innerHTML = '';
-    var rows = state.rentals.filter(rentalsMatchFilter).filter(rentalsMatchSearch);
+    var rows = sortRows('rentalsTable', state.rentals.filter(rentalsMatchFilter).filter(rentalsMatchSearch));
     $('rentalsEmpty').hidden = rows.length > 0;
     $('rentalsEmpty').textContent = state.rentalsSearch ? 'No active rentals match this search.' : 'No active rentals right now.';
     rows.forEach(function (r) {
@@ -930,6 +962,7 @@
         '<td>' + (isQueued ? '—' : fmtDate(r.start_date)) + '</td>' +
         '<td>' + (isQueued ? '—' : fmtDate(r.end_date)) + '</td>' +
         '<td>' + timeLeftCell + '</td>' +
+        '<td class="a-notes-cell" title="' + esc(r.notes || '') + '">' + esc(r.notes || '') + '</td>' +
         '<td class="a-actions-cell">' + actionsMenu(actions) + '</td>';
       tbody.appendChild(tr);
     });
@@ -1017,7 +1050,7 @@
   function renderReservations() {
     var tbody = document.querySelector('#reservationsTable tbody');
     tbody.innerHTML = '';
-    var rows = reservationsRows();
+    var rows = sortRows('reservationsTable', reservationsRows());
     $('reservationsEmpty').hidden = rows.length > 0;
     var badge = $('reservationsBadge');
     badge.textContent = rows.length ? '(' + rows.length + ')' : '';
@@ -1042,6 +1075,7 @@
         '<td>₱' + (r.amount != null ? r.amount : 0) + '</td>' +
         '<td>Queue #' + r.queue_position + '</td>' +
         '<td>' + paymentPill(r.payment_status) + '</td>' +
+        '<td class="a-notes-cell" title="' + esc(r.notes || '') + '">' + esc(r.notes || '') + '</td>' +
         '<td class="a-actions-cell">' + actionsMenu(actions) + '</td>';
       tbody.appendChild(tr);
     });
@@ -1057,7 +1091,7 @@
   function renderHistory() {
     var tbody = document.querySelector('#historyTable tbody');
     tbody.innerHTML = '';
-    var rows = historyRows().filter(function (r) { return rowMatchesSearch(r, state.historySearch); });
+    var rows = sortRows('historyTable', historyRows().filter(function (r) { return rowMatchesSearch(r, state.historySearch); }));
     $('historyEmpty').hidden = rows.length > 0;
     $('historyEmpty').textContent = state.historySearch ? 'No past rentals match this search.' : 'No past rentals yet.';
     rows.forEach(function (r) {
@@ -1073,7 +1107,8 @@
         '<td>' + (wasSwapped(r.id) ? '<span class="a-pill a-pill-swap">Swapped</span>' : statusPill(r.status)) + '</td>' +
         '<td>' + paymentPill(r.payment_status) + '</td>' +
         '<td>' + fmtDate(r.start_date) + '</td>' +
-        '<td>' + fmtDate(r.end_date) + '</td>';
+        '<td>' + fmtDate(r.end_date) + '</td>' +
+        '<td class="a-notes-cell" title="' + esc(r.notes || '') + '">' + esc(r.notes || '') + '</td>';
       tbody.appendChild(tr);
     });
   }
@@ -1423,6 +1458,18 @@
       hint.hidden = true;
     }
     var rows = state.renters.filter(rentersMatchFilter).filter(rentersMatchSearch);
+    // "Total Paid"/"Rentals"/"Active Now" are computed, not raw columns --
+    // the render loop below already derives them per row for display, but
+    // the generic sort mechanism needs them present *before* sorting, so
+    // compute them once here too (see rentersTable's data-sort-key="_..."
+    // attributes in dashboard.html).
+    rows.forEach(function (r) {
+      var theirRentals = renterRentals(r.id);
+      r._totalPaid = theirRentals.reduce(function (sum, x) { return sum + (x.payment_status === 'paid' && !wasSwapped(x.id) ? (x.amount || 0) : 0); }, 0);
+      r._rentalsCount = theirRentals.length;
+      r._activeNow = theirRentals.filter(function (x) { return x.status === 'active'; }).length;
+    });
+    rows = sortRows('rentersTable', rows);
     $('rentersEmpty').hidden = rows.length > 0;
     $('rentersEmpty').textContent = state.renters.length ? 'No renters match this filter.' : 'No renters yet.';
     rows.forEach(function (r) {
@@ -1655,7 +1702,7 @@
     var tbody = document.querySelector('#gamesTable tbody');
     var q = ($('gamesSearch') && $('gamesSearch').value || '').trim().toLowerCase();
     var games = q ? state.games.filter(function (g) { return g.title.toLowerCase().indexOf(q) !== -1; }) : state.games.slice();
-    if (state.gamesSortByRented) games.sort(function (a, b) { return (b.times_rented || 0) - (a.times_rented || 0); });
+    games = sortRows('gamesTable', games);
     tbody.innerHTML = '';
     games.forEach(function (g) {
       var tr = document.createElement('tr');
@@ -1667,10 +1714,6 @@
     });
   }
   if ($('gamesSearch')) $('gamesSearch').addEventListener('input', renderGames);
-  if ($('timesRentedHeader')) $('timesRentedHeader').addEventListener('click', function () {
-    state.gamesSortByRented = !state.gamesSortByRented;
-    renderGames();
-  });
 
   document.querySelector('#gamesTable tbody').addEventListener('change', function (e) {
     var sel = e.target.closest('select[data-game]');
@@ -1799,6 +1842,217 @@
     });
   });
 
+  // ---- generic table chrome: column resize + click-to-sort, shared by all
+  // nine .a-table tables (see the owner's request: "you can adjust column
+  // widths of tables and click table headers to sort"). One mechanism for
+  // both, wired once per table at boot in initTableEnhancements() below,
+  // instead of a bespoke implementation per table. ----
+
+  // getSortValue supports a dot-path (e.g. "games.title", "renters.name")
+  // for the tables built from state.rentals -- those rows come back
+  // embedded as `{...rental, games: {...}, renters: {...}}` from
+  // loadAll()'s `select('*, games(*), renters(*))` -- as well as a plain
+  // top-level property. One getter covers every table instead of a
+  // one-off lookup per column.
+  function getSortValue(row, key) {
+    var parts = key.split('.');
+    var v = row;
+    for (var i = 0; i < parts.length; i++) {
+      if (v == null) return null;
+      v = v[parts[i]];
+    }
+    return v;
+  }
+  // One comparator for every column type actually present across these
+  // tables: numbers (amount, queue_position, times_rented -- already
+  // numbers coming back from Supabase), ISO date/timestamp strings
+  // (start_date/end_date/created_at/hold_expires_at -- sort correctly as
+  // plain strings since they're fixed-format and big-endian), plain text
+  // (titles/names/ref codes), and the odd boolean-ish column (e.g.
+  // renters.auth_user_id is either a uuid string or null -- the null
+  // handling below just puts "not linked" rows first ascending, which
+  // reads fine for a linked/unlinked column).
+  function compareSortValues(a, b) {
+    if (a == null && b == null) return 0;
+    if (a == null) return -1;
+    if (b == null) return 1;
+    if (typeof a === 'boolean' || typeof b === 'boolean') {
+      return (a ? 1 : 0) - (b ? 1 : 0);
+    }
+    var na = typeof a === 'number' ? a : (a !== '' && !isNaN(Number(a)) ? Number(a) : null);
+    var nb = typeof b === 'number' ? b : (b !== '' && !isNaN(Number(b)) ? Number(b) : null);
+    if (na != null && nb != null) return na - nb;
+    return String(a).toLowerCase().localeCompare(String(b).toLowerCase());
+  }
+  // Sorts a fresh copy of `rows` per state.tableSort[tableId] (set by
+  // wireTableSort's click handler below) -- called from inside each
+  // table's own render*() function, right before it turns the filtered/
+  // searched array into <tr> markup. Returns `rows` untouched when nothing
+  // has been clicked yet, so the existing default ordering (newest-first,
+  // queue order, etc.) is unaffected until the admin actually clicks a
+  // header -- and since every render*() calls this every time it runs
+  // (including from the 5s poll and from search/filter changes), the sort
+  // survives a re-render instead of being a one-time DOM reorder.
+  function sortRows(tableId, rows) {
+    var sort = state.tableSort[tableId];
+    if (!sort) return rows;
+    return rows.slice().sort(function (a, b) {
+      var cmp = compareSortValues(getSortValue(a, sort.key), getSortValue(b, sort.key));
+      return sort.dir === 'desc' ? -cmp : cmp;
+    });
+  }
+
+  // Adds one small draggable handle to the right edge of every <th> in
+  // `table`, then locks the table into table-layout:fixed with each
+  // column's current rendered width applied via an explicit <colgroup>
+  // (one <col> per header cell), so dragging a handle resizes just that
+  // column instead of fighting the browser's content-based auto layout.
+  // A <colgroup> is used rather than a width on the <th>/<td> cells
+  // themselves -- with table.a-table's own `width:100%`, a fixed layout
+  // that only widens ONE column's cells still gets rescaled by the browser
+  // to keep the table at exactly 100%, visibly squeezing every other
+  // column.
+  //
+  // Letting the *table* fall back to `width:auto` (see .a-table-resizable
+  // in admin.css) is NOT enough to stop that on its own: a <table> is a
+  // block-level box, and `width:auto` in normal flow resolves via
+  // shrink-to-fit, i.e. min(content-width, *available* width) -- and
+  // "available width" here is .a-table-wrap's own box, not "however wide
+  // the content wants to scroll to", so the table still gets clamped back
+  // to the wrapper's width and every column gets rescaled right back to
+  // fit, even with .a-table-wrap{overflow-x:auto} allowed to scroll.
+  // Explicitly setting the table's own `width` (in updateTableWidth()
+  // below) to the sum of its column widths sidesteps shrink-to-fit
+  // entirely, so growing one column past the wrapper's width correctly
+  // spills into that existing scroll area instead of squeezing its
+  // neighbors. Per-session only (no localStorage) -- a fresh page load
+  // goes back to the CSS defaults.
+  function updateTableWidth(table, cols) {
+    var total = 0;
+    Array.prototype.forEach.call(cols, function (col) { total += parseFloat(col.style.width) || 0; });
+    table.style.width = total + 'px';
+  }
+  function makeTableResizable(table) {
+    if (!table || table._resizableInit) return;
+    table._resizableInit = true;
+    // initTableEnhancements() wires up all nine tables at boot, but only
+    // one tab's .a-panel is .is-active (display:block) at a time -- every
+    // other table's th.offsetWidth would read 0 (a hidden ancestor gives
+    // every descendant zero layout size), locking in unusably-collapsed
+    // columns forever. Briefly force this table's panel visible to
+    // measure its real auto-layout widths, then put visibility back
+    // exactly as it was -- synchronous, so nothing actually paints in
+    // between and the admin never sees the flash.
+    var panel = table.closest('.a-panel');
+    var wasActive = panel && panel.classList.contains('is-active');
+    if (panel && !wasActive) panel.classList.add('is-active');
+    var ths = table.querySelectorAll('thead th');
+    var colgroup = document.createElement('colgroup');
+    var cols = [];
+    Array.prototype.forEach.call(ths, function (th) {
+      // Lock in today's rendered (auto-layout) width as each column's
+      // starting point *before* switching to table-layout:fixed below, so
+      // columns don't all jump to some other distribution the instant
+      // this runs.
+      var col = document.createElement('col');
+      col.style.width = th.offsetWidth + 'px';
+      colgroup.appendChild(col);
+      cols.push(col);
+    });
+    table.insertBefore(colgroup, table.firstChild);
+    table.classList.add('a-table-resizable');
+    updateTableWidth(table, cols);
+    if (panel && !wasActive) panel.classList.remove('is-active');
+    Array.prototype.forEach.call(ths, function (th, i) {
+      var col = cols[i];
+      var handle = document.createElement('span');
+      handle.className = 'a-col-resize-handle';
+      handle.addEventListener('mousedown', function (e) {
+        var startX = e.clientX;
+        var startWidth = th.offsetWidth;
+        document.body.classList.add('a-col-resizing');
+        function onMove(ev) {
+          var next = startWidth + (ev.clientX - startX);
+          if (next < 40) next = 40; // never let a column collapse to zero/negative
+          col.style.width = next + 'px';
+          updateTableWidth(table, cols);
+        }
+        function onUp() {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.body.classList.remove('a-col-resizing');
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        // Never let a mousedown/click that starts on the handle bubble up
+        // to the th's own click listener (wired by wireTableSort below) --
+        // resizing must never also trigger a sort, even for a plain click
+        // on the handle with no drag.
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      handle.addEventListener('click', function (e) { e.stopPropagation(); });
+      th.appendChild(handle);
+    });
+  }
+
+  // Wires click-to-sort onto every `th[data-sort-key]` in `table` -- the
+  // key names the exact property (or "a.b" dot-path) on that table's row
+  // objects to sort by, set in the markup (dashboard.html), since header
+  // text alone doesn't say which field it maps to. Ascending on first
+  // click, descending on a second click of the same header, ascending
+  // again after clicking a different header. `renderFn` is that table's
+  // own existing render*() function -- re-invoking it is what actually
+  // re-sorts the visible rows, since render*() reads state.tableSort via
+  // sortRows() every time it runs.
+  function wireTableSort(table, tableId, renderFn) {
+    if (!table || table._sortInit) return;
+    table._sortInit = true;
+    var ths = table.querySelectorAll('thead th[data-sort-key]');
+    Array.prototype.forEach.call(ths, function (th) {
+      th.classList.add('a-sortable-th');
+      th.setAttribute('title', 'Click to sort');
+      th.addEventListener('click', function () {
+        var key = th.getAttribute('data-sort-key');
+        var current = state.tableSort[tableId];
+        var dir = (current && current.key === key && current.dir === 'asc') ? 'desc' : 'asc';
+        state.tableSort[tableId] = { key: key, dir: dir };
+        Array.prototype.forEach.call(ths, function (other) { other.classList.remove('a-sort-asc', 'a-sort-desc'); });
+        th.classList.add(dir === 'asc' ? 'a-sort-asc' : 'a-sort-desc');
+        renderFn();
+      });
+    });
+  }
+
+  // Table ids paired with their own existing render*() function --
+  // "Trophy"/"Non-Trophy" on #gamesTable are deliberately left out of
+  // their <th> (no data-sort-key in dashboard.html) since they render an
+  // interactive <select> whose meaning flips between an availability
+  // boolean and a reservation-status enum depending on the game's status,
+  // so there's no single consistent value to sort by; every purely
+  // actions-only trailing column (the blank <th></th> on several tables)
+  // is skipped the same way, automatically, since wireTableSort() only
+  // looks at th[data-sort-key].
+  var SORTABLE_TABLES = [
+    { id: 'pendingTable', render: renderPending },
+    { id: 'swapsTable', render: renderSwaps },
+    { id: 'endingSoonTable', render: renderOverview },
+    { id: 'mostRentedTable', render: renderOverview },
+    { id: 'rentalsTable', render: renderRentals },
+    { id: 'reservationsTable', render: renderReservations },
+    { id: 'historyTable', render: renderHistory },
+    { id: 'rentersTable', render: renderRenters },
+    { id: 'gamesTable', render: renderGames }
+  ];
+  function initTableEnhancements() {
+    SORTABLE_TABLES.forEach(function (t) {
+      var table = document.getElementById(t.id);
+      if (!table) return;
+      makeTableResizable(table);
+      wireTableSort(table, t.id, t.render);
+    });
+  }
+
   // ---- boot ----
   // Ticks every live-updating on-screen clock: the topbar's "Updated Xs
   // ago" text, plus the Pending Payments / Swap Requests "waiting" and
@@ -1813,7 +2067,11 @@
     if (!session) return;
     $('whoami').textContent = session.user.email;
     $('userAvatar').textContent = session.user.email.charAt(0).toUpperCase();
-    loadAll();
+    // Wire up column resize + click-to-sort only after the first load has
+    // populated every table with real rows -- capturing each column's
+    // starting width (see makeTableResizable()) off an empty <tbody> would
+    // lock in widths based on header text alone.
+    loadAll().then(initTableEnhancements);
     // Incoming requests (and everything else) come from customers using the
     // public site in real time -- poll instead of requiring a manual refresh
     // to notice a new one.
