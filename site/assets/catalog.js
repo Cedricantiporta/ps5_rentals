@@ -124,7 +124,10 @@
     if (g.status === 'upcoming') return { label: 'PRE-RESERVE', cls: 'rc-badge-upcoming' };
     var t = g.trophy.available, n = g.nontrophy.available;
     if (!t && !n) return { label: 'FULLY RENTED', cls: 'rc-badge-waitlist' };
-    if (!t || !n) return { label: 'RENTED', cls: 'rc-badge-trophyfull' };
+    // Exactly one slot full used to show a "RENTED" pill on the grid card --
+    // removed per owner request (card real estate); FULLY RENTED/HIGH
+    // DEMAND/POPULAR/PRE-RESERVE below are unaffected and still show.
+    if (!t || !n) return null;
     if (g.activeRentals >= HIGH_DEMAND_MIN) return { label: 'HIGH DEMAND', cls: 'rc-badge-demand' };
     if (g.activeRentals >= POPULAR_MIN) return { label: 'POPULAR', cls: 'rc-badge-popular' };
     return null;
@@ -299,14 +302,13 @@
         '<div class="rc-card" data-slug="' + g.slug + '">' +
           '<div class="rc-card-cover-wrap">' +
             (badge ? '<span class="rc-badge ' + badge.cls + '">' + badge.label + '</span>' : '') +
-            (g.activeRentals > 0 ? '<span class="rc-count-badge">' + (g.activeRentals > 99 ? '99+' : g.activeRentals) + '</span>' : '') +
             '<img class="rc-card-cover" loading="lazy" src="' + (g.cover || '') + '" alt="' + g.title + '"/>' +
+            (g.genre[0] ? '<span class="rc-card-cover-genre">' + g.genre[0] + '</span>' : '') +
+            '<span class="rc-card-cover-plat">' + platformBadge(g.platform) + '</span>' +
           '</div>' +
           '<div class="rc-card-body">' +
             '<div class="rc-card-top">' +
               '<p class="rc-card-title">' + g.title + '</p>' +
-              '<p class="rc-card-genre">' + (g.genre[0] || '') + '</p>' +
-              platformBadge(g.platform) +
             '</div>' +
             '<div class="rc-card-bottom">' +
               '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('trophy') + ' Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +

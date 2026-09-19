@@ -280,13 +280,6 @@
 .rc-badge-demand { background: #bb311c; }
 .rc-badge-popular { background: #26262e; }
 
-.rc-count-badge {
-  position: absolute; right: 0.5rem; top: 0.5rem; z-index: 2; width: 26px; height: 26px;
-  border-radius: 50%; background: #fff; color: #0a0a0a; font-size: 0.78rem; font-weight: 900;
-  display: flex; align-items: center; justify-content: center; line-height: 1;
-  box-shadow: 0 2px 8px rgba(0,0,0,.35);
-}
-
 /* main grid */
 .rc-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.1rem; }
 .rc-card {
@@ -313,10 +306,20 @@
 }
 .rc-card-cover { width: 100%; aspect-ratio: 3/2; object-fit: cover; display: block; background: #1c1e28; }
 .rc-card-body { padding: 0.75rem 0.8rem 0.85rem; display: flex; flex-direction: column; flex: 1; }
-.rc-card-top { display: flex; flex-direction: column; gap: 0.3rem; }
+.rc-card-top { display: flex; flex-direction: column; }
 .rc-card-bottom { margin-top: auto; padding-top: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; }
 .rc-card-title { color: var(--rc-text); font-size: 0.88rem; font-weight: 700; line-height: 1.25; margin: 0; min-height: 2.5em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.rc-card-genre { font-size: 0.68rem; font-weight: 700; color: var(--rc-text-3); text-transform: uppercase; letter-spacing: .04em; }
+/* genre + platform now sit on the cover art itself (bottom corners) instead
+   of their own lines below it, so the card's cover-to-price distance is
+   shorter -- see renderGrid in catalog.js. The cover's own ::after gradient
+   (below) darkens the bottom of the image, so plain white text stays legible
+   over any cover art. */
+.rc-card-cover-genre {
+  position: absolute; left: 0.55rem; bottom: 0.5rem; z-index: 2; max-width: 55%;
+  font-size: 0.6rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: .04em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px rgba(0,0,0,.55);
+}
+.rc-card-cover-plat { position: absolute; right: 0.55rem; bottom: 0.5rem; z-index: 2; }
 .rc-plat-badge {
   display: inline-flex; align-items: stretch; border-radius: 999px; overflow: hidden;
   border: 1px solid rgba(255,255,255,.35); font-family: Playstation, Arial, sans-serif;
