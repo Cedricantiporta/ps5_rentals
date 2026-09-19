@@ -148,11 +148,29 @@
     return Math.round((target - today) / 86400000);
   }
 
+  // Real hours remaining until the END of today (the next local midnight),
+  // used only for the final day (daysUntilDate === 0, i.e. availableAt is
+  // today) so the countdown can show "18H LEFT" instead of a static
+  // "FREE SOON" for the whole last day regardless of what time it is right
+  // now. availableAt being "today" means today is still the last unavailable
+  // day, so the relevant deadline is midnight tonight, not midnight this
+  // morning (which has already passed).
+  function hoursUntilMidnight() {
+    var next = new Date();
+    next.setHours(24, 0, 0, 0);
+    return (next - new Date()) / 3600000;
+  }
+
   function availInfo(available, availableAt) {
     if (available) return { label: 'AVAILABLE', cls: 'rc-status-available' };
     var days = daysUntilDate(availableAt);
     if (days === null) return { label: 'FULL', cls: 'rc-status-full' };
-    if (days <= 0) return { label: 'FREE SOON', cls: 'rc-status-full' };
+    if (days < 0) return { label: 'FREE SOON', cls: 'rc-status-full' };
+    if (days === 0) {
+      var hours = Math.ceil(hoursUntilMidnight());
+      if (hours <= 0) return { label: 'FREE SOON', cls: 'rc-status-full' };
+      return { label: hours + 'H LEFT', cls: 'rc-status-full' };
+    }
     return { label: days + 'D LEFT', cls: 'rc-status-full' };
   }
 
