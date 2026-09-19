@@ -288,17 +288,21 @@
     return t.content.firstElementChild;
   }
 
-  // Infinite strip: the prev/next arrows should never dead-end at a real
-  // boundary (see scrollByAmount in wireToolbar, which does the actual
-  // wrap-around jump) -- so "can this strip scroll" no longer depends on
-  // scrollLeft/maxScroll, just on whether there's more than one card to
-  // loop between. Looping a single card would be meaningless, so 0/1 cards
-  // still hide/disable the arrows exactly like before.
+  // Infinite strip: the prev/next arrows never dead-end at a real boundary
+  // any more -- clone padding (see renderComingSoon) means there's always a
+  // next/prev card to scroll to, so "can this strip scroll" no longer
+  // depends on scrollLeft/maxScroll or even the (now tripled) DOM child
+  // count, just on how many REAL cards there are to loop between. Looping a
+  // single card would be meaningless, so 0/1 real cards still hide/disable
+  // the arrows exactly like before. data-real-count is set by
+  // renderComingSoon; the child-count fallback only matters before that's
+  // ever run.
   function updateStripEdges() {
     var wrap = document.querySelector('.rc-strip-wrap');
     var track = document.getElementById('rcComingSoonTrack');
     if (!wrap || !track) return;
-    var canScroll = track.children.length > 1;
+    var realCount = Number(track.getAttribute('data-real-count')) || track.children.length;
+    var canScroll = realCount > 1;
     wrap.classList.toggle('can-scroll-left', canScroll);
     wrap.classList.toggle('can-scroll-right', canScroll);
   }
@@ -320,29 +324,51 @@
     return dots;
   }
 
-  // Highlights whichever card is nearest the strip's current scroll
-  // position -- called after every programmatic scroll (arrows, dot clicks)
-  // and on the track's own native scroll event (drag, trackpad, touch), so
-  // the indicator tracks the strip regardless of how it was moved.
+  // Highlights whichever REAL card's center is nearest the CENTER of the
+  // currently visible viewport (not whichever card's left edge is nearest
+  // the viewport's left edge -- that made the dots track the leftmost
+  // visible card, not the one actually centered/focal in the strip). Called
+  // after every programmatic scroll (arrows, dot clicks) and on the track's
+  // own native scroll event (drag, trackpad, touch), so the indicator
+  // tracks the strip regardless of how it was moved. With clone padding
+  // (see renderComingSoon) several DOM cards can represent the same real
+  // game -- data-real-index maps whichever one wins back to its one dot, so
+  // a clone and its real counterpart always light up the same dot.
   function updateStripDots() {
     var track = document.getElementById('rcComingSoonTrack');
     var dots = document.getElementById('rcComingSoonDots');
     if (!track || !dots || !track.children.length) return;
-    var pos = track.scrollLeft;
+    var viewportCenter = track.scrollLeft + track.clientWidth / 2;
     var best = 0, bestDist = Infinity;
-    Array.prototype.forEach.call(track.children, function (card, i) {
-      var dist = Math.abs(card.offsetLeft - pos);
-      if (dist < bestDist) { bestDist = dist; best = i; }
+    Array.prototype.forEach.call(track.children, function (card) {
+      var center = card.offsetLeft + card.getBoundingClientRect().width / 2;
+      var dist = Math.abs(center - viewportCenter);
+      if (dist < bestDist) { bestDist = dist; best = Number(card.getAttribute('data-real-index')) || 0; }
     });
     Array.prototype.forEach.call(dots.children, function (dot, i) {
       dot.classList.toggle('is-active', i === best);
     });
   }
 
+  // Scrolls to a REAL card index, but picks whichever clone (or the
+  // original) of that index sits closest to the current scroll position --
+  // there are up to three DOM cards sharing this real index (one per clone
+  // copy, see renderComingSoon), and always jumping to a fixed copy could
+  // mean an unnecessarily long scroll across the whole strip when a nearer
+  // copy of the same card is right there.
   function scrollToStripCard(index) {
     var track = document.getElementById('rcComingSoonTrack');
-    if (!track || !track.children[index]) return;
-    track.scrollTo({ left: track.children[index].offsetLeft, behavior: 'smooth' });
+    if (!track) return;
+    var candidates = Array.prototype.filter.call(track.children, function (card) {
+      return Number(card.getAttribute('data-real-index')) === index;
+    });
+    if (!candidates.length) return;
+    var pos = track.scrollLeft, best = candidates[0], bestDist = Infinity;
+    candidates.forEach(function (card) {
+      var dist = Math.abs(card.offsetLeft - pos);
+      if (dist < bestDist) { bestDist = dist; best = card; }
+    });
+    track.scrollTo({ left: best.offsetLeft, behavior: 'smooth' });
   }
 
   // A resting "peek" -- the first card sits with ~20% of its left edge
@@ -358,6 +384,87 @@
     return first.getBoundingClientRect().width * 0.2;
   }
 
+  // One card's full horizontal step (its own width plus the track's gap) --
+  // shared by the arrow-click scroll amount and the silent re-centering
+  // check below, both of which need to move/measure in exact card-width
+  // increments.
+  function stripCardStep(track) {
+    var first = track.children[0];
+    if (!first) return 0;
+    var trackStyle = window.getComputedStyle(track);
+    var gap = parseFloat(trackStyle.columnGap || trackStyle.gap) || 0;
+    return first.getBoundingClientRect().width + gap;
+  }
+
+  // ---- seamless infinite loop via clone padding ----
+  // Debounced "settle" check: rather than a mid-scroll (still-animating)
+  // jump, which would itself be visible, this waits until scrolling has
+  // genuinely stopped -- 140ms with no further scroll event -- before
+  // silently repositioning. Covers native scroll (drag/trackpad/touch) and
+  // the tail end of a programmatic smooth scrollBy alike, since both fire
+  // ordinary 'scroll' events the whole way through and this only acts once
+  // those events stop arriving.
+  var stripSettleTimer = null;
+  function scheduleStripSettle() {
+    clearTimeout(stripSettleTimer);
+    stripSettleTimer = setTimeout(stripSettleCheck, 140);
+  }
+  // If scrollLeft has drifted a full card-width past the middle (real) copy's
+  // start or end -- i.e. genuinely into the first or third clone copy, not
+  // just near the seam -- jump by exactly one copy-width to land on the
+  // pixel-identical equivalent spot in the middle copy. The clone is an exact
+  // visual duplicate of the real card it copies, so this repositioning is
+  // imperceptible; it only ever runs after scrolling has settled (see
+  // scheduleStripSettle), never mid-animation.
+  function stripSettleCheck() {
+    var track = document.getElementById('rcComingSoonTrack');
+    if (!track) return;
+    var realCount = Number(track.getAttribute('data-real-count')) || 0;
+    var copies = Number(track.getAttribute('data-copies')) || 1;
+    if (realCount < 2 || copies < 3) return; // nothing to loop between
+    var first = track.children[0];
+    var midFirst = track.children[realCount];
+    if (!first || !midFirst) return;
+    var midStart = midFirst.offsetLeft;
+    var setWidth = midStart - first.offsetLeft; // exact width of one full copy
+    if (!setWidth) return;
+    var midEnd = midStart + setWidth;
+    var cardStep = stripCardStep(track);
+    if (track.scrollLeft < midStart - cardStep) {
+      track.scrollLeft += setWidth;
+    } else if (track.scrollLeft > midEnd + cardStep) {
+      track.scrollLeft -= setWidth;
+    }
+  }
+
+  // Builds the markup for one real card. realIndex is baked into
+  // data-real-index so every clone of this card (see renderComingSoon) can
+  // be mapped back to the one dot/real game it represents.
+  function buildSoonCardHtml(g, realIndex) {
+    var t = reservationInfo(g.trophy.reservationStatus);
+    var n = reservationInfo(g.nontrophy.reservationStatus);
+    return '' +
+      '<div class="rc-soon-card" data-slug="' + g.slug + '" data-real-index="' + realIndex + '">' +
+        '<div class="rc-soon-cover-wrap">' +
+          '<span class="rc-badge rc-badge-upcoming">Pre-Reserve</span>' +
+          '<img class="rc-soon-cover" loading="lazy" src="' + (g.cover || '') + '" alt="' + g.title + '"/>' +
+        '</div>' +
+        '<div class="rc-soon-body">' +
+          (g.genre[0] ? '<span class="rc-soon-genre">' + g.genre[0] + '</span>' : '') +
+          '<p class="rc-soon-title">' + g.title + '</p>' +
+          '<p class="rc-soon-desc">' + platformBadge(g.platform) + ' Releases ' + releaseDateLabel(g.releaseDate) + '</p>' +
+          '<div class="rc-soon-status">' +
+            '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('trophy') + ' Trophy' + helpBadge(TROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
+            '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('user') + ' Non-Trophy' + helpBadge(NONTROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
+          '</div>' +
+          '<div class="rc-soon-price-row">' +
+            '<div class="rc-soon-price-box"><span class="rc-price-label">Weekly</span><span class="rc-price-value">' + peso(g.trophy.weekly) + '</span></div>' +
+            '<div class="rc-soon-price-box"><span class="rc-price-label">Monthly</span><span class="rc-price-value">' + peso(g.trophy.monthly) + '</span></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
   function renderComingSoon() {
     var track = document.getElementById('rcComingSoonTrack');
     var section = document.getElementById('rcComingSoonSection');
@@ -366,34 +473,41 @@
       .sort(function (a, b) { return a.upcomingOrder - b.upcomingOrder; });
     if (!upcoming.length) { section.style.display = 'none'; return; }
     section.style.display = '';
-    track.innerHTML = upcoming.map(function (g) {
-      var t = reservationInfo(g.trophy.reservationStatus);
-      var n = reservationInfo(g.nontrophy.reservationStatus);
-      return '' +
-        '<div class="rc-soon-card" data-slug="' + g.slug + '">' +
-          '<div class="rc-soon-cover-wrap">' +
-            '<span class="rc-badge rc-badge-upcoming">Pre-Reserve</span>' +
-            '<img class="rc-soon-cover" loading="lazy" src="' + (g.cover || '') + '" alt="' + g.title + '"/>' +
-          '</div>' +
-          '<div class="rc-soon-body">' +
-            (g.genre[0] ? '<span class="rc-soon-genre">' + g.genre[0] + '</span>' : '') +
-            '<p class="rc-soon-title">' + g.title + '</p>' +
-            '<p class="rc-soon-desc">' + platformBadge(g.platform) + ' Releases ' + releaseDateLabel(g.releaseDate) + '</p>' +
-            '<div class="rc-soon-status">' +
-              '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('trophy') + ' Trophy' + helpBadge(TROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
-              '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('user') + ' Non-Trophy' + helpBadge(NONTROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
-            '</div>' +
-            '<div class="rc-soon-price-row">' +
-              '<div class="rc-soon-price-box"><span class="rc-price-label">Weekly</span><span class="rc-price-value">' + peso(g.trophy.weekly) + '</span></div>' +
-              '<div class="rc-soon-price-box"><span class="rc-price-label">Monthly</span><span class="rc-price-value">' + peso(g.trophy.monthly) + '</span></div>' +
-            '</div>' +
-          '</div>' +
-        '</div>';
-    }).join('');
+
+    var realCount = upcoming.length;
+    // Clone padding: with more than one real card, render 3 full copies of
+    // the list back-to-back ([...copy1 (tail clone), ...copy2 (the "real"
+    // middle copy we rest/settle in), ...copy3 (head clone)...]) so there is
+    // always a full screen's worth of real-looking content to scroll into in
+    // either direction -- scrolling never reaches an actual DOM edge inside
+    // normal usage, only the silent settle check (stripSettleCheck) ever
+    // "wraps" the position, and it does so invisibly. A single card can't be
+    // looped meaningfully, so it gets one copy, same as before.
+    var copies = realCount > 1 ? 3 : 1;
+    var cardsHtml = upcoming.map(function (g, i) { return buildSoonCardHtml(g, i); });
+    var allHtml = [];
+    for (var c = 0; c < copies; c++) { allHtml = allHtml.concat(cardsHtml); }
+    track.innerHTML = allHtml.join('');
+    track.setAttribute('data-real-count', String(realCount));
+    track.setAttribute('data-copies', String(copies));
+
+    // Every card, real or cloned, represents the same underlying game --
+    // wire the exact same click-to-open-modal behavior on all of them.
     Array.prototype.forEach.call(track.children, function (card) {
       card.addEventListener('click', function () { openModal(card.getAttribute('data-slug')); });
     });
-    track.scrollLeft = stripPeekOffset(track);
+
+    // Rest at the START of the MIDDLE copy (plus the usual peek offset) so
+    // there's a full copy's worth of scrollable room in both directions
+    // immediately, rather than resting at the literal start of the DOM
+    // where "prev" would have nowhere real-looking to go.
+    var peek = stripPeekOffset(track);
+    if (copies > 1) {
+      var midFirst = track.children[realCount];
+      track.scrollLeft = (midFirst ? midFirst.offsetLeft : 0) + peek;
+    } else {
+      track.scrollLeft = peek;
+    }
     updateStripEdges();
 
     var dotsEl = ensureStripDotsEl();
@@ -411,6 +525,7 @@
         dotsEl.innerHTML = '';
       }
     }
+    updateStripDots();
   }
 
   function renderGrid() {
@@ -1403,43 +1518,37 @@
     var prevBtn = document.getElementById('rcSoonPrev');
     var nextBtn = document.getElementById('rcSoonNext');
     if (track && prevBtn && nextBtn) {
-      // Infinite, no-dead-end strip: a normal scrollBy would just clamp at
-      // the real start/end (the old behaviour the owner asked to remove).
-      // Instead, when a click would go past a boundary, jump straight to
-      // the opposite end -- a plain hard cut, not a seamless marquee, which
-      // the owner explicitly said is fine ("no dead end" not "seamless").
+      // Seamless infinite strip: clone padding (see renderComingSoon) means
+      // there's always a next/prev card to scroll to in either direction
+      // within normal usage, so this is now just a plain one-card scrollBy
+      // with NO boundary-check/jump logic. The only thing that keeps the
+      // real scroll position from eventually drifting into (and, with
+      // extremely fast repeated clicking, potentially running out of) clone
+      // room is the silent re-centering check scheduled on every 'scroll'
+      // event below (scheduleStripSettle/stripSettleCheck).
       var scrollByAmount = function (dir) {
-        var cards = track.children;
-        if (cards.length < 2) return; // nothing to loop between
-        var trackStyle = window.getComputedStyle(track);
-        var gap = parseFloat(trackStyle.columnGap || trackStyle.gap) || 0;
-        var cardWidth = cards[0].getBoundingClientRect().width + gap;
-        var maxScroll = track.scrollWidth - track.clientWidth;
-        var EDGE = 4;
-        // The strip's resting "start" position is the peek offset, not a
-        // literal 0 (see stripPeekOffset) -- so "at the start" for wrap-
-        // around purposes means at-or-before that peeked position, not
-        // at-or-before 0. Using EDGE alone here would let a "prev" click
-        // from the resting position clamp to 0 (a real dead end) instead of
-        // wrapping to the last card.
-        var peek = stripPeekOffset(track);
-        if (dir > 0 && track.scrollLeft >= maxScroll - EDGE) {
-          track.scrollLeft = peek;
-        } else if (dir < 0 && track.scrollLeft <= peek + EDGE) {
-          track.scrollLeft = maxScroll;
-        } else {
-          track.scrollBy({ left: dir * cardWidth, behavior: 'smooth' });
-        }
-        updateStripDots();
+        var realCount = Number(track.getAttribute('data-real-count')) || track.children.length;
+        if (realCount < 2) return; // nothing to loop between
+        var cardStep = stripCardStep(track);
+        track.scrollBy({ left: dir * cardStep, behavior: 'smooth' });
       };
       prevBtn.addEventListener('click', function () { scrollByAmount(-1); });
       nextBtn.addEventListener('click', function () { scrollByAmount(1); });
-      track.addEventListener('scroll', updateStripDots, { passive: true });
+      track.addEventListener('scroll', function () {
+        updateStripDots();
+        scheduleStripSettle();
+      }, { passive: true });
       window.addEventListener('resize', updateStripEdges);
       window.addEventListener('resize', updateStripDots);
 
       // mouse users have no touch/trackpad gesture to scroll a horizontal
       // strip with -- let them click-and-drag it like a native carousel.
+      // Setting track.scrollLeft below fires native 'scroll' events just
+      // like a real drag/trackpad/touch scroll would, so the listener
+      // wired above (updateStripDots + scheduleStripSettle) already covers
+      // this for free -- once the drag ends and scrollLeft stops changing,
+      // the same debounced settle check silently re-centers if needed, no
+      // extra wiring required here.
       var isDown = false, dragged = false, startX = 0, startScroll = 0;
       track.addEventListener('mousedown', function (e) {
         isDown = true; dragged = false;
