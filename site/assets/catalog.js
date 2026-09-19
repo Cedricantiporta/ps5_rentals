@@ -1160,7 +1160,9 @@
       state.reserving = false;
       if (state.modalGame !== g) return;
       renderModal();
-      finalizeRental(slotKey);
+      // Deferred, post-RPC-rejection -- not a direct click result, so this
+      // must be same-tab (see finalizeRental's sameTab comment above).
+      finalizeRental(slotKey, true);
     });
   }
 
@@ -1186,7 +1188,14 @@
     }, 1400);
   }
 
-  function finalizeRental(slotKey) {
+  // sameTab: pass true when this isn't a direct, synchronous result of the
+  // user's click (e.g. after an awaited RPC has already resolved/rejected)
+  // -- same reasoning as openMessengerAfterHold above, window.open in that
+  // deferred case risks a silent popup-block (or, if not blocked, a
+  // needlessly surprising new tab). The swap path and confirmPaymentSent's
+  // synchronous "!sb" fallback call this with no sameTab arg since they run
+  // inside the click's own call stack, where window.open is safe.
+  function finalizeRental(slotKey, sameTab) {
     var g = state.modalGame;
     state.slot = slotKey;
     var slotName = slotKey === 'trophy' ? 'Trophy' : 'Non-Trophy';
@@ -1200,7 +1209,9 @@
       text = 'Hi! I\'d like to ' + (upcoming ? 'pre-reserve' : 'rent') + ' "' + g.title + '" — ' + slotName + ' access, ' + planName + ' plan (' + price + ').';
       submitRentalRequest(g, slotKey);
     }
-    window.open(messengerLink(g, text), '_blank', 'noopener');
+    var url = messengerLink(g, text);
+    if (sameTab) window.location.href = url;
+    else window.open(url, '_blank', 'noopener');
   }
 
   function renderModal() {
