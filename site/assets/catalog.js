@@ -666,18 +666,21 @@
 
   // Rent-count now lives here (modal header) instead of the grid card's
   // cover -- see badgeFor/renderGrid, which no longer render rc-count-badge.
+  // g.activeRentals (mapGameRow: row.times_rented) is a persisted, all-time
+  // lifetime counter, not a live "currently renting" count -- the label
+  // reflects that (past tense, no "person"/"people" occupancy wording) so it
+  // doesn't imply present-tense activity that isn't true.
   function rentedNote(g) {
     if (!g.activeRentals) return '';
     var n = g.activeRentals > 99 ? '99+' : g.activeRentals;
-    var word = g.activeRentals === 1 ? 'person' : 'people';
-    return '<p class="rc-modal-rented">' + icon('user') + ' ' + n + ' ' + word + ' renting this</p>';
+    var label = g.activeRentals === 1 ? 'Rented once' : 'Rented ' + n + ' times';
+    return '<p class="rc-modal-rented">' + icon('refresh-cw') + ' ' + label + '</p>';
   }
 
   function buildModalHeader(g) {
     return '<h2 class="rc-modal-title">' + g.title + '</h2>' +
-      platformBadge(g.platform) +
-      '<p class="rc-modal-genre">' + g.genre.join(' · ') + (g.releaseDate ? ' · Release ' + releaseDateLabel(g.releaseDate) : '') + '</p>' +
-      rentedNote(g);
+      '<div class="rc-modal-meta-row">' + platformBadge(g.platform) + rentedNote(g) + '</div>' +
+      '<p class="rc-modal-genre">' + g.genre.join(' · ') + (g.releaseDate ? ' · Release ' + releaseDateLabel(g.releaseDate) : '') + '</p>';
   }
 
   // Shown in place while create_rental_hold is in flight -- writes straight
@@ -707,8 +710,10 @@
 
   function renderPaymentFailure(code) {
     return '' +
-      '<button type="button" class="rc-wizard-back" id="rcWizardBack">' + icon('chevron-left') + ' Back</button>' +
-      '<div class="rc-wizard-heading">Couldn\'t reserve that slot</div>' +
+      '<div class="rc-wizard-header-row">' +
+        '<div class="rc-wizard-heading">Couldn\'t reserve that slot</div>' +
+        '<button type="button" class="rc-wizard-back" id="rcWizardBack">' + icon('chevron-left') + ' Back</button>' +
+      '</div>' +
       '<p class="rc-wizard-sub">' + holdErrorMessage(code) + '</p>';
   }
 
@@ -968,8 +973,10 @@
   function renderPlanStep(g) {
     var upcoming = g.status === 'upcoming';
     return '' +
-      (upcoming ? '' : '<button type="button" class="rc-wizard-back" id="rcWizardBack">' + icon('chevron-left') + ' Change Action</button>') +
-      '<div class="rc-wizard-heading">Weekly or Monthly?</div>' +
+      '<div class="rc-wizard-header-row">' +
+        '<div class="rc-wizard-heading">Weekly or Monthly?</div>' +
+        (upcoming ? '' : '<button type="button" class="rc-wizard-back" id="rcWizardBack">' + icon('chevron-left') + ' Change Action</button>') +
+      '</div>' +
       '<p class="rc-wizard-sub">Choose your rental period first.</p>' +
       '<div class="rc-plan-grid">' +
         '<button type="button" class="rc-plan-card rc-plan-weekly" data-plan="weekly">' +
@@ -1012,8 +1019,10 @@
     var n = slotLabel(g, 'nontrophy');
     var actionWord = upcoming ? 'PRE-RESERVE' : 'RENT ' + state.plan.toUpperCase();
     return '' +
-      '<button type="button" class="rc-wizard-back" id="rcWizardBack">' + icon('chevron-left') + ' Change Plan</button>' +
-      '<div class="rc-wizard-heading">Trophy or Non-Trophy?</div>' +
+      '<div class="rc-wizard-header-row">' +
+        '<div class="rc-wizard-heading">Trophy or Non-Trophy?</div>' +
+        '<button type="button" class="rc-wizard-back" id="rcWizardBack">' + icon('chevron-left') + ' Change Plan</button>' +
+      '</div>' +
       '<p class="rc-wizard-sub">Trophy: play on your own PSN profile, trophies and saves stay yours. Non-Trophy: play on the rented game profile with full game access either way.</p>' +
       '<div class="rc-access-grid rc-access-grid-simple">' +
         '<div class="rc-access-card' + (!trophyOn ? ' is-disabled' : '') + '">' +
