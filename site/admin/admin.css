@@ -144,6 +144,18 @@ table.a-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
    position:fixed) must never be clipped by its own cell. */
 table.a-table th, table.a-table td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--a-border); vertical-align: middle; white-space: nowrap; overflow: hidden; }
 table.a-table td.a-actions-cell { white-space: normal; overflow: visible; }
+/* Actions column pins to the right of the scroll area (.a-table-wrap) on
+   the 5 tables that have one, so the action buttons/menu stay reachable
+   without scrolling all the way right on a wide table -- everything else
+   still scrolls normally underneath it. Needs its own opaque background
+   (it's the same var(--a-panel) as the page, not the row-hover tint) so
+   scrolled-under content doesn't show through, plus a hairline left
+   border so it reads as a distinct pinned edge rather than blending in. */
+th.a-actions-th, td.a-actions-cell {
+  position: sticky; right: 0; z-index: 2;
+  background: var(--a-panel); border-left: 1px solid var(--a-border);
+}
+th.a-actions-th { z-index: 3; }
 /* Normal-case header, still distinct via weight/color/size instead of caps.
    position:relative anchors each header's .a-col-resize-handle (absolutely
    positioned, added by makeTableResizable() in dashboard.js). */
