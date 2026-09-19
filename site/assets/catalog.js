@@ -1262,15 +1262,39 @@
   function wireAccessStep(body) {
     var back = document.getElementById('rcWizardBack');
     if (back) back.addEventListener('click', function () { window.history.back(); });
+
+    function chooseSlot(slotKey) {
+      // Swaps keep their existing Messenger-only behaviour untouched --
+      // only a brand-new rental goes through the self-serve hold/payment
+      // step (see chooseNewRentalSlot).
+      if (state.intent === 'swap') finalizeRental(slotKey);
+      else chooseNewRentalSlot(slotKey);
+    }
+
+    // The whole card selects its slot, not just the pill button inside it --
+    // per owner feedback, clicking anywhere on an enabled card (the cover
+    // icon, the description text, the status pill) should work exactly like
+    // clicking the button, not just the button itself. The "?" help badge
+    // is exempted automatically: wireHelpBadges() intercepts it in the
+    // capture phase before this bubble-phase listener ever runs.
+    Array.prototype.forEach.call(body.querySelectorAll('.rc-access-card'), function (card) {
+      if (card.classList.contains('is-disabled')) return;
+      var btn = card.querySelector('.rc-access-choose');
+      var slotKey = btn && btn.getAttribute('data-slot');
+      if (!slotKey) return;
+      card.classList.add('is-clickable');
+      card.addEventListener('click', function () { chooseSlot(slotKey); });
+    });
+
+    // The button itself still works independently (keyboard/tab users who
+    // land on the button via Tab, not a mouse click on the card) -- guard
+    // against double-firing when a click on the button also bubbles up to
+    // the card's own listener above by stopping it there.
     Array.prototype.forEach.call(body.querySelectorAll('.rc-access-choose'), function (btn) {
       if (btn.hasAttribute('disabled')) return;
-      btn.addEventListener('click', function () {
-        var slotKey = btn.getAttribute('data-slot');
-        // Swaps keep their existing Messenger-only behaviour untouched --
-        // only a brand-new rental goes through the self-serve hold/payment
-        // step (see chooseNewRentalSlot).
-        if (state.intent === 'swap') finalizeRental(slotKey);
-        else chooseNewRentalSlot(slotKey);
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        chooseSlot(btn.getAttribute('data-slot'));
       });
     });
   }

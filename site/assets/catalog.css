@@ -761,6 +761,8 @@
   background: var(--rc-panel); color: var(--rc-text); border-radius: 0.72rem; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;
   transition: background-color .15s ease, color .15s ease;
 }
+/* Whole card is clickable (see wireAccessStep), not just its button. */
+.rc-access-card.is-clickable { cursor: pointer; }
 /* same solid-blue-with-light-text hover as .rc-choice-card -- selection
    itself still happens via the .rc-access-choose button, not the card, so
    disabled cards (nothing to choose) don't get the hover affordance. */
