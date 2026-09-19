@@ -802,10 +802,10 @@
   .rc-choice-grid, .rc-plan-grid, .rc-access-grid, .rc-access-grid-simple { grid-template-columns: 1fr; }
 }
 
-/* step 4: payment -- create_rental_hold spinner, GCash instructions, ref
-   code, hold countdown. Reuses .rc-panel/.rc-panel-2 tokens and the
-   plan/access-card light-mode overrides so it matches the rest of the
-   wizard in both themes. */
+/* step 4: payment -- pending GCash instructions (no hold yet), the
+   create_rental_hold spinner, and the post-confirm ref code/queue-position
+   screen. Reuses .rc-panel/.rc-panel-2 tokens and the plan/access-card
+   light-mode overrides so it matches the rest of the wizard in both themes. */
 .rc-pay-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 3rem 1rem; text-align: center; }
 .rc-pay-spinner {
   width: 2.4rem; height: 2.4rem; border-radius: 50%; border: 3px solid var(--rc-border-2);
@@ -822,11 +822,12 @@
 .rc-pay-row-amount { padding-top: 0.5rem; border-top: 1px solid var(--rc-border-2); }
 .rc-pay-row-amount b { font-size: 1.15rem; color: var(--rc-blue); }
 
-.rc-pay-hold { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; background: var(--rc-panel-2); border-radius: 999px; padding: 0.55rem 1rem; margin-bottom: 0.85rem; }
-[data-theme="light"] .rc-pay-hold { background: #f0f1f4; }
-.rc-pay-hold-label { font-size: 0.72rem; font-weight: 700; color: var(--rc-text-2); text-transform: uppercase; letter-spacing: .04em; }
-.rc-pay-hold-timer { font-size: 0.95rem; font-weight: 800; color: var(--rc-amber); font-variant-numeric: tabular-nums; }
-.rc-pay-hold-timer.rc-hold-expired { color: var(--rc-red); }
+/* Queue-position banner (migration_20 only -- "you're #23 of 50 in line"),
+   shown on the post-confirm screen for a pre-release reservation. */
+.rc-pay-queue { font-size: 0.82rem; color: var(--rc-text); background: var(--rc-panel-2); border-radius: 0.61rem; padding: 0.6rem 0.9rem; margin-bottom: 0.85rem; }
+[data-theme="light"] .rc-pay-queue { background: #f0f1f4; }
+.rc-pay-queue b { color: var(--rc-blue); }
+[data-theme="light"] .rc-pay-queue b { color: #123b8f; }
 
 .rc-pay-gcash { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.85rem; }
 .rc-pay-field { background: var(--rc-panel); border-radius: 0.61rem; padding: 0.65rem 0.9rem; }

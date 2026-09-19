@@ -7,7 +7,7 @@
   var HIGH_DEMAND_MIN = 10;
   var PAGE_SIZE = 20;
 
-  var state = { games: [], query: '', quickFilter: 'available', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1, step: 'intent', intent: 'new', overlayStack: [], modalStepDepth: 0, hold: null, holdError: null };
+  var state = { games: [], query: '', quickFilter: 'available', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1, step: 'intent', intent: 'new', overlayStack: [], modalStepDepth: 0, hold: null, holdError: null, reserving: false };
 
   var THEME_KEY = 'rc-theme';
   function getSavedTheme() {
@@ -652,6 +652,7 @@
     state.slot = null;
     state.hold = null;
     state.holdError = null;
+    state.reserving = false;
     state.intent = 'new';
     state.step = (g.status === 'upcoming') ? 'plan' : 'intent';
     renderModal();
@@ -669,7 +670,6 @@
   function closeModal() {
     document.getElementById('rcModalOverlay').classList.remove('is-open');
     document.body.style.overflow = '';
-    clearHoldCountdown();
   }
 
   function slotLabel(g, slotKey) {
@@ -769,36 +769,19 @@
   }
 
   // ---- self-serve payment step (create_rental_hold) ----
-  // Pre-migration (RPCs not deployed yet) or any Supabase failure must fail
-  // soft back to the exact old behaviour -- submitRentalRequest() + open
-  // Messenger -- so the live site never breaks for a real customer while
-  // the SQL agent's migration hasn't landed. See RENT-FLOW-CONTRACT.md.
-  var holdCountdownTimer = null;
-
-  function clearHoldCountdown() {
-    if (holdCountdownTimer) { clearInterval(holdCountdownTimer); holdCountdownTimer = null; }
-  }
-
-  function startHoldCountdown(expiresAtIso) {
-    clearHoldCountdown();
-    var tick = function () {
-      var el = document.getElementById('rcHoldCountdown');
-      if (!el) { clearHoldCountdown(); return; }
-      var remain = new Date(expiresAtIso).getTime() - Date.now();
-      if (isNaN(remain) || remain <= 0) {
-        el.textContent = 'Expired';
-        el.classList.add('rc-hold-expired');
-        clearHoldCountdown();
-        return;
-      }
-      var totalSec = Math.floor(remain / 1000);
-      var m = Math.floor(totalSec / 60);
-      var s = totalSec % 60;
-      el.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
-    };
-    tick();
-    holdCountdownTimer = setInterval(tick, 1000);
-  }
+  // Registration is deferred to the "I've Paid" click (see
+  // confirmPaymentSent) -- picking a slot (chooseNewRentalSlot) only shows
+  // payment instructions computed client-side, with NO RPC call and NO
+  // database write, so a customer who looks at the price and closes the tab
+  // never leaves behind a renter/rental row. create_rental_hold() only runs
+  // once the customer claims to have paid. Pre-migration (RPCs not deployed
+  // yet) or any Supabase failure at THAT point must fail soft back to the
+  // exact old pure-Messenger behaviour -- submitRentalRequest() + open
+  // Messenger -- so the live site never breaks for a real customer while a
+  // migration hasn't landed or the Supabase client itself is unavailable.
+  // See RENT-FLOW-CONTRACT.md. Because nothing is held before the click,
+  // there is no "slot held for X minutes" countdown to show on the pending
+  // screen -- see renderPaymentPending.
 
   // navigator.clipboard is unavailable/rejects on older browsers and on
   // non-HTTPS -- always fall back to the hidden-textarea execCommand trick,
@@ -896,6 +879,9 @@
       case 'no_price': return 'This game doesn\'t have a price set for that plan yet. Please message us on Messenger instead.';
       case 'bad_plan': return 'Something went wrong with the selected plan. Please go back and choose again.';
       case 'bad_slot': return 'Something went wrong with the selected access type. Please go back and choose again.';
+      // migration_20 only -- a full pre-release reservation queue. Absent/
+      // impossible pre-migration since the queue itself doesn't exist yet.
+      case 'reservation_full': return 'This reservation is full for now — check back later or message us.';
       default: return 'Something went wrong reserving your slot. Please go back and try again, or message us on Messenger.';
     }
   }
@@ -909,34 +895,88 @@
       '<p class="rc-wizard-sub">' + holdErrorMessage(code) + '</p>';
   }
 
-  function renderPaymentSuccess(g, hold) {
+  // Shown the instant a slot is picked (see chooseNewRentalSlot) -- no RPC
+  // has run yet and nothing is held, so deliberately no reference code and
+  // no "slot held for X minutes" countdown here. Amount is computed straight
+  // from state.games (already loaded client-side for the catalog grid, no
+  // RPC needed); the GCash number/name come from the read-only
+  // get_public_settings() cache (loadPublicSettings/publicSettings -- see
+  // openModal, which already fetches it) rather than a fresh call, since
+  // that call creates nothing and was already being made for the plan step's
+  // swap-limit copy.
+  function renderPaymentPending(g) {
+    var slotKey = state.slot;
+    var planName = state.plan === 'weekly' ? 'Weekly' : 'Monthly';
+    var amount = peso(slotKey && g[slotKey] ? g[slotKey][state.plan] : null);
+    var gcashNumber = publicSettings && publicSettings.gcash_number;
+    var gcashName = publicSettings && publicSettings.gcash_name;
+    var settingsReady = !!(gcashNumber || gcashName);
+    return '' +
+      '<div class="rc-wizard-header-row">' +
+        '<div class="rc-wizard-heading">Send Payment via GCash</div>' +
+        '<button type="button" class="rc-wizard-back" id="rcWizardBack">' + icon('chevron-left') + ' Back</button>' +
+      '</div>' +
+      '<p class="rc-wizard-sub">Nothing is reserved yet. Send the exact amount below, then tap the button once you\'ve paid to lock in your slot.</p>' +
+      '<div class="rc-pay-summary">' +
+        '<div class="rc-pay-row"><span>Game</span><b>' + g.title + '</b></div>' +
+        '<div class="rc-pay-row"><span>Access</span><b>' + slotDisplayName(slotKey) + '</b></div>' +
+        '<div class="rc-pay-row"><span>Plan</span><b>' + planName + '</b></div>' +
+        '<div class="rc-pay-row rc-pay-row-amount"><span>Amount Due</span><b>' + amount + '</b></div>' +
+      '</div>' +
+      '<div class="rc-pay-gcash">' +
+        (settingsReady ? '' +
+          '<div class="rc-pay-field">' +
+            '<span class="rc-pay-field-label">GCash Number</span>' +
+            '<div class="rc-pay-field-row">' +
+              '<span class="rc-pay-field-value">' + (gcashNumber || '—') + '</span>' +
+              (gcashNumber ? '<button type="button" class="rc-pay-copy" id="rcCopyGcash" data-copy="' + gcashNumber + '">Copy</button>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="rc-pay-field">' +
+            '<span class="rc-pay-field-label">GCash Name</span>' +
+            '<div class="rc-pay-field-row"><span class="rc-pay-field-value">' + (gcashName || '—') + '</span></div>' +
+          '</div>'
+        : '<p class="rc-pay-loading-text">Loading payment details…</p>') +
+      '</div>' +
+      '<p class="rc-pay-instruction">Send ' + amount + ' to this number, then tap the button below once you\'ve sent it.</p>' +
+      '<button type="button" class="rc-modal-cta rc-pay-cta" id="rcPaySentBtn">' + icon('message-circle') + ' I\'ve paid — send screenshot</button>';
+  }
+
+  function paymentConfirmedMessengerText(g, hold) {
+    var planName = state.plan === 'weekly' ? 'Weekly' : 'Monthly';
+    return 'Hi! I\'ve paid for "' + g.title + '" — ' + slotDisplayName(state.slot) + ' access, ' +
+      planName + ' plan (' + peso(hold.amount) + '). Ref: ' + hold.ref_code + '. Attaching my GCash screenshot.';
+  }
+
+  // Shown once create_rental_hold() has actually succeeded (see
+  // confirmPaymentSent) -- the first moment a real ref_code and tracking
+  // code exist. Messenger opens shortly after this renders (see
+  // openMessengerAfterHold), so the customer sees their ref code -- and
+  // queue position, if this was a pre-release reservation -- before/while
+  // being sent there, instead of losing it entirely.
+  function renderPaymentConfirmed(g, hold) {
     var planName = state.plan === 'weekly' ? 'Weekly' : 'Monthly';
     var amount = peso(hold.amount);
+    var queueBlock = '';
+    // queue_position only exists post-migration_20, and only for a
+    // reservation on an upcoming/not-yet-released game -- undefined/null
+    // here just means "not a queued reservation", not an error.
+    if (hold.queue_position !== undefined && hold.queue_position !== null) {
+      var limit = publicSettings && publicSettings.reservation_queue_limit;
+      queueBlock = '<div class="rc-pay-queue">You\'re <b>#' + hold.queue_position + '</b>' +
+        (limit ? ' of ' + limit : '') + ' in line for this reservation.</div>';
+    }
     return '' +
-      '<div class="rc-wizard-heading">Reserve your slot with GCash</div>' +
-      '<p class="rc-wizard-sub">Your slot is held for a limited time. Send the exact amount below to confirm.</p>' +
+      '<div class="rc-wizard-heading">You\'re confirmed — opening Messenger…</div>' +
+      '<p class="rc-wizard-sub">Send your GCash payment screenshot on Messenger to finish confirming your rental.</p>' +
+      queueBlock +
       '<div class="rc-pay-summary">' +
         '<div class="rc-pay-row"><span>Game</span><b>' + g.title + '</b></div>' +
         '<div class="rc-pay-row"><span>Access</span><b>' + slotDisplayName(state.slot) + '</b></div>' +
         '<div class="rc-pay-row"><span>Plan</span><b>' + planName + '</b></div>' +
         '<div class="rc-pay-row rc-pay-row-amount"><span>Amount Due</span><b>' + amount + '</b></div>' +
       '</div>' +
-      '<div class="rc-pay-hold">' +
-        '<span class="rc-pay-hold-label">Slot held for</span>' +
-        '<span class="rc-pay-hold-timer" id="rcHoldCountdown">--:--</span>' +
-      '</div>' +
       '<div class="rc-pay-gcash">' +
-        '<div class="rc-pay-field">' +
-          '<span class="rc-pay-field-label">GCash Number</span>' +
-          '<div class="rc-pay-field-row">' +
-            '<span class="rc-pay-field-value">' + hold.gcash_number + '</span>' +
-            '<button type="button" class="rc-pay-copy" id="rcCopyGcash" data-copy="' + hold.gcash_number + '">Copy</button>' +
-          '</div>' +
-        '</div>' +
-        '<div class="rc-pay-field">' +
-          '<span class="rc-pay-field-label">GCash Name</span>' +
-          '<div class="rc-pay-field-row"><span class="rc-pay-field-value">' + hold.gcash_name + '</span></div>' +
-        '</div>' +
         '<div class="rc-pay-field">' +
           '<span class="rc-pay-field-label">Reference Code</span>' +
           '<div class="rc-pay-field-row">' +
@@ -945,8 +985,7 @@
           '</div>' +
         '</div>' +
       '</div>' +
-      '<p class="rc-pay-instruction">Send exactly <b>' + amount + '</b> to this GCash number, then put <b>' + hold.ref_code + '</b> in the message/note.</p>' +
-      '<button type="button" class="rc-modal-cta rc-pay-cta" id="rcPaySentBtn">' + icon('message-circle') + ' I\'ve paid — send screenshot</button>' +
+      '<p class="rc-pay-instruction">Put <b>' + hold.ref_code + '</b> in the Messenger message/note along with your screenshot. Redirecting you now — <a href="' + messengerLink(g, paymentConfirmedMessengerText(g, hold)) + '">tap here</a> if it doesn\'t open.</p>' +
       '<div class="rc-pay-code-box">' +
         '<span class="rc-pay-code-label">Saved on this device</span>' +
         '<p class="rc-pay-code-intro">This phone will remember your rentals automatically. <a href="/account/">View my rentals</a> anytime — no sign-in needed.</p>' +
@@ -959,7 +998,9 @@
   }
 
   function renderPaymentStep(g) {
-    return state.hold ? renderPaymentSuccess(g, state.hold) : renderPaymentFailure(state.holdError);
+    if (state.holdError) return renderPaymentFailure(state.holdError);
+    if (state.hold) return renderPaymentConfirmed(g, state.hold);
+    return renderPaymentPending(g);
   }
 
   function wirePaymentStep(body) {
@@ -983,34 +1024,56 @@
       });
     });
 
+    // Only present on the pending screen (no hold yet, no error) -- this is
+    // now the actual trigger for create_rental_hold(), not a static
+    // already-reserved confirmation button. See confirmPaymentSent.
     var sendBtn = document.getElementById('rcPaySentBtn');
-    if (sendBtn) sendBtn.addEventListener('click', function () {
-      var game = state.modalGame, hold = state.hold;
-      if (!game || !hold) return;
-      var planName = state.plan === 'weekly' ? 'Weekly' : 'Monthly';
-      var text = 'Hi! I\'ve paid for "' + game.title + '" — ' + slotDisplayName(state.slot) + ' access, ' +
-        planName + ' plan (' + peso(hold.amount) + '). Ref: ' + hold.ref_code + '. Attaching my GCash screenshot.';
-      window.open(messengerLink(game, text), '_blank', 'noopener');
-    });
+    if (sendBtn) sendBtn.addEventListener('click', confirmPaymentSent);
   }
 
   // Called when a customer picks an access slot for a brand-new rental
-  // (never for swaps -- see wireAccessStep). Tries to soft-hold the
-  // slot server-side and show a GCash payment screen; falls all the way
-  // back to the pre-existing Messenger-only flow (submitRentalRequest +
-  // messengerLink, via finalizeRental) on any error, including the RPC not
-  // existing yet pre-migration. Never leaves the customer stuck on a
-  // spinner.
+  // (never for swaps -- see wireAccessStep). Per owner instruction ("only if
+  // you click i've paid... then it will be on the renters list and on the
+  // admin app"), picking a slot no longer calls create_rental_hold() -- it
+  // only shows the payment instructions (amount computed client-side, GCash
+  // info from the cached get_public_settings() call). No RPC, no database
+  // write, so a customer who looks at the price and leaves never creates a
+  // renter/rental row. Registration happens on the "I've Paid" click --
+  // see confirmPaymentSent.
   function chooseNewRentalSlot(slotKey) {
     var g = state.modalGame;
     if (!g) return;
     state.slot = slotKey;
     state.hold = null;
     state.holdError = null;
+    state.reserving = false;
+    state.step = 'payment';
+    renderModal();
+    pushStepState();
+  }
+
+  // Fires on the "I've paid — send screenshot" click -- THE moment a renter
+  // row (if new) and a pending rentals row actually get created. On success,
+  // opens Messenger with the real ref code. A structural failure (Supabase
+  // client missing entirely, or the RPC promise itself rejecting instead of
+  // resolving) falls all the way back to the pre-existing Messenger-only
+  // flow (submitRentalRequest + messengerLink, via finalizeRental) so the
+  // customer is never left stuck -- same safety net the old eager-hold flow
+  // relied on. A response that actually came back from the server (res.error
+  // as a resolved PostgREST error, or ok:false) is different: the
+  // reservation attempt definitely ran, so this shows the plain-language
+  // error inline and does NOT open Messenger, letting the customer go back
+  // and pick a different slot/game instead of messaging in with no matching
+  // rental on file.
+  function confirmPaymentSent() {
+    var g = state.modalGame;
+    var slotKey = state.slot;
+    if (!g || !slotKey || state.reserving) return;
+    state.reserving = true;
     renderHoldSpinner(g);
 
     var sb = getPublicSupabase();
-    if (!sb) { renderModal(); finalizeRental(slotKey); return; }
+    if (!sb) { state.reserving = false; renderModal(); finalizeRental(slotKey); return; }
 
     getSignedInRenterId().then(function (renterId) {
       var args = {
@@ -1027,8 +1090,8 @@
       return sb.rpc('create_rental_hold', args).then(function (res) {
         // Before migration_18 the function has six arguments, so passing a
         // seventh means PostgREST can't resolve it at all. Retry without the
-        // code rather than dropping the customer back to Messenger -- losing
-        // the renter-reuse nicety beats losing the rental.
+        // code rather than failing outright -- losing the renter-reuse
+        // nicety beats losing the rental.
         if (res && res.error) {
           delete args.p_public_code;
           return sb.rpc('create_rental_hold', args);
@@ -1036,29 +1099,54 @@
         return res;
       });
     }).then(function (res) {
-      if (state.modalGame !== g) return; // stale response -- customer moved on
-      if (!res || res.error) { renderModal(); finalizeRental(slotKey); return; }
-      var row = res.data && res.data[0];
-      if (!row) { renderModal(); finalizeRental(slotKey); return; }
-      if (!row.ok) {
-        state.holdError = row.error || null;
+      state.reserving = false;
+      if (state.modalGame !== g || state.slot !== slotKey) return; // stale -- customer moved on
+      if (!res || res.error) {
+        state.holdError = null; // unrecognized/transport error -> generic message
         state.hold = null;
-        state.step = 'payment';
         renderModal();
-        pushStepState();
+        return;
+      }
+      var row = res.data && res.data[0];
+      if (!row || !row.ok) {
+        state.holdError = (row && row.error) || null;
+        state.hold = null;
+        renderModal();
         return;
       }
       state.hold = row;
       state.holdError = null;
       saveTrackCode(row.public_code);
-      state.step = 'payment';
       renderModal();
-      pushStepState();
+      openMessengerAfterHold(g, row);
     }, function () {
+      state.reserving = false;
       if (state.modalGame !== g) return;
       renderModal();
       finalizeRental(slotKey);
     });
+  }
+
+  // Sends the customer to Messenger once create_rental_hold() has actually
+  // succeeded. This can no longer be a synchronous window.open('_blank') in
+  // the click handler -- by the time the RPC promise above resolves, the
+  // click's "user gesture" window has often expired, and browsers commonly
+  // (and silently) block a new-tab window.open() that isn't a direct,
+  // synchronous result of user input. Same-tab navigation is never subject
+  // to that popup-blocker check, so it's used here instead for this specific
+  // deferred case -- verified working in a real browser test (see the
+  // commit/report for how). Trade-off: this leaves the site instead of
+  // opening Messenger in a new tab. finalizeRental's synchronous, same-click
+  // window.open (swaps, and the structural-failure fallback above) is
+  // untouched. The short delay lets the confirmation screen (ref code, and
+  // queue position for a pre-release reservation) actually be seen before
+  // the page navigates away.
+  function openMessengerAfterHold(g, hold) {
+    var url = messengerLink(g, paymentConfirmedMessengerText(g, hold));
+    setTimeout(function () {
+      if (state.modalGame !== g || state.hold !== hold) return; // customer already moved on
+      window.location.href = url;
+    }, 1400);
   }
 
   function finalizeRental(slotKey) {
@@ -1081,7 +1169,6 @@
   function renderModal() {
     var g = state.modalGame;
     if (!g) return;
-    clearHoldCountdown();
     var body = document.getElementById('rcModalBody');
     var header = buildModalHeader(g);
 
@@ -1090,7 +1177,6 @@
     else if (state.step === 'payment') {
       body.innerHTML = header + renderPaymentStep(g);
       wirePaymentStep(body);
-      if (state.hold) startHoldCountdown(state.hold.hold_expires_at);
     }
     else { body.innerHTML = header + renderAccessStep(g); wireAccessStep(body); }
 
@@ -1148,8 +1234,12 @@
       publicSettingsLoading = false;
       if (!res || res.error || !res.data || !res.data[0]) return;
       publicSettings = res.data[0];
-      // The plan step may already be on screen with the fallback copy.
-      if (state.step === 'plan') renderModal();
+      // The plan step, or the pending-payment step, may already be on
+      // screen with the fallback copy -- refresh once real settings arrive.
+      // Skipped while create_rental_hold() is actually in flight
+      // (state.reserving) so this can't clobber the "Reserving your slot…"
+      // spinner mid-request.
+      if (state.step === 'plan' || (state.step === 'payment' && !state.reserving)) renderModal();
     }, function () { publicSettingsLoading = false; });
   }
   function swapsCopy(plan) {
