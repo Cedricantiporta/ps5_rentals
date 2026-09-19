@@ -71,6 +71,7 @@
     <div class="a-panel is-active" id="panel-pending">
       <div class="a-card">
         <p class="a-hint">Customer already picked a game on the public site and got a GCash reference on the payment screen -- their slot is already held for <span id="pendingHoldMinutesHint">30</span> minutes. Match the ref code below to their Messenger screenshot, then click Confirm Paid. Nothing else to fill in.</p>
+        <div class="a-field" style="max-width:320px;margin-bottom:0.9rem;"><input id="pendingSearch" type="text" placeholder="Search game, renter, or ref code..."></div>
         <div class="a-table-wrap">
         <table class="a-table" id="pendingTable">
           <thead>
@@ -90,6 +91,7 @@
       <div class="a-card">
         <p class="a-hint" id="swapsMigrationHint" hidden>Run migration_16 to enable swap requests.</p>
         <p class="a-hint">Customer self-served a swap on the public site -- the new slot is already held for them. Approve to finish the swap (send the new game's credentials on Messenger right after), or decline to release the hold.</p>
+        <div class="a-field" style="max-width:320px;margin-bottom:0.9rem;"><input id="swapsSearch" type="text" placeholder="Search renter or game..."></div>
         <div class="a-table-wrap" id="swapsTableWrap">
         <table class="a-table" id="swapsTable">
           <thead>
@@ -282,6 +284,7 @@
           <button type="button" class="a-btn a-btn-primary" id="openAddRenterBtn">+ Add Renter</button>
         </div>
         <p class="a-hint" id="rentersMergeHint" hidden></p>
+        <div class="a-field" style="max-width:320px;margin-bottom:0.9rem;"><input id="rentersSearch" type="text" placeholder="Search name, messenger, or tracking code..."></div>
         <div class="a-chip-row" id="rentersFilterRow">
           <button type="button" class="a-chip is-active" data-filter="all">All</button>
           <button type="button" class="a-chip" data-filter="linked">Linked Account</button>

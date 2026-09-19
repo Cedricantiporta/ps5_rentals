@@ -507,8 +507,17 @@
   // older flow still driven from the Rentals tab (Confirm Payment /
   // Activate honoring queue order); this queue is only the ordinary
   // self-serve pending rentals the new create_rental_hold RPC writes. ----
+  function pendingMatchSearch(r) {
+    var q = state.pendingSearch;
+    if (!q) return true;
+    var game = r.games || {};
+    var renter = r.renters || {};
+    var haystack = [game.title, renter.name, r.ref_code].join(' ').toLowerCase();
+    return haystack.indexOf(q) !== -1;
+  }
   function pendingRows() {
     return state.rentals.filter(function (r) { return r.status === 'pending' && r.queue_position == null; })
+      .filter(pendingMatchSearch)
       .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
   }
   function renderPending() {
@@ -624,7 +633,17 @@
     wrap.style.display = '';
     var tbody = document.querySelector('#swapsTable tbody');
     tbody.innerHTML = '';
+    function swapMatchSearch(req) {
+      var q = state.swapsSearch;
+      if (!q) return true;
+      var renter = state.renters.filter(function (r) { return r.id === req.renter_id; })[0] || {};
+      var fromGame = state.games.filter(function (g) { return g.id === req.from_game_id; })[0] || {};
+      var toGame = state.games.filter(function (g) { return g.id === req.to_game_id; })[0] || {};
+      var haystack = [renter.name, fromGame.title, toGame.title].join(' ').toLowerCase();
+      return haystack.indexOf(q) !== -1;
+    }
     var rows = state.swapRequests.filter(function (r) { return r.status === 'pending'; })
+      .filter(swapMatchSearch)
       .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
     $('swapsEmpty').hidden = rows.length > 0;
     badge.textContent = rows.length ? '(' + rows.length + ')' : '';
@@ -794,6 +813,18 @@
   $('rentalsSearch').addEventListener('input', function () {
     state.rentalsSearch = this.value.trim().toLowerCase();
     renderRentals();
+  });
+  $('pendingSearch').addEventListener('input', function () {
+    state.pendingSearch = this.value.trim().toLowerCase();
+    renderPending();
+  });
+  $('swapsSearch').addEventListener('input', function () {
+    state.swapsSearch = this.value.trim().toLowerCase();
+    renderSwaps();
+  });
+  $('rentersSearch').addEventListener('input', function () {
+    state.rentersSearch = this.value.trim().toLowerCase();
+    renderRenters();
   });
   $('historySearch').addEventListener('input', function () {
     state.historySearch = this.value.trim().toLowerCase();
@@ -1354,6 +1385,12 @@
     if (state.rentersFilter === 'needs-merge') return isMergeCandidate(r);
     return true;
   }
+  function rentersMatchSearch(r) {
+    var q = state.rentersSearch;
+    if (!q) return true;
+    var haystack = [r.name, r.messenger_name, r.public_code].join(' ').toLowerCase();
+    return haystack.indexOf(q) !== -1;
+  }
   document.querySelectorAll('#rentersFilterRow .a-chip').forEach(function (chip) {
     chip.addEventListener('click', function () {
       document.querySelectorAll('#rentersFilterRow .a-chip').forEach(function (c) { c.classList.remove('is-active'); });
@@ -1385,7 +1422,7 @@
     } else {
       hint.hidden = true;
     }
-    var rows = state.renters.filter(rentersMatchFilter);
+    var rows = state.renters.filter(rentersMatchFilter).filter(rentersMatchSearch);
     $('rentersEmpty').hidden = rows.length > 0;
     $('rentersEmpty').textContent = state.renters.length ? 'No renters match this filter.' : 'No renters yet.';
     rows.forEach(function (r) {
