@@ -515,13 +515,19 @@
   background: linear-gradient(180deg, rgba(238,240,243,0) 0%, rgba(238,240,243,.92) 45%, rgba(238,240,243,.98) 75%);
 }
 .rc-modal-title { color: var(--rc-text); font-family: var(--_typography---font-family--headers); font-size: 1.6rem; font-weight: 400; margin: 0 0 0.2rem; }
+/* platform badge + rent-count pill now sit side by side on their own row
+   (see buildModalHeader in catalog.js) instead of stacking as separate
+   block-level elements -- their own default margins are neutralized here so
+   they don't add extra offset on top of the row's own margin. */
+.rc-modal-meta-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin: 0.2rem 0 0.9rem; }
+.rc-modal-meta-row .rc-plat-badge { margin: 0; }
+.rc-modal-meta-row .rc-modal-rented { margin: 0; }
 .rc-modal-genre { color: var(--rc-text-2); font-size: 0.82rem; font-weight: 600; margin-bottom: 1rem; }
 /* rent count moved here from the grid card's cover (see renderGrid/badgeFor
    in catalog.js) -- only rendered when activeRentals > 0. */
 .rc-modal-rented {
   display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700;
   color: var(--rc-text-2); background: var(--rc-panel); padding: 0.3rem 0.65rem; border-radius: 999px;
-  margin: -0.35rem 0 0.9rem;
 }
 [data-theme="light"] .rc-modal-rented { background: #fff; }
 .rc-modal-rented .rc-icon { width: 12px; height: 12px; }
@@ -593,21 +599,39 @@
 .rc-wizard-eyebrow { display: block; color: var(--rc-text); font-size: 0.72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 0.4rem; }
 .rc-wizard-heading { color: var(--rc-text); font-family: var(--_typography---font-family--headers); font-size: 1.2rem; font-weight: 400; margin: 0 0 0.25rem; }
 .rc-wizard-sub { color: var(--rc-text-2); font-size: 0.82rem; margin: 0 0 0.7rem; line-height: 1.4; }
+/* step heading + its "Change X" back button share one row, button pushed to
+   the far right via space-between (not just placed next to the heading) --
+   see renderPlanStep/renderSimpleAccessStep/renderPaymentFailure. The
+   heading's own margin-bottom (spacing down to rc-wizard-sub) moves onto this
+   wrapper so that spacing doesn't change; flex-wrap plus min-width:0 on the
+   heading is a narrow-viewport fallback so a long heading can't force the
+   button to overlap it instead of wrapping to its own line. */
+.rc-wizard-header-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; margin: 0 0 0.25rem; }
+.rc-wizard-header-row .rc-wizard-heading { margin: 0; min-width: 0; }
+.rc-wizard-header-row .rc-wizard-back { margin: 0; flex: none; }
 
 /* step 1: intent */
 .rc-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .rc-choice-card {
   background: var(--rc-panel); border: none; border-radius: 1rem; padding: 1.25rem 1.1rem; text-align: left;
   cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; color: var(--rc-text);
-  transition: background .15s ease;
+  transition: background-color .15s ease, color .15s ease;
 }
-/* subtle blue wash on hover (not a flat grey/blue fill) in both themes --
-   the gradient's blue-tinted stop is --rc-blue-glow (a low-alpha blue), which
-   composites over whatever sits behind the card, and fades into the card's
-   own normal panel color at the other stop. --rc-text/--rc-text-2 stay as-is
-   since the wash is light enough not to affect their contrast. */
-.rc-choice-card:hover { background: linear-gradient(135deg, var(--rc-blue-glow), var(--rc-panel)); }
-.rc-choice-icon { width: 2.2rem; height: 2.2rem; border-radius: 50%; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; }
+/* solid, saturated blue fill on hover (not a tint/gradient) in both themes --
+   flips the text tokens to white/light at the same time (re-declared as
+   custom properties on the hovered card so every descendant reading
+   var(--rc-text)/--rc-text-2/--rc-text-3 -- title, desc, icon -- picks up the
+   light value automatically) since the solid blue needs light text for
+   contrast, unlike the old low-alpha wash. */
+.rc-choice-card:hover {
+  background-color: var(--rc-blue);
+  color: #fff;
+  --rc-text: #fff;
+  --rc-text-2: rgba(255,255,255,.85);
+  --rc-text-3: rgba(255,255,255,.6);
+}
+.rc-choice-card:hover .rc-choice-icon { background: rgba(255,255,255,.22); }
+.rc-choice-icon { width: 2.2rem; height: 2.2rem; border-radius: 50%; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; transition: background-color .15s ease; }
 .rc-choice-icon .rc-icon { width: 18px; height: 18px; }
 .rc-choice-name { font-weight: 800; font-size: 0.95rem; }
 .rc-choice-desc { font-size: 0.78rem; color: var(--rc-text-2); line-height: 1.4; }
@@ -617,19 +641,39 @@
    otherwise win while hovering in light mode and silently cancel the hover
    effect -- repeat it here (higher specificity: class+class+pseudo-class)
    so hover keeps working in both themes. */
-[data-theme="light"] .rc-choice-card:hover { background: linear-gradient(135deg, var(--rc-blue-glow), var(--rc-panel)); }
+[data-theme="light"] .rc-choice-card:hover {
+  background-color: var(--rc-blue);
+  color: #fff;
+  --rc-text: #fff;
+  --rc-text-2: rgba(255,255,255,.85);
+  --rc-text-3: rgba(255,255,255,.6);
+}
 [data-theme="light"] .rc-choice-icon { background: #0a0a0f14; }
 [data-theme="light"] .rc-choice-desc { color: #3f3f48; }
+/* .rc-choice-desc's light-theme color above is a hardcoded value, not
+   var(--rc-text-2), so the --rc-text-2 flip on the hovered card (above)
+   can't reach it on its own -- override it directly here. */
+[data-theme="light"] .rc-choice-card:hover .rc-choice-desc { color: rgba(255,255,255,.85); }
 
 /* step 2: plan */
 .rc-plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 .rc-plan-card {
   background: var(--rc-panel); border: none; border-radius: 1rem; padding: 1rem 1rem; text-align: left;
   cursor: pointer; display: flex; flex-direction: column; gap: 0.25rem; color: var(--rc-text);
-  transition: background .15s ease;
+  transition: background-color .15s ease, color .15s ease;
 }
-/* same subtle blue-wash hover as .rc-choice-card above -- see that comment. */
-.rc-plan-card:hover { background: linear-gradient(135deg, var(--rc-blue-glow), var(--rc-panel)); }
+/* same solid-blue-with-light-text hover as .rc-choice-card above -- see that comment. */
+.rc-plan-card:hover {
+  background-color: var(--rc-blue);
+  color: #fff;
+  --rc-text: #fff;
+  --rc-text-2: rgba(255,255,255,.85);
+  --rc-text-3: rgba(255,255,255,.6);
+}
+/* "Tap to choose" is styled in --rc-blue itself (an accent, not a text
+   token), so it would vanish against the now-solid-blue card -- flip it to
+   white explicitly. */
+.rc-plan-card:hover .rc-plan-tap { color: #fff; }
 .rc-plan-name { font-weight: 800; font-size: 0.95rem; }
 .rc-plan-price { font-size: 1.4rem; font-weight: 800; color: var(--rc-text); }
 .rc-plan-desc { font-size: 0.72rem; color: var(--rc-text-2); line-height: 1.4; margin-bottom: 0.4rem; }
@@ -637,9 +681,20 @@
 [data-theme="light"] .rc-plan-card { background: #fff; color: #0a0a0f; }
 /* see the matching comment on .rc-choice-card's light-theme hover above --
    same specificity/order issue, same fix. */
-[data-theme="light"] .rc-plan-card:hover { background: linear-gradient(135deg, var(--rc-blue-glow), var(--rc-panel)); }
+[data-theme="light"] .rc-plan-card:hover {
+  background-color: var(--rc-blue);
+  color: #fff;
+  --rc-text: #fff;
+  --rc-text-2: rgba(255,255,255,.85);
+  --rc-text-3: rgba(255,255,255,.6);
+}
 [data-theme="light"] .rc-plan-price { color: #0a0a0f; }
 [data-theme="light"] .rc-plan-desc { color: #3f3f48; }
+/* .rc-plan-price/.rc-plan-desc's light-theme colors above are hardcoded, not
+   var(--rc-text)/--rc-text-2, so the flip on the hovered card can't reach
+   them on its own -- override directly, same as .rc-choice-desc above. */
+[data-theme="light"] .rc-plan-card:hover .rc-plan-price { color: #fff; }
+[data-theme="light"] .rc-plan-card:hover .rc-plan-desc { color: rgba(255,255,255,.85); }
 
 /* step 3: access */
 .rc-access-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; margin-bottom: 0.7rem; }
@@ -650,12 +705,18 @@
    follow the page theme directly. */
 .rc-access-card {
   background: var(--rc-panel); color: var(--rc-text); border-radius: 1rem; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;
-  transition: background .15s ease;
+  transition: background-color .15s ease, color .15s ease;
 }
-/* same subtle blue-wash hover as .rc-choice-card -- selection itself still
-   happens via the .rc-access-choose button, not the card, so disabled cards
-   (nothing to choose) don't get the hover affordance. */
-.rc-access-card:not(.is-disabled):hover { background: linear-gradient(135deg, var(--rc-blue-glow), var(--rc-panel)); }
+/* same solid-blue-with-light-text hover as .rc-choice-card -- selection
+   itself still happens via the .rc-access-choose button, not the card, so
+   disabled cards (nothing to choose) don't get the hover affordance. */
+.rc-access-card:not(.is-disabled):hover {
+  background-color: var(--rc-blue);
+  color: #fff;
+  --rc-text: #fff;
+  --rc-text-2: rgba(255,255,255,.85);
+  --rc-text-3: rgba(255,255,255,.6);
+}
 .rc-access-card.is-disabled { opacity: .5; }
 .rc-access-top { display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; }
 .rc-access-name { display: flex; align-items: center; gap: 0.35rem; font-weight: 800; font-size: 0.85rem; }
@@ -663,8 +724,17 @@
 [data-theme="light"] .rc-access-card { background: #fff; color: #0a0a0f; }
 /* see the matching comment on .rc-choice-card's light-theme hover above --
    same specificity/order issue, same fix. */
-[data-theme="light"] .rc-access-card:not(.is-disabled):hover { background: linear-gradient(135deg, var(--rc-blue-glow), var(--rc-panel)); }
+[data-theme="light"] .rc-access-card:not(.is-disabled):hover {
+  background-color: var(--rc-blue);
+  color: #fff;
+  --rc-text: #fff;
+  --rc-text-2: rgba(255,255,255,.85);
+  --rc-text-3: rgba(255,255,255,.6);
+}
 [data-theme="light"] .rc-access-desc { color: #3f3f48; }
+/* .rc-access-desc's light-theme color above is hardcoded, not
+   var(--rc-text-2) -- override directly, same as .rc-choice-desc above. */
+[data-theme="light"] .rc-access-card:not(.is-disabled):hover .rc-access-desc { color: rgba(255,255,255,.85); }
 .rc-access-choose {
   margin-top: auto; background: var(--rc-blue); color: #fff; border: none; border-radius: 999px; padding: 0.6rem 0.75rem;
   font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .03em; cursor: pointer; text-align: center;
