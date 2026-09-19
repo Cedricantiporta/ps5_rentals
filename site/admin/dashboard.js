@@ -1507,7 +1507,7 @@
         ? '<span class="a-pill a-pill-linked" title="Has a customer-portal account">Linked</span>'
         : '—';
       tr.innerHTML = '<td>' + esc(r.name) + ' ' + messengerIcon(r.messenger_url) + '</td><td>' + esc(r.messenger_name) + '</td>' +
-        '<td>' + esc(r.contact_note) + '</td><td>' + fmtDate((r.created_at || '').slice(0, 10)) + '</td>' +
+        '<td class="a-notes-cell" title="' + esc(r.contact_note || '') + '">' + esc(r.contact_note) + '</td><td>' + fmtDate((r.created_at || '').slice(0, 10)) + '</td>' +
         '<td>' + accountCell + '</td>' +
         '<td>' + publicCodeCell(r) + '</td>' +
         '<td>₱' + totalPaid.toLocaleString() + '</td>' +
