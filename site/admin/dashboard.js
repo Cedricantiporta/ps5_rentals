@@ -4,7 +4,7 @@
   var supabase = window.rcSupabase;
   var state = {
     games: [], renters: [], rentals: [], swapFromRental: null,
-    amountManuallyEdited: false, rentalsFilter: 'all', rentalsSearch: '', gamesSortByRented: false,
+    amountManuallyEdited: false, rentalsSearch: '', historySearch: '', gamesSortByRented: false,
     rentersFilter: 'all', mergeRemoveId: null,
     // Self-serve rent flow additions (RENT-FLOW-CONTRACT.md / CONTRACT-AMENDMENT-1.md).
     // settings/swapRequests may not exist in the live DB yet -- see the
@@ -178,7 +178,9 @@
     pending: { title: 'Pending Payments', desc: 'Self-serve rentals awaiting GCash confirmation -- the main admin queue.' },
     swaps: { title: 'Swap Requests', desc: 'Customer-submitted game swaps waiting for approval.' },
     overview: { title: 'Overview', desc: 'Snapshot of revenue, active rentals, and renters.' },
-    rentals: { title: 'Rentals', desc: 'Every rental -- active, pending, and past.' },
+    rentals: { title: 'Rentals', desc: 'Currently active rentals only -- see Reservations or History for the rest.' },
+    reservations: { title: 'Reservations', desc: 'Pre-reserve queue for upcoming games, waiting for payment confirmation or activation.' },
+    history: { title: 'History', desc: 'Past rentals -- ended or cancelled.' },
     renters: { title: 'Renters', desc: 'Renter profiles, Messenger links, and lifetime spend.' },
     games: { title: 'Games', desc: 'Live catalog status -- changes here go out to the public site immediately.' },
     settings: { title: 'Settings', desc: 'GCash details, Messenger link, hold time, and swap limit shown to customers.' }
@@ -310,6 +312,8 @@
       renderPending();
       renderSwaps();
       renderRentals();
+      renderReservations();
+      renderHistory();
       renderRenters();
       renderGames();
       renderOverview();
@@ -774,31 +778,26 @@
     return '<span class="a-pill ' + (p === 'paid' ? 'a-pill-paid' : 'a-pill-pending') + '">' + esc(p) + '</span>';
   }
 
-  function rentalsMatchFilter(r) {
-    if (state.rentalsFilter === 'active') return r.status === 'active';
-    if (state.rentalsFilter === 'pending') return r.status === 'pending';
-    if (state.rentalsFilter === 'history') return r.status === 'ended' || r.status === 'cancelled';
-    return true;
-  }
-  function rentalsMatchSearch(r) {
-    var q = state.rentalsSearch;
+  // Rentals tab is active-only, permanently -- pending (ordinary or
+  // queued/reservation) rows live on the Pending Payments / Reservations
+  // tabs instead, and ended/cancelled rows live on History. See the owner's
+  // request: "rentals only show active rentals, no all tab".
+  function rentalsMatchFilter(r) { return r.status === 'active'; }
+  function rowMatchesSearch(r, q) {
     if (!q) return true;
     var game = r.games || {};
     var renter = r.renters || {};
     var haystack = [game.title, renter.name, r.slot === 'trophy' ? 'trophy' : 'non-trophy'].join(' ').toLowerCase();
     return haystack.indexOf(q) !== -1;
   }
-  document.querySelectorAll('#rentalsFilterRow .a-chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      document.querySelectorAll('#rentalsFilterRow .a-chip').forEach(function (c) { c.classList.remove('is-active'); });
-      chip.classList.add('is-active');
-      state.rentalsFilter = chip.getAttribute('data-filter');
-      renderRentals();
-    });
-  });
+  function rentalsMatchSearch(r) { return rowMatchesSearch(r, state.rentalsSearch); }
   $('rentalsSearch').addEventListener('input', function () {
     state.rentalsSearch = this.value.trim().toLowerCase();
     renderRentals();
+  });
+  $('historySearch').addEventListener('input', function () {
+    state.historySearch = this.value.trim().toLowerCase();
+    renderHistory();
   });
 
   function renderRentals() {
@@ -806,7 +805,7 @@
     tbody.innerHTML = '';
     var rows = state.rentals.filter(rentalsMatchFilter).filter(rentalsMatchSearch);
     $('rentalsEmpty').hidden = rows.length > 0;
-    $('rentalsEmpty').textContent = state.rentals.length ? 'No rentals match this filter/search.' : 'No rentals yet.';
+    $('rentalsEmpty').textContent = state.rentalsSearch ? 'No active rentals match this search.' : 'No active rentals right now.';
     rows.forEach(function (r) {
       var tr = document.createElement('tr');
       var game = r.games || {};
@@ -905,7 +904,11 @@
     });
   }
 
-  document.querySelector('#rentalsTable tbody').addEventListener('click', function (e) {
+  // Shared by #rentalsTable (active rows: end/end-override/edit-amount/swap/
+  // swap-history) and #reservationsTable (queued pending rows: activate/
+  // cancel/confirm-payment) -- same rental-mutating actions regardless of
+  // which table the click came from, so one handler covers both.
+  function onRentalRowAction(e) {
     var btn = e.target.closest('button[data-action]');
     if (!btn) return;
     var id = Number(btn.getAttribute('data-id'));
@@ -967,7 +970,82 @@
         loadAll();
       });
     }
-  });
+  }
+  document.querySelector('#rentalsTable tbody').addEventListener('click', onRentalRowAction);
+  document.querySelector('#reservationsTable tbody').addEventListener('click', onRentalRowAction);
+
+  // ---- reservations tab (the pre-reserve queue rows pendingRows()
+  // deliberately excludes -- rentals with queue_position != null, waiting
+  // on either payment confirmation or their turn at the front of the queue.
+  // Action-button logic ported verbatim from the old combined Rentals
+  // table's queued-row branch. ----
+  function reservationsRows() {
+    return state.rentals.filter(function (r) { return r.status === 'pending' && r.queue_position != null; })
+      .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+  }
+  function renderReservations() {
+    var tbody = document.querySelector('#reservationsTable tbody');
+    tbody.innerHTML = '';
+    var rows = reservationsRows();
+    $('reservationsEmpty').hidden = rows.length > 0;
+    var badge = $('reservationsBadge');
+    badge.textContent = rows.length ? '(' + rows.length + ')' : '';
+    rows.forEach(function (r) {
+      var game = r.games || {};
+      var renter = r.renters || {};
+      var tr = document.createElement('tr');
+      var actions = '';
+      if (r.payment_status !== 'paid') {
+        actions += '<button type="button" class="a-menu-item" data-action="confirm-payment" data-id="' + r.id + '">Confirm Payment</button>';
+      } else if (r.queue_position === 1) {
+        actions += '<button type="button" class="a-menu-item" data-action="activate" data-id="' + r.id + '">Activate</button>';
+      } else {
+        actions += '<button type="button" class="a-menu-item" disabled title="Only the front of the queue can be activated">Activate (queue #' + r.queue_position + ')</button>';
+      }
+      actions += '<button type="button" class="a-menu-item" data-action="cancel" data-id="' + r.id + '">Cancel</button>';
+      tr.innerHTML =
+        '<td>' + esc(game.title) + '</td>' +
+        '<td>' + esc(renter.name) + '</td>' +
+        '<td>' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + '</td>' +
+        '<td>' + (r.plan === 'weekly' ? 'Weekly' : 'Monthly') + '</td>' +
+        '<td>₱' + (r.amount != null ? r.amount : 0) + '</td>' +
+        '<td>Queue #' + r.queue_position + '</td>' +
+        '<td>' + paymentPill(r.payment_status) + '</td>' +
+        '<td class="a-actions-cell">' + actionsMenu(actions) + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---- history tab (today's old "History" chip, promoted to its own tab
+  // -- ended or cancelled rentals. Read-only: no action buttons, since
+  // nothing here should mutate state anymore). ----
+  function historyRows() {
+    return state.rentals.filter(function (r) { return r.status === 'ended' || r.status === 'cancelled'; })
+      .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+  }
+  function renderHistory() {
+    var tbody = document.querySelector('#historyTable tbody');
+    tbody.innerHTML = '';
+    var rows = historyRows().filter(function (r) { return rowMatchesSearch(r, state.historySearch); });
+    $('historyEmpty').hidden = rows.length > 0;
+    $('historyEmpty').textContent = state.historySearch ? 'No past rentals match this search.' : 'No past rentals yet.';
+    rows.forEach(function (r) {
+      var game = r.games || {};
+      var renter = r.renters || {};
+      var renterObj = state.renters.filter(function (x) { return x.id === r.renter_id; })[0];
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + esc(game.title) + '</td>' +
+        '<td>' + esc(renter.name) + ' ' + messengerIcon(renterObj && renterObj.messenger_url) + '</td>' +
+        '<td>' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + '</td>' +
+        '<td>' + (r.plan === 'weekly' ? 'Weekly' : 'Monthly') + '</td>' +
+        '<td>' + (wasSwapped(r.id) ? '<span class="a-pill a-pill-swap">Swapped</span>' : statusPill(r.status)) + '</td>' +
+        '<td>' + paymentPill(r.payment_status) + '</td>' +
+        '<td>' + fmtDate(r.start_date) + '</td>' +
+        '<td>' + fmtDate(r.end_date) + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
 
   // Powers the "times played" count badge on the public catalog card.
   function incrementTimesRented(gameId) {

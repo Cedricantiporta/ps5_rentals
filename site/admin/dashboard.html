@@ -38,6 +38,8 @@
         <button class="a-tab" data-tab="swaps">Swap Requests <span id="swapsBadge"></span></button>
         <button class="a-tab" data-tab="overview">Overview</button>
         <button class="a-tab" data-tab="rentals">Rentals</button>
+        <button class="a-tab" data-tab="reservations">Reservations <span id="reservationsBadge"></span></button>
+        <button class="a-tab" data-tab="history">History</button>
         <button class="a-tab" data-tab="renters">Renters</button>
         <button class="a-tab" data-tab="games">Games</button>
         <button class="a-tab" data-tab="settings">Settings</button>
@@ -68,7 +70,6 @@
     <div class="a-wrap">
     <div class="a-panel is-active" id="panel-pending">
       <div class="a-card">
-        <h2>Pending payments</h2>
         <p class="a-hint">Customer already picked a game on the public site and got a GCash reference on the payment screen -- their slot is already held for <span id="pendingHoldMinutesHint">30</span> minutes. Match the ref code below to their Messenger screenshot, then click Confirm Paid. Nothing else to fill in.</p>
         <div class="a-table-wrap">
         <table class="a-table" id="pendingTable">
@@ -87,7 +88,6 @@
 
     <div class="a-panel" id="panel-swaps">
       <div class="a-card">
-        <h2>Swap requests</h2>
         <p class="a-hint" id="swapsMigrationHint" hidden>Run migration_16 to enable swap requests.</p>
         <p class="a-hint">Customer self-served a swap on the public site -- the new slot is already held for them. Approve to finish the swap (send the new game's credentials on Messenger right after), or decline to release the hold.</p>
         <div class="a-table-wrap" id="swapsTableWrap">
@@ -147,17 +147,11 @@
 
     <div class="a-panel" id="panel-rentals">
       <div class="a-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
-          <h2 style="margin:0;">All rentals</h2>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:1rem;">
           <button type="button" class="a-btn a-btn-primary" id="openBlankNewRentalBtn">+ New Rental</button>
         </div>
+        <p class="a-hint">Only currently active rentals show here. For rentals awaiting payment or activation, see Reservations (or Pending Payments); for ended/cancelled rentals, see History.</p>
         <div class="a-field" style="max-width:320px;margin-bottom:0.9rem;"><input id="rentalsSearch" type="text" placeholder="Search game, renter, or slot..."></div>
-        <div class="a-chip-row" id="rentalsFilterRow">
-          <button type="button" class="a-chip is-active" data-filter="all">All</button>
-          <button type="button" class="a-chip" data-filter="active">Active</button>
-          <button type="button" class="a-chip" data-filter="pending">Pending &amp; Reservations</button>
-          <button type="button" class="a-chip" data-filter="history">History</button>
-        </div>
         <div class="a-table-wrap">
         <table class="a-table" id="rentalsTable">
           <thead>
@@ -169,7 +163,42 @@
           <tbody></tbody>
         </table>
         </div>
-        <p class="a-empty" id="rentalsEmpty" hidden>No rentals yet.</p>
+        <p class="a-empty" id="rentalsEmpty" hidden>No active rentals right now.</p>
+      </div>
+    </div>
+
+    <div class="a-panel" id="panel-reservations">
+      <div class="a-card">
+        <p class="a-hint">Pre-reserve queue for upcoming games -- multiple renters can be queued for the same slot before it releases. Only the front of the queue (#1) can be activated once paid.</p>
+        <div class="a-table-wrap">
+        <table class="a-table" id="reservationsTable">
+          <thead>
+            <tr>
+              <th>Game</th><th>Renter</th><th>Slot</th><th>Plan</th><th>Amount</th><th>Queue</th><th>Payment</th><th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        </div>
+        <p class="a-empty" id="reservationsEmpty" hidden>No reservations right now.</p>
+      </div>
+    </div>
+
+    <div class="a-panel" id="panel-history">
+      <div class="a-card">
+        <div class="a-field" style="max-width:320px;margin-bottom:0.9rem;"><input id="historySearch" type="text" placeholder="Search game, renter, or slot..."></div>
+        <div class="a-table-wrap">
+        <table class="a-table" id="historyTable">
+          <thead>
+            <tr>
+              <th>Game</th><th>Renter</th><th>Slot</th><th>Plan</th>
+              <th>Status</th><th>Payment</th><th>Start</th><th>End</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        </div>
+        <p class="a-empty" id="historyEmpty" hidden>No past rentals yet.</p>
       </div>
     </div>
 
