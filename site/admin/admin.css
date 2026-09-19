@@ -18,8 +18,13 @@ a { color: inherit; }
   width: var(--a-sidebar-w); flex: none; background: var(--a-panel); border-right: 1px solid var(--a-border);
   display: flex; flex-direction: column; padding: 1.25rem 0.85rem; position: sticky; top: 0; height: 100vh;
 }
-.a-sidebar-title { display: flex; align-items: center; margin: 0 0 1.25rem; padding: 0 0.5rem; }
+.a-sidebar-title { display: flex; align-items: center; justify-content: space-between; margin: 0 0 1.25rem; padding: 0 0.5rem; }
 .a-sidebar-logo { height: 26px; width: auto; filter: invert(1); }
+.a-sidebar-collapse-btn {
+  background: transparent; border: none; color: var(--a-text-2); cursor: pointer;
+  width: 1.75rem; height: 1.75rem; border-radius: var(--a-radius-sm); display: flex; align-items: center; justify-content: center; flex: none;
+}
+.a-sidebar-collapse-btn:hover { background: var(--a-panel-2); color: var(--a-text); }
 .a-user-row { display: flex; align-items: center; gap: 0.6rem; padding: 0 0.5rem; margin-bottom: 0.6rem; }
 .a-avatar {
   width: 30px; height: 30px; border-radius: 50%; background: var(--a-blue); color: #fff;
@@ -56,12 +61,16 @@ a { color: inherit; }
   position: sticky; top: 0; z-index: 5;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
   background: var(--a-panel);
-  /* No hard border line (density pass) -- a hairline shadow instead, so the
-     sticky bar still reads as separate from content once the page scrolls
-     underneath it, without the flatter look a solid border edge gives. */
-  box-shadow: 0 1px 0 rgba(0,0,0,.06);
   padding: 0.7rem 1.5rem;
 }
+.a-topbar-left { display: flex; align-items: center; gap: 0.9rem; min-width: 0; }
+.a-sidebar-toggle {
+  display: none; background: transparent; border: none; color: var(--a-text-2); cursor: pointer;
+  width: 2rem; height: 2rem; border-radius: var(--a-radius-sm); align-items: center; justify-content: center; flex: none;
+}
+.a-sidebar-toggle:hover { background: var(--a-panel-2); color: var(--a-text); }
+.a-shell.is-sidebar-collapsed .a-sidebar-toggle { display: flex; }
+.a-shell.is-sidebar-collapsed .a-sidebar { display: none; }
 .a-topbar-info { min-width: 0; }
 .a-topbar-title { margin: 0; font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em; }
 .a-topbar-desc { margin: 0.15rem 0 0; font-size: 0.75rem; color: var(--a-text-2); }

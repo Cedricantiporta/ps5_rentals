@@ -206,6 +206,16 @@
     else el.textContent = 'Updated ' + secs + 's ago';
   }
 
+  // ---- sidebar collapse (per-browser convenience, not shared state) ----
+  var shellEl = document.querySelector('.a-shell');
+  function setSidebarCollapsed(collapsed) {
+    shellEl.classList.toggle('is-sidebar-collapsed', collapsed);
+    try { localStorage.setItem('a_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
+  }
+  $('sidebarCollapseBtn').addEventListener('click', function () { setSidebarCollapsed(true); });
+  $('sidebarShowBtn').addEventListener('click', function () { setSidebarCollapsed(false); });
+  try { if (localStorage.getItem('a_sidebar_collapsed') === '1') setSidebarCollapsed(true); } catch (e) {}
+
   // ---- tabs ----
   // NOTE: 'add-game' is deliberately not a .a-tab anymore -- it moved behind
   // an "+ Add Game" button on the Games tab that opens it as a modal (same

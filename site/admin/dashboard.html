@@ -32,7 +32,12 @@
   </div>
   <div class="a-shell">
     <aside class="a-sidebar">
-      <h1 class="a-sidebar-title"><img src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals" class="a-sidebar-logo"></h1>
+      <h1 class="a-sidebar-title">
+        <img src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals" class="a-sidebar-logo">
+        <button type="button" class="a-sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Hide sidebar">
+          <svg viewBox="0 0 20 20" width="16" height="16"><path d="M4 5h12M4 10h12M4 15h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </h1>
       <nav class="a-nav">
         <button class="a-tab" data-tab="overview">Overview</button>
         <button class="a-tab is-active" data-tab="pending">Pending Payments <span id="pendingBadge"></span></button>
@@ -67,9 +72,14 @@
 
     <main class="a-main">
     <div class="a-topbar" id="topbar">
-      <div class="a-topbar-info">
-        <h2 class="a-topbar-title" id="topbarTitle">Overview</h2>
-        <p class="a-topbar-desc" id="topbarDesc">Snapshot of revenue, active rentals, and renters.</p>
+      <div class="a-topbar-left">
+        <button type="button" class="a-sidebar-toggle" id="sidebarShowBtn" aria-label="Show sidebar">
+          <svg viewBox="0 0 20 20" width="16" height="16"><path d="M4 5h12M4 10h12M4 15h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+        <div class="a-topbar-info">
+          <h2 class="a-topbar-title" id="topbarTitle">Overview</h2>
+          <p class="a-topbar-desc" id="topbarDesc">Snapshot of revenue, active rentals, and renters.</p>
+        </div>
       </div>
       <div class="a-topbar-live" id="topbarLive" title="Dashboard auto-refreshes from Supabase every 5 seconds">
         <span class="a-live-dot" aria-hidden="true"></span>
@@ -158,11 +168,11 @@
 
     <div class="a-panel" id="panel-rentals">
       <div class="a-card">
-        <div style="display:flex;align-items:center;justify-content:flex-end;gap:1rem;">
+        <p class="a-hint">Only currently active rentals show here. For rentals awaiting payment or activation, see Reservations (or Pending Payments); for ended/cancelled rentals, see History.</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.9rem;">
+          <div class="a-field" style="max-width:320px;margin:0;"><input id="rentalsSearch" type="text" placeholder="Search game, renter, or slot..."></div>
           <button type="button" class="a-btn a-btn-primary" id="openBlankNewRentalBtn">+ New Rental</button>
         </div>
-        <p class="a-hint">Only currently active rentals show here. For rentals awaiting payment or activation, see Reservations (or Pending Payments); for ended/cancelled rentals, see History.</p>
-        <div class="a-field" style="max-width:320px;margin-bottom:0.9rem;"><input id="rentalsSearch" type="text" placeholder="Search game, renter, or slot..."></div>
         <div class="a-table-wrap">
         <table class="a-table" id="rentalsTable">
           <thead>
@@ -288,12 +298,11 @@
 
     <div class="a-panel" id="panel-renters">
       <div class="a-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
-          <h2 style="margin:0;">All renters</h2>
+        <p class="a-hint" id="rentersMergeHint" hidden></p>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.9rem;">
+          <div class="a-field" style="max-width:320px;margin:0;"><input id="rentersSearch" type="text" placeholder="Search name, messenger, or tracking code..."></div>
           <button type="button" class="a-btn a-btn-primary" id="openAddRenterBtn">+ Add Renter</button>
         </div>
-        <p class="a-hint" id="rentersMergeHint" hidden></p>
-        <div class="a-field" style="max-width:320px;margin-bottom:0.9rem;"><input id="rentersSearch" type="text" placeholder="Search name, messenger, or tracking code..."></div>
         <div class="a-chip-row" id="rentersFilterRow">
           <button type="button" class="a-chip is-active" data-filter="all">All</button>
           <button type="button" class="a-chip" data-filter="linked">Linked Account</button>
