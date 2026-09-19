@@ -220,21 +220,8 @@
   // NOTE: 'add-game' is deliberately not a .a-tab anymore -- it moved behind
   // an "+ Add Game" button on the Games tab that opens it as a modal (same
   // pattern as New Rental below), so it never shows up in this loop.
-  // Swap Requests/Reservations/History live as a collapsible submenu under
-  // Rentals (owner's request) -- opening one of them expands the group and
-  // keeps it open so the current location stays visible in the sidebar.
-  var RENTALS_GROUP_CHILDREN = ['swaps', 'reservations', 'history'];
-  function setRentalsGroupOpen(open) {
-    $('rentalsGroupChildren').classList.toggle('is-open', open);
-    $('rentalsGroupToggle').setAttribute('aria-expanded', open ? 'true' : 'false');
-  }
-  $('rentalsGroupToggle').addEventListener('click', function () {
-    setRentalsGroupOpen($('rentalsGroupToggle').getAttribute('aria-expanded') !== 'true');
-  });
-  if (RENTALS_GROUP_CHILDREN.indexOf(document.querySelector('.a-tab.is-active').getAttribute('data-tab')) !== -1) {
-    setRentalsGroupOpen(true);
-  }
-
+  // Swap Requests/Reservations/History are nested under Rentals (owner's
+  // request) but always shown, not a collapsible submenu.
   Array.prototype.forEach.call(document.querySelectorAll('.a-tab'), function (tab) {
     tab.addEventListener('click', function () {
       closeNewRentalModal();
@@ -245,7 +232,6 @@
       tab.classList.add('is-active');
       $('panel-' + tab.getAttribute('data-tab')).classList.add('is-active');
       setTopbarSection(tab.getAttribute('data-tab'));
-      if (RENTALS_GROUP_CHILDREN.indexOf(tab.getAttribute('data-tab')) !== -1) setRentalsGroupOpen(true);
     });
   });
 
