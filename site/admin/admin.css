@@ -161,6 +161,43 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
   padding: 0.5rem 0.7rem; font-size: 0.8125rem; font-family: inherit; transition: border-color .15s, background-color .15s;
 }
 .a-field input:focus, .a-field select:focus, .a-field textarea:focus { outline: none; border-color: var(--a-blue); background: #fff; }
+/* Form-modal selects (#gStatus, #renterSelect, #slotSelect, #planSelect,
+   #mergeKeepSelect, etc.) -- strip the native OS chrome and draw our own
+   chevron so they read as one deliberate control set with their sibling
+   text inputs above, instead of a plain browser-default box. Same height
+   as `.a-field input` (identical padding/border/font-size), just with extra
+   right padding so the label text never runs under the chevron. The
+   chevron color is hardcoded (SVG background-image can't use currentColor
+   or var(--a-*) since those only resolve for real CSS properties, not
+   inside a data-URI) to roughly the weight of --a-text-2. */
+.a-field select {
+  -webkit-appearance: none; -moz-appearance: none; appearance: none;
+  padding-right: 2rem; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%236e6e73' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 0.75rem center;
+}
+.a-field select:hover:not(:disabled) { border-color: rgba(0,0,0,.16); }
+.a-field select:disabled {
+  opacity: 0.5; cursor: not-allowed; background-color: var(--a-panel-2);
+}
+/* Inline per-row selects in the Games table (data-field="available" /
+   data-field="reservation", built in slotControlHtml()) -- their own,
+   smaller variant so they sit comfortably inside a table cell without
+   growing row height (the density pass shortened rows on purpose). Same
+   chevron/border/radius language as `.a-field select` above, just tighter
+   padding and a smaller font size matching the table body text. */
+.a-inline-select {
+  -webkit-appearance: none; -moz-appearance: none; appearance: none;
+  background: var(--a-panel); border: 1px solid var(--a-border); border-radius: var(--a-radius-sm);
+  color: var(--a-text); font-size: 0.75rem; font-family: inherit; cursor: pointer;
+  padding: 0.25rem 1.5rem 0.25rem 0.5rem; line-height: 1.3;
+  transition: border-color .15s, background-color .15s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5' viewBox='0 0 9 5'%3E%3Cpath d='M1 1l3.5 3.5L8 1' fill='none' stroke='%236e6e73' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 0.5rem center;
+}
+.a-inline-select:hover:not(:disabled) { background: var(--a-panel-2); }
+.a-inline-select:focus { outline: none; border-color: var(--a-blue); background-color: #fff; }
+.a-inline-select:disabled { opacity: 0.5; cursor: not-allowed; }
 .a-hint { font-size: 0.75rem; color: var(--a-text-3); margin-top: 0.4rem; }
 .a-link-btn {
   background: none; border: none; padding: 0; font: inherit; color: var(--a-blue);
