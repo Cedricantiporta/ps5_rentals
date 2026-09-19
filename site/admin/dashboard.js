@@ -180,22 +180,28 @@
   }, true);
 
   // ---- topbar (section title + live-refresh indicator) ----
+  // help is the fuller explanation, shown via the "?" badge's native title
+  // tooltip next to the topbar title -- moved off the panel body (where it
+  // used to sit as a permanent <p class="a-hint">) so the panel itself
+  // starts with actual data instead of a paragraph of instructions every
+  // time. pending's is built dynamically in renderPending() below (it
+  // needs the live hold_minutes setting), not listed here.
   var TAB_META = {
-    pending: { title: 'Pending Payments', desc: 'Self-serve rentals awaiting GCash confirmation -- the main admin queue.' },
-    swaps: { title: 'Swap Requests', desc: 'Customer-submitted game swaps waiting for approval.' },
-    overview: { title: 'Overview', desc: 'Snapshot of revenue, active rentals, and renters.' },
-    rentals: { title: 'Rentals', desc: 'Currently active rentals only -- see Reservations or History for the rest.' },
-    reservations: { title: 'Reservations', desc: 'Pre-reserve queue for upcoming games, waiting for payment confirmation or activation.' },
-    history: { title: 'History', desc: 'Past rentals -- ended or cancelled.' },
-    renters: { title: 'Renters', desc: 'Renter profiles, Messenger links, and lifetime spend.' },
-    games: { title: 'Games', desc: 'Live catalog status -- changes here go out to the public site immediately.' },
-    settings: { title: 'Settings', desc: 'GCash details, Messenger link, hold time, and swap limit shown to customers.' }
+    pending: { title: 'Pending Payments', help: 'Customer already picked a game on the public site and got a GCash reference on the payment screen -- their slot is already held. Match the ref code below to their Messenger screenshot, then click Confirm Paid. Nothing else to fill in.' },
+    swaps: { title: 'Swap Requests', help: "Customer self-served a swap on the public site -- the new slot is already held for them. Approve to finish the swap (send the new game's credentials on Messenger right after), or decline to release the hold." },
+    overview: { title: 'Overview', help: 'Snapshot of revenue, active rentals, and renters.' },
+    rentals: { title: 'Rentals', help: 'Only currently active rentals show here. For rentals awaiting payment or activation, see Reservations (or Pending Payments); for ended/cancelled rentals, see History.' },
+    reservations: { title: 'Reservations', help: 'Pre-reserve queue for upcoming games -- multiple renters can be queued for the same slot before it releases. Only the front of the queue (#1) can be activated once paid.' },
+    history: { title: 'History', help: 'Past rentals -- ended or cancelled.' },
+    renters: { title: 'Renters', help: 'Renter profiles, Messenger links, and lifetime spend.' },
+    games: { title: 'Games', help: 'Changing these here updates the public site immediately -- use this only for manual overrides outside the normal rental flow.' },
+    settings: { title: 'Settings', help: 'GCash details, Messenger link, hold time, and swap limit shown to customers.' }
   };
   function setTopbarSection(tabKey) {
     var meta = TAB_META[tabKey];
     if (!meta) return;
     $('topbarTitle').textContent = meta.title;
-    $('topbarDesc').textContent = meta.desc;
+    $('topbarHelpBtn').title = meta.help;
   }
   var lastLoadAt = null;
   function updateLiveText() {
@@ -616,7 +622,16 @@
     $('pendingEmpty').hidden = rows.length > 0;
     var badge = $('pendingBadge');
     badge.textContent = rows.length ? '(' + rows.length + ')' : '';
-    if (state.settings.hold_minutes) $('pendingHoldMinutesHint').textContent = state.settings.hold_minutes;
+    // The pending tab's help tooltip needs the live hold_minutes value, so
+    // it's built here (where settings are freshest) instead of sitting as a
+    // fixed string in TAB_META -- only touches the shared help button when
+    // Pending is the tab actually showing, so it can't stomp another tab's
+    // tooltip text if this render happens to run while a different tab is
+    // active (loadAll() renders every tab's data every poll).
+    if (document.querySelector('.a-tab.is-active[data-tab="pending"]')) {
+      var holdMins = state.settings.hold_minutes || 30;
+      $('topbarHelpBtn').title = 'Customer already picked a game on the public site and got a GCash reference on the payment screen -- their slot is already held for ' + holdMins + ' minutes. Match the ref code below to their Messenger screenshot, then click Confirm Paid. Nothing else to fill in.';
+    }
     rows.forEach(function (r) {
       var game = r.games || {};
       var renter = r.renters || {};
@@ -2140,6 +2155,12 @@
     if (!session) return;
     $('whoami').textContent = session.user.email;
     $('userAvatar').textContent = session.user.email.charAt(0).toUpperCase();
+    // setTopbarSection() was previously only ever called from the tab-click
+    // listener, so the topbar title/help sat on their static HTML defaults
+    // ("Overview") until the admin clicked *something*, even though Pending
+    // Payments (not Overview) is the actually-visible panel on first load.
+    // Sync it once here to whatever tab starts .is-active instead.
+    setTopbarSection(document.querySelector('.a-tab.is-active').getAttribute('data-tab'));
     // Wire up column resize + click-to-sort only after the first load has
     // populated every table with real rows -- capturing each column's
     // starting width (see makeTableResizable()) off an empty <tbody> would

@@ -72,8 +72,10 @@
           <svg viewBox="0 0 20 20" width="16" height="16"><path d="M4 5h12M4 10h12M4 15h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
         <div class="a-topbar-info">
-          <h2 class="a-topbar-title" id="topbarTitle">Overview</h2>
-          <p class="a-topbar-desc" id="topbarDesc">Snapshot of revenue, active rentals, and renters.</p>
+          <span class="a-topbar-title-row">
+            <h2 class="a-topbar-title" id="topbarTitle">Overview</h2>
+            <button type="button" class="a-topbar-help" id="topbarHelpBtn" title="" aria-label="About this tab">?</button>
+          </span>
         </div>
       </div>
       <div class="a-topbar-live" id="topbarLive" title="Dashboard auto-refreshes from Supabase every 5 seconds">
@@ -84,7 +86,6 @@
     <div class="a-wrap">
     <div class="a-panel is-active" id="panel-pending">
       <div class="a-card">
-        <p class="a-hint">Customer already picked a game on the public site and got a GCash reference on the payment screen -- their slot is already held for <span id="pendingHoldMinutesHint">30</span> minutes. Match the ref code below to their Messenger screenshot, then click Confirm Paid. Nothing else to fill in.</p>
         <div class="a-field" style="max-width:320px;margin-bottom:0.9rem;"><input id="pendingSearch" type="text" placeholder="Search game, renter, or ref code..."></div>
         <div class="a-table-wrap">
         <table class="a-table" id="pendingTable">
@@ -104,7 +105,6 @@
     <div class="a-panel" id="panel-swaps">
       <div class="a-card">
         <p class="a-hint" id="swapsMigrationHint" hidden>Run migration_16 to enable swap requests.</p>
-        <p class="a-hint">Customer self-served a swap on the public site -- the new slot is already held for them. Approve to finish the swap (send the new game's credentials on Messenger right after), or decline to release the hold.</p>
         <div class="a-field" style="max-width:320px;margin-bottom:0.9rem;"><input id="swapsSearch" type="text" placeholder="Search renter or game..."></div>
         <div class="a-table-wrap" id="swapsTableWrap">
         <table class="a-table" id="swapsTable">
@@ -163,7 +163,6 @@
 
     <div class="a-panel" id="panel-rentals">
       <div class="a-card">
-        <p class="a-hint">Only currently active rentals show here. For rentals awaiting payment or activation, see Reservations (or Pending Payments); for ended/cancelled rentals, see History.</p>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:0.9rem;">
           <div class="a-field" style="max-width:320px;margin:0;"><input id="rentalsSearch" type="text" placeholder="Search game, renter, or slot..."></div>
           <button type="button" class="a-btn a-btn-primary" id="openBlankNewRentalBtn">+ New Rental</button>
@@ -185,7 +184,6 @@
 
     <div class="a-panel" id="panel-reservations">
       <div class="a-card">
-        <p class="a-hint">Pre-reserve queue for upcoming games -- multiple renters can be queued for the same slot before it releases. Only the front of the queue (#1) can be activated once paid.</p>
         <div class="a-table-wrap">
         <table class="a-table" id="reservationsTable">
           <thead>
@@ -338,7 +336,6 @@
           <h2 style="margin:0;">Games (live catalog status)</h2>
           <button type="button" class="a-btn a-btn-primary" id="openAddGameBtn">+ Add Game</button>
         </div>
-        <p class="a-hint">Changing these here updates the public site immediately -- use this only for manual overrides outside the normal rental flow.</p>
         <div class="a-field" style="max-width:280px;margin-bottom:1rem;"><input id="gamesSearch" type="text" placeholder="Search games..."></div>
         <div class="a-table-wrap">
         <table class="a-table" id="gamesTable">
