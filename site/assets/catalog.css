@@ -671,20 +671,23 @@
   cursor: pointer; display: flex; flex-direction: column; gap: 0.5rem; color: var(--rc-text);
   transition: background-color .15s ease, color .15s ease;
 }
+.rc-choice-card:disabled { opacity: .45; cursor: not-allowed; }
 /* solid, saturated blue fill on hover (not a tint/gradient) in both themes --
    flips the text tokens to white/light at the same time (re-declared as
    custom properties on the hovered card so every descendant reading
    var(--rc-text)/--rc-text-2/--rc-text-3 -- title, desc, icon -- picks up the
    light value automatically) since the solid blue needs light text for
-   contrast, unlike the old low-alpha wash. */
-.rc-choice-card:hover {
+   contrast, unlike the old low-alpha wash. Guarded with :not(:disabled) so a
+   greyed-out, un-clickable card (e.g. Swap with no active rental) doesn't
+   still light up blue on hover, which would look clickable when it isn't. */
+.rc-choice-card:hover:not(:disabled) {
   background-color: var(--rc-blue);
   color: #fff;
   --rc-text: #fff;
   --rc-text-2: rgba(255,255,255,.85);
   --rc-text-3: rgba(255,255,255,.6);
 }
-.rc-choice-card:hover .rc-choice-icon { background: rgba(255,255,255,.22); }
+.rc-choice-card:hover:not(:disabled) .rc-choice-icon { background: rgba(255,255,255,.22); }
 .rc-choice-icon { width: 2.2rem; height: 2.2rem; border-radius: 50%; background: rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; transition: background-color .15s ease; }
 .rc-choice-icon .rc-icon { width: 18px; height: 18px; }
 .rc-choice-name { font-weight: 800; font-size: 0.95rem; }
@@ -695,7 +698,7 @@
    otherwise win while hovering in light mode and silently cancel the hover
    effect -- repeat it here (higher specificity: class+class+pseudo-class)
    so hover keeps working in both themes. */
-[data-theme="light"] .rc-choice-card:hover {
+[data-theme="light"] .rc-choice-card:hover:not(:disabled) {
   background-color: var(--rc-blue);
   color: #fff;
   --rc-text: #fff;
@@ -707,7 +710,7 @@
 /* .rc-choice-desc's light-theme color above is a hardcoded value, not
    var(--rc-text-2), so the --rc-text-2 flip on the hovered card (above)
    can't reach it on its own -- override it directly here. */
-[data-theme="light"] .rc-choice-card:hover .rc-choice-desc { color: rgba(255,255,255,.85); }
+[data-theme="light"] .rc-choice-card:hover:not(:disabled) .rc-choice-desc { color: rgba(255,255,255,.85); }
 
 /* step 2: plan */
 .rc-plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }

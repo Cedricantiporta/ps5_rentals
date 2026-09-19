@@ -7,7 +7,7 @@
   var HIGH_DEMAND_MIN = 10;
   var PAGE_SIZE = 20;
 
-  var state = { games: [], query: '', quickFilter: 'available', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1, step: 'intent', intent: 'new', overlayStack: [], modalStepDepth: 0, hold: null, holdError: null, reserving: false };
+  var state = { games: [], query: '', quickFilter: 'available', genre: '', sort: 'default', modalGame: null, plan: 'weekly', slot: null, page: 1, step: 'intent', intent: 'new', overlayStack: [], modalStepDepth: 0, hold: null, holdError: null, reserving: false, hasActiveRental: null };
 
   var THEME_KEY = 'rc-theme';
   function getSavedTheme() {
@@ -654,8 +654,10 @@
     state.holdError = null;
     state.reserving = false;
     state.intent = 'new';
+    state.hasActiveRental = null;
     state.step = (g.status === 'upcoming') ? 'plan' : 'intent';
     renderModal();
+    if (state.step === 'intent') checkHasActiveRental();
     document.getElementById('rcModalOverlay').classList.add('is-open');
     document.body.style.overflow = 'hidden';
     state.modalStepDepth = 0;
@@ -737,6 +739,41 @@
         return (row && row.renter_id) || null;
       });
     }, function () { return null; });
+  }
+
+  // Swap only makes sense for someone who already has SOME active rental
+  // (elsewhere) to swap out -- otherwise "Swap Current Rental" is a lie the
+  // old Messenger-text flow let anyone claim regardless. Sets
+  // state.hasActiveRental (true/false) and re-renders the intent step if
+  // it's still showing for the same game once the check resolves; defaults
+  // to false (disabled) until then, and on any failure, so the button never
+  // sits enabled without a confirmed active rental behind it.
+  function checkHasActiveRental() {
+    var g = state.modalGame;
+    function resolve(val) {
+      state.hasActiveRental = val;
+      if (state.modalGame === g && state.step === 'intent') renderModal();
+    }
+    if (!window.RCAccount) { resolve(false); return; }
+    window.RCAccount.getSession().then(function (session) {
+      if (session) {
+        var sb = window.RCAccount.getClient();
+        return window.RCAccount.ensureRenter().then(function (row) {
+          var renterId = row && row.renter_id;
+          if (!renterId || !sb) return false;
+          return sb.from('rentals').select('id').eq('renter_id', renterId).eq('status', 'active').limit(1)
+            .then(function (res) { return !res.error && (res.data || []).length > 0; });
+        });
+      }
+      var code = window.RCAccount.loadGuestCode();
+      if (!code) return false;
+      var sb2 = window.RCAccount.getClient();
+      if (!sb2) return false;
+      return sb2.rpc('lookup_rentals_by_code', { p_code: code }).then(function (res) {
+        if (res.error) return false;
+        return (res.data || []).some(function (r) { return r.status === 'active'; });
+      });
+    }).then(resolve, function () { resolve(false); });
   }
 
   // Drops a note in the admin app's "Incoming Requests" inbox with the
@@ -1189,6 +1226,10 @@
   }
 
   function renderIntentStep(g) {
+    var swapEligible = state.hasActiveRental === true;
+    var swapDesc = swapEligible
+      ? 'Active renters: request this game as your replacement title.'
+      : "You'll need an active rental first -- this is for swapping one you already have.";
     return '' +
       '<div class="rc-wizard-heading">What do you want to do with this game?</div>' +
       '<p class="rc-wizard-sub">Choose one: start a new rental or swap an active rental.</p>' +
@@ -1198,10 +1239,10 @@
           '<span class="rc-choice-name">New Rental</span>' +
           '<span class="rc-choice-desc">Rent this game as a new or additional subscription.</span>' +
         '</button>' +
-        '<button type="button" class="rc-choice-card rc-choice-swap" data-intent="swap">' +
+        '<button type="button" class="rc-choice-card rc-choice-swap"' + (swapEligible ? '' : ' disabled') + ' data-intent="swap">' +
           '<span class="rc-choice-icon">' + icon('refresh-cw') + '</span>' +
           '<span class="rc-choice-name">Swap Current Rental</span>' +
-          '<span class="rc-choice-desc">Active renters: request this game as your replacement title.</span>' +
+          '<span class="rc-choice-desc">' + swapDesc + '</span>' +
         '</button>' +
       '</div>';
   }
