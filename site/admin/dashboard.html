@@ -34,12 +34,21 @@
     <aside class="a-sidebar">
       <h1 class="a-sidebar-title"><img src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals" class="a-sidebar-logo"></h1>
       <nav class="a-nav">
-        <button class="a-tab is-active" data-tab="pending">Pending Payments <span id="pendingBadge"></span></button>
-        <button class="a-tab" data-tab="swaps">Swap Requests <span id="swapsBadge"></span></button>
         <button class="a-tab" data-tab="overview">Overview</button>
-        <button class="a-tab" data-tab="rentals">Rentals</button>
-        <button class="a-tab" data-tab="reservations">Reservations <span id="reservationsBadge"></span></button>
-        <button class="a-tab" data-tab="history">History</button>
+        <button class="a-tab is-active" data-tab="pending">Pending Payments <span id="pendingBadge"></span></button>
+        <div class="a-tab-group">
+          <div class="a-tab-parent-row">
+            <button class="a-tab a-tab-parent" data-tab="rentals">Rentals</button>
+            <button type="button" class="a-tab-group-toggle" id="rentalsGroupToggle" aria-label="Show Swap Requests, Reservations, History" aria-expanded="false">
+              <svg viewBox="0 0 20 20" width="14" height="14"><path d="M6 8l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <div class="a-tab-children" id="rentalsGroupChildren">
+            <button class="a-tab a-tab-child" data-tab="swaps">Swap Requests <span id="swapsBadge"></span></button>
+            <button class="a-tab a-tab-child" data-tab="reservations">Reservations <span id="reservationsBadge"></span></button>
+            <button class="a-tab a-tab-child" data-tab="history">History</button>
+          </div>
+        </div>
         <button class="a-tab" data-tab="renters">Renters</button>
         <button class="a-tab" data-tab="games">Games</button>
         <button class="a-tab" data-tab="settings">Settings</button>
