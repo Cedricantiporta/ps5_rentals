@@ -556,19 +556,7 @@
 .rc-wizard-back .rc-icon { width: 14px; height: 14px; }
 .rc-wizard-eyebrow { display: block; color: var(--rc-text); font-size: 0.72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 0.4rem; }
 .rc-wizard-heading { color: var(--rc-text); font-family: var(--_typography---font-family--headers); font-size: 1.2rem; font-weight: 400; margin: 0 0 0.25rem; }
-.rc-wizard-heading-sm { font-size: 1rem; margin-top: 0.7rem; }
 .rc-wizard-sub { color: var(--rc-text-2); font-size: 0.82rem; margin: 0 0 0.7rem; line-height: 1.4; }
-
-.rc-wizard-steps { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
-.rc-wizard-step-chip {
-  display: flex; align-items: center; gap: 0.4rem; background: var(--rc-panel); border-radius: 999px;
-  padding: 0.4rem 0.85rem 0.4rem 0.4rem; font-size: 0.75rem; font-weight: 700; color: var(--rc-text-2);
-}
-[data-theme="light"] .rc-wizard-step-chip { background: #fff; color: #3f3f48; }
-.rc-wizard-step-num {
-  width: 1.35rem; height: 1.35rem; border-radius: 50%; background: var(--rc-blue); color: #fff;
-  display: flex; align-items: center; justify-content: center; font-size: 0.72rem;
-}
 
 /* step 1: intent */
 .rc-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
@@ -636,23 +624,17 @@
 .rc-access-top { display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; }
 .rc-access-name { display: flex; align-items: center; gap: 0.35rem; font-weight: 800; font-size: 0.85rem; }
 .rc-access-desc { font-size: 0.75rem; color: var(--rc-text-2); line-height: 1.4; margin: 0; }
-.rc-access-note { font-size: 0.7rem; color: var(--rc-text-3); line-height: 1.4; margin: 0; }
-.rc-access-price { font-size: 0.95rem; font-weight: 800; color: var(--rc-text); }
 [data-theme="light"] .rc-access-card { background: #fff; color: #0a0a0f; }
 /* see the matching comment on .rc-choice-card's light-theme hover above --
    same specificity/order issue, same fix. */
 [data-theme="light"] .rc-access-card:not(.is-disabled):hover { background: linear-gradient(135deg, var(--rc-blue-glow), var(--rc-panel)); }
 [data-theme="light"] .rc-access-desc { color: #3f3f48; }
-[data-theme="light"] .rc-access-note { color: #6b6b74; }
-[data-theme="light"] .rc-access-price { color: #0a0a0f; }
 .rc-access-choose {
   margin-top: auto; background: var(--rc-blue); color: #fff; border: none; border-radius: 999px; padding: 0.6rem 0.75rem;
   font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .03em; cursor: pointer; text-align: center;
 }
 .rc-access-choose:hover:not(:disabled) { filter: brightness(1.1); }
 .rc-access-choose:disabled { opacity: .4; cursor: not-allowed; }
-
-.rc-access-checklist { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; font-size: 0.7rem; color: var(--rc-text-2); margin-bottom: 0.4rem; }
 
 @media (max-width: 560px) {
   .rc-choice-grid, .rc-plan-grid, .rc-access-grid, .rc-access-grid-simple { grid-template-columns: 1fr; }

@@ -966,49 +966,33 @@
       '</div>';
   }
 
+  // Simplified per owner feedback (too busy): dropped the numbered 1-2-3
+  // process chips (explains process, not a decision), the "First Available"
+  // third option (redundant with just picking whichever slot shows OPEN),
+  // and the trailing checklist + explainer paragraph -- collapsed to one
+  // heading + one subtext line, matching renderSimpleAccessStep's shape.
   function renderSwapAccessStep(g) {
     var trophyOn = slotEnabled(g, 'trophy');
     var nontrophyOn = slotEnabled(g, 'nontrophy');
     var t = slotLabel(g, 'trophy');
     var n = slotLabel(g, 'nontrophy');
-    var firstKey = trophyOn ? 'trophy' : (nontrophyOn ? 'nontrophy' : null);
-    var firstName = firstKey === 'trophy' ? 'Trophy' : (firstKey === 'nontrophy' ? 'Non-Trophy' : null);
 
     return '' +
       '<span class="rc-wizard-eyebrow">CURRENT RENTER SWAP</span>' +
-      '<div class="rc-wizard-heading">Ready when you are.</div>' +
-      '<p class="rc-wizard-sub">Choose an open access type. We\'ll check your active rental, plan and cooldown on Messenger.</p>' +
-      '<div class="rc-wizard-steps">' +
-        '<span class="rc-wizard-step-chip"><span class="rc-wizard-step-num">1</span>Choose slot</span>' +
-        '<span class="rc-wizard-step-chip"><span class="rc-wizard-step-num">2</span>Send I\'m ready</span>' +
-        '<span class="rc-wizard-step-chip"><span class="rc-wizard-step-num">3</span>Get next step</span>' +
-      '</div>' +
-      '<div class="rc-wizard-heading rc-wizard-heading-sm">Choose your preferred access</div>' +
-      '<p class="rc-wizard-sub">Trophy: play on your own PSN profile; trophies and saves stay yours. Non-Trophy: play on the rented game profile. Both give full game access.</p>' +
-      '<div class="rc-access-grid">' +
+      '<div class="rc-wizard-heading">Trophy or Non-Trophy?</div>' +
+      '<p class="rc-wizard-sub">We\'ll confirm your plan and cooldown on Messenger before finalizing.</p>' +
+      '<div class="rc-access-grid rc-access-grid-simple">' +
         '<div class="rc-access-card' + (!trophyOn ? ' is-disabled' : '') + '">' +
           '<div class="rc-access-top"><span class="rc-access-name">' + icon('trophy') + ' Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
           '<p class="rc-access-desc">Play on your own PSN profile. Trophies and saves stay yours.</p>' +
-          '<p class="rc-access-note">' + (trophyOn ? 'Available now, subject to your rental and cooldown check.' : 'Not open right now.') + '</p>' +
           '<button type="button" class="rc-access-choose" data-slot="trophy"' + (!trophyOn ? ' disabled' : '') + '>Choose Trophy</button>' +
         '</div>' +
         '<div class="rc-access-card' + (!nontrophyOn ? ' is-disabled' : '') + '">' +
           '<div class="rc-access-top"><span class="rc-access-name">' + icon('user') + ' Non-Trophy</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
           '<p class="rc-access-desc">Play on the rented game profile with the same full game access.</p>' +
-          '<p class="rc-access-note">' + (nontrophyOn ? 'Available now, subject to your rental and cooldown check.' : 'Not open right now.') + '</p>' +
           '<button type="button" class="rc-access-choose" data-slot="nontrophy"' + (!nontrophyOn ? ' disabled' : '') + '>Choose Non-Trophy</button>' +
         '</div>' +
-        '<div class="rc-access-card rc-access-first' + (!firstKey ? ' is-disabled' : '') + '">' +
-          '<div class="rc-access-top"><span class="rc-access-name">' + icon('zap') + ' First Available</span>' + (firstKey ? '<span class="rc-slot-status rc-status-open"><span class="rc-dot"></span>FASTEST</span>' : '') + '</div>' +
-          '<p class="rc-access-desc">Choose whichever access opens first for the fastest possible option.</p>' +
-          '<p class="rc-access-note">' + (firstKey ? firstName + ' is open now, so there\'s no need to wait.' : 'Nothing open right now — check back soon.') + '</p>' +
-          '<button type="button" class="rc-access-choose" data-slot="' + (firstKey || '') + '"' + (!firstKey ? ' disabled' : '') + '>Use ' + (firstName || 'Access') + ' Now</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="rc-access-checklist">' +
-        '<span>✓ Open slot prioritized</span><span>✓ Plan and cooldown checked</span><span>✓ Exact payment only if needed</span>' +
-      '</div>' +
-      '<p class="rc-modal-note">Choose Trophy, Non-Trophy, or First Available. If an access type is open now, we\'ll prioritize that faster path. Keep your current game active until June Digitals confirms the next step.</p>';
+      '</div>';
   }
 
   function wireAccessStep(body) {
