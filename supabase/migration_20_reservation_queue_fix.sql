@@ -342,13 +342,9 @@ grant execute on function get_public_settings() to anon, authenticated;
 -- SAME zz-test-game-a / trophy slot (an upcoming test row is created below
 -- if needed) -- proving two reservers on the same not-yet-released slot both
 -- succeed instead of the second one being rejected.
-do $$
-begin
-  if not exists (select 1 from games where slug = 'zz-test-reservation-game') then
-    insert into games (slug, title, status, trophy_weekly, trophy_monthly, nontrophy_weekly, nontrophy_monthly, is_test)
-    values ('zz-test-reservation-game', 'ZZ Test Reservation Game', 'upcoming', 249, 699, 249, 699, true);
-  end if;
-end $$;
+insert into games (slug, title, status, trophy_weekly, trophy_monthly, nontrophy_weekly, nontrophy_monthly, is_test)
+select 'zz-test-reservation-game', 'ZZ Test Reservation Game', 'upcoming', 249, 699, 249, 699, true
+where not exists (select 1 from games where slug = 'zz-test-reservation-game');
 
 select 'first reserver' as which, ok, error, queue_position, ref_code
   from create_rental_hold('zz-test-reservation-game', 'trophy', 'weekly', null, 'ZZ Reserver One');
