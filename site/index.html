@@ -233,18 +233,24 @@ margin: 0rem !important;
   <div class="rc-filter-group">
     <div class="rc-filter-seg">
       <span class="rc-filter-label">Genre</span>
-      <select id="rcGenre" class="rc-filter-select"><option value="">Any</option></select>
+      <div class="rc-filter-select-wrap">
+        <select id="rcGenre" class="rc-filter-select"><option value="">Any</option></select>
+        <svg class="rc-filter-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
     </div>
     <div class="rc-filter-sep"></div>
     <div class="rc-filter-seg">
       <span class="rc-filter-label">Sort by</span>
-      <select id="rcSort" class="rc-filter-select">
-        <option value="default">Default</option>
-        <option value="title">Title A-Z</option>
-        <option value="price-low">Price: low-high</option>
-        <option value="price-high">Price: high-low</option>
-        <option value="rentals">Most rented</option>
-      </select>
+      <div class="rc-filter-select-wrap">
+        <select id="rcSort" class="rc-filter-select">
+          <option value="default">Default</option>
+          <option value="title">Title A-Z</option>
+          <option value="price-low">Price: low-high</option>
+          <option value="price-high">Price: high-low</option>
+          <option value="rentals">Most rented</option>
+        </select>
+        <svg class="rc-filter-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </div>
     </div>
   </div>
 </div>

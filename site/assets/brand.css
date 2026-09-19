@@ -15,8 +15,13 @@
 .padding-global { padding-left: 1.75rem !important; padding-right: 1.75rem !important; }
 
 /* logo sits too far from the edge relative to the rest of the navbar -- pull
-   it in on the left only, leave the hamburger/buttons side untouched. */
-.navbar .padding-global.is-navbar { padding-left: 1rem !important; }
+   it in on the left only, leave the hamburger/buttons side untouched.
+   Also shrink the navbar's vertical padding (frog's default is 1rem
+   top/bottom at every breakpoint) so the bar reads as compact rather than
+   tall, on both desktop and mobile -- !important beats the shared
+   stylesheet's own breakpoint rules without needing to repeat this per
+   breakpoint. */
+.navbar .padding-global.is-navbar { padding-left: 1rem !important; padding-top: 0.55rem !important; padding-bottom: 0.55rem !important; }
 
 .navbar { background-color: #000 !important; background-image: none !important; }
 .navbar_list { background-color: #0a0a0a !important; }
