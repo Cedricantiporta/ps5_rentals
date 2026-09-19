@@ -1525,12 +1525,12 @@
     if (g.status === 'upcoming') {
       var val = g[slot + '_reservation_status'];
       var opts = ['OPEN', 'LIMITED', 'PRIORITY_LIST', 'CLOSED'];
-      return '<select data-game="' + g.id + '" data-slot="' + slot + '" data-field="reservation">' +
+      return '<select class="a-inline-select" data-game="' + g.id + '" data-slot="' + slot + '" data-field="reservation">' +
         opts.map(function (o) { return '<option value="' + o + '"' + (o === val ? ' selected' : '') + '>' + enumLabel(o) + '</option>'; }).join('') +
         '</select>';
     }
     var avail = g[slot + '_available'];
-    return '<select data-game="' + g.id + '" data-slot="' + slot + '" data-field="available">' +
+    return '<select class="a-inline-select" data-game="' + g.id + '" data-slot="' + slot + '" data-field="available">' +
       '<option value="true"' + (avail ? ' selected' : '') + '>Available</option>' +
       '<option value="false"' + (!avail ? ' selected' : '') + '>Full</option>' +
       '</select>';
