@@ -120,6 +120,69 @@
     return String(s || '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase();
   }
 
+  // Trophy/Non-Trophy explainer copy for the "?" help badges -- reuses the
+  // exact customer-facing wording already used by the per-slot descriptions
+  // in renderSimpleAccessStep/renderSwapAccessStep (which matches the
+  // chatbot FAQ's "played on your own PSN profile" / "same full game
+  // access either way" wording), rather than inventing new copy.
+  var TROPHY_HELP_TEXT = 'Play on your own PSN profile. Trophies and saves stay yours.';
+  var NONTROPHY_HELP_TEXT = 'Play on the rented game profile with the same full game access.';
+  function helpBadge(text) {
+    var esc = String(text).replace(/"/g, '&quot;');
+    return '<span class="rc-help" tabindex="0" role="button" aria-label="More info" data-help="' + esc + '" title="' + esc + '">?</span>';
+  }
+
+  // A single shared bubble (not a per-badge popover) that opens on click/tap
+  // next to whichever "?" badge was activated -- works for mouse click and
+  // touch tap alike, on top of the native `title` tooltip for mouse hover.
+  var helpBubbleEl = null;
+  var helpOpenBadge = null;
+  function closeHelpBubble() {
+    if (helpBubbleEl && helpBubbleEl.parentNode) helpBubbleEl.parentNode.removeChild(helpBubbleEl);
+    helpBubbleEl = null;
+    helpOpenBadge = null;
+  }
+  function openHelpBubble(badge) {
+    var text = badge.getAttribute('data-help');
+    if (!text) return;
+    closeHelpBubble();
+    var bubble = document.createElement('div');
+    bubble.className = 'rc-help-bubble';
+    bubble.textContent = text;
+    document.body.appendChild(bubble);
+    var rect = badge.getBoundingClientRect();
+    var top = rect.bottom + window.scrollY + 6;
+    var left = rect.left + window.scrollX;
+    var maxLeft = window.scrollX + document.documentElement.clientWidth - bubble.offsetWidth - 10;
+    if (left > maxLeft) left = Math.max(10, maxLeft);
+    bubble.style.top = top + 'px';
+    bubble.style.left = left + 'px';
+    helpBubbleEl = bubble;
+    helpOpenBadge = badge;
+  }
+  function wireHelpBadges() {
+    // Capture phase, not bubble -- a "?" badge sits inside clickable grid
+    // cards/coming-soon cards, whose own click-to-open-modal listeners are
+    // bound directly on the card element. Stopping propagation from a
+    // bubble-phase document listener would run too late (the card's own
+    // listener, being closer to the target, already fired); capture runs
+    // top-down, before that, so it can actually intercept the click.
+    document.addEventListener('click', function (e) {
+      var badge = e.target.closest && e.target.closest('.rc-help');
+      if (badge) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (helpOpenBadge === badge) closeHelpBubble();
+        else openHelpBubble(badge);
+        return;
+      }
+      if (helpBubbleEl) closeHelpBubble();
+    }, true);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeHelpBubble(); });
+    window.addEventListener('resize', closeHelpBubble);
+    document.addEventListener('scroll', closeHelpBubble, true);
+  }
+
   function badgeFor(g) {
     if (g.status === 'upcoming') return { label: 'PRE-RESERVE', cls: 'rc-badge-upcoming' };
     var t = g.trophy.available, n = g.nontrophy.available;
@@ -259,8 +322,8 @@
               '<p class="rc-soon-date">Release: ' + releaseDateLabel(g.releaseDate) + '</p>' +
             '</div>' +
             '<div class="rc-card-bottom">' +
-              '<div class="rc-slot-row"><span class="rc-slot-label">Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
-              '<div class="rc-slot-row"><span class="rc-slot-label">Non-Trophy</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
+              '<div class="rc-slot-row"><span class="rc-slot-label">Trophy' + helpBadge(TROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
+              '<div class="rc-slot-row"><span class="rc-slot-label">Non-Trophy' + helpBadge(NONTROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
               '<div class="rc-soon-prices"><span>Wk <b>' + peso(g.trophy.weekly) + '</b></span><span>Mo <b>' + peso(g.trophy.monthly) + '</b></span></div>' +
             '</div>' +
           '</div>' +
@@ -311,8 +374,8 @@
               '<p class="rc-card-title">' + g.title + '</p>' +
             '</div>' +
             '<div class="rc-card-bottom">' +
-              '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('trophy') + ' Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
-              '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('user') + ' Non-Trophy</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
+              '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('trophy') + ' Trophy' + helpBadge(TROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
+              '<div class="rc-slot-row"><span class="rc-slot-label">' + icon('user') + ' Non-Trophy' + helpBadge(NONTROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
               '<div class="rc-price-row">' +
                 '<div class="rc-price-box"><span class="rc-price-label">Weekly</span><span class="rc-price-value">' + peso(g.trophy.weekly) + '</span></div>' +
                 '<div class="rc-price-box"><span class="rc-price-label">Monthly</span><span class="rc-price-value">' + peso(g.trophy.monthly) + '</span></div>' +
@@ -954,12 +1017,12 @@
       '<p class="rc-wizard-sub">Trophy: play on your own PSN profile, trophies and saves stay yours. Non-Trophy: play on the rented game profile with full game access either way.</p>' +
       '<div class="rc-access-grid rc-access-grid-simple">' +
         '<div class="rc-access-card' + (!trophyOn ? ' is-disabled' : '') + '">' +
-          '<div class="rc-access-top"><span class="rc-access-name">' + icon('trophy') + ' Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
+          '<div class="rc-access-top"><span class="rc-access-name">' + icon('trophy') + ' Trophy' + helpBadge(TROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
           '<p class="rc-access-desc">Play on your own PSN profile. Trophies and saves stay yours.</p>' +
           '<button type="button" class="rc-access-choose" data-slot="trophy"' + (!trophyOn ? ' disabled' : '') + '>' + actionWord + ' — Trophy</button>' +
         '</div>' +
         '<div class="rc-access-card' + (!nontrophyOn ? ' is-disabled' : '') + '">' +
-          '<div class="rc-access-top"><span class="rc-access-name">' + icon('user') + ' Non-Trophy</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
+          '<div class="rc-access-top"><span class="rc-access-name">' + icon('user') + ' Non-Trophy' + helpBadge(NONTROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
           '<p class="rc-access-desc">Play on the rented game profile with the same full game access.</p>' +
           '<button type="button" class="rc-access-choose" data-slot="nontrophy"' + (!nontrophyOn ? ' disabled' : '') + '>' + actionWord + ' — Non-Trophy</button>' +
         '</div>' +
@@ -983,12 +1046,12 @@
       '<p class="rc-wizard-sub">We\'ll confirm your plan and cooldown on Messenger before finalizing.</p>' +
       '<div class="rc-access-grid rc-access-grid-simple">' +
         '<div class="rc-access-card' + (!trophyOn ? ' is-disabled' : '') + '">' +
-          '<div class="rc-access-top"><span class="rc-access-name">' + icon('trophy') + ' Trophy</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
+          '<div class="rc-access-top"><span class="rc-access-name">' + icon('trophy') + ' Trophy' + helpBadge(TROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + t.cls + '"><span class="rc-dot"></span>' + t.label + '</span></div>' +
           '<p class="rc-access-desc">Play on your own PSN profile. Trophies and saves stay yours.</p>' +
           '<button type="button" class="rc-access-choose" data-slot="trophy"' + (!trophyOn ? ' disabled' : '') + '>Choose Trophy</button>' +
         '</div>' +
         '<div class="rc-access-card' + (!nontrophyOn ? ' is-disabled' : '') + '">' +
-          '<div class="rc-access-top"><span class="rc-access-name">' + icon('user') + ' Non-Trophy</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
+          '<div class="rc-access-top"><span class="rc-access-name">' + icon('user') + ' Non-Trophy' + helpBadge(NONTROPHY_HELP_TEXT) + '</span><span class="rc-slot-status ' + n.cls + '"><span class="rc-dot"></span>' + n.label + '</span></div>' +
           '<p class="rc-access-desc">Play on the rented game profile with the same full game access.</p>' +
           '<button type="button" class="rc-access-choose" data-slot="nontrophy"' + (!nontrophyOn ? ' disabled' : '') + '>Choose Non-Trophy</button>' +
         '</div>' +
@@ -1476,6 +1539,7 @@
     wireThemeToggle();
     wireNavCurrentPage();
     wireChatWidget();
+    wireHelpBadges();
     loadGames().then(function (games) {
       state.games = games;
       populateGenres();

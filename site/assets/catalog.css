@@ -510,6 +510,26 @@
 [data-theme="light"] .rc-modal-rented { background: #fff; }
 .rc-modal-rented .rc-icon { width: 12px; height: 12px; }
 
+/* "?" help affordance next to Trophy/Non-Trophy labels (grid card, coming
+   soon strip, modal access-step cards) -- native title tooltip for desktop
+   hover, plus a tap-friendly custom bubble (see wireHelpBadges in
+   catalog.js) so it also works on touch. Uses a theme-agnostic translucent
+   grey so it reads correctly whether it's sitting on dark cover art, a dark
+   modal panel, or a light-theme panel. */
+.rc-help {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 1rem; height: 1rem; border-radius: 50%; background: rgba(127,127,127,.28);
+  color: var(--rc-text-2); font-size: 0.62rem; font-weight: 800; line-height: 1;
+  cursor: help; user-select: none;
+}
+.rc-help:hover, .rc-help:focus-visible { background: var(--rc-blue); color: #fff; outline: none; }
+.rc-help-bubble {
+  position: absolute; z-index: 10060; max-width: 220px; background: #0a0a0f; color: #fff;
+  font-size: 0.72rem; line-height: 1.4; padding: 0.5rem 0.65rem; border-radius: 0.6rem;
+  box-shadow: 0 10px 24px rgba(0,0,0,.35);
+}
+[data-theme="light"] .rc-help-bubble { background: #fff; color: #0a0a0f; border: 1px solid var(--rc-border-2); }
+
 /* plan-tab/slot-option/choice cards: original dark-grey panel look in dark
    mode (using the modal's own pinned --rc-panel/--rc-text, see .rc-modal),
    switched to plain white cards with dark text in light mode -- otherwise
