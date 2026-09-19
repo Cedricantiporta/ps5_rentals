@@ -601,10 +601,20 @@
     try { localStorage.setItem(TRACK_CODE_KEY, code); } catch (e) {}
   }
 
+  // Rent-count now lives here (modal header) instead of the grid card's
+  // cover -- see badgeFor/renderGrid, which no longer render rc-count-badge.
+  function rentedNote(g) {
+    if (!g.activeRentals) return '';
+    var n = g.activeRentals > 99 ? '99+' : g.activeRentals;
+    var word = g.activeRentals === 1 ? 'person' : 'people';
+    return '<p class="rc-modal-rented">' + icon('user') + ' ' + n + ' ' + word + ' renting this</p>';
+  }
+
   function buildModalHeader(g) {
     return '<h2 class="rc-modal-title">' + g.title + '</h2>' +
       platformBadge(g.platform) +
-      '<p class="rc-modal-genre">' + g.genre.join(' · ') + (g.releaseDate ? ' · Release ' + releaseDateLabel(g.releaseDate) : '') + '</p>';
+      '<p class="rc-modal-genre">' + g.genre.join(' · ') + (g.releaseDate ? ' · Release ' + releaseDateLabel(g.releaseDate) : '') + '</p>' +
+      rentedNote(g);
   }
 
   // Shown in place while create_rental_hold is in flight -- writes straight

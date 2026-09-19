@@ -500,6 +500,15 @@
 }
 .rc-modal-title { color: var(--rc-text); font-family: var(--_typography---font-family--headers); font-size: 1.6rem; font-weight: 400; margin: 0 0 0.2rem; }
 .rc-modal-genre { color: var(--rc-text-2); font-size: 0.82rem; font-weight: 600; margin-bottom: 1rem; }
+/* rent count moved here from the grid card's cover (see renderGrid/badgeFor
+   in catalog.js) -- only rendered when activeRentals > 0. */
+.rc-modal-rented {
+  display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; font-weight: 700;
+  color: var(--rc-text-2); background: var(--rc-panel); padding: 0.3rem 0.65rem; border-radius: 999px;
+  margin: -0.35rem 0 0.9rem;
+}
+[data-theme="light"] .rc-modal-rented { background: #fff; }
+.rc-modal-rented .rc-icon { width: 12px; height: 12px; }
 
 /* plan-tab/slot-option/choice cards: original dark-grey panel look in dark
    mode (using the modal's own pinned --rc-panel/--rc-text, see .rc-modal),
