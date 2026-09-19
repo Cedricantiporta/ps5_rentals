@@ -9,8 +9,12 @@
 -- customers, no test rentals, no test swaps.
 --
 -- DOES NOT TOUCH: your games catalog (titles, genres, covers, prices,
--- release dates, status), your admin login, the `settings` table (GCash
--- number, hold minutes, swap limits, etc.), or the pg_cron auto-expire job.
+-- release dates, status), the `settings` table (GCash number, hold
+-- minutes, swap limits, etc.), or the pg_cron auto-expire job.
+--
+-- ADMIN ACCOUNTS ARE NEVER TOUCHED. Nothing below references the `admins`
+-- table or `auth.users` -- your own login (and any other admin's) stays
+-- exactly as it is. This script has no DELETE or UPDATE against either.
 --
 -- TEST GAMES: the two `is_test = true` rows (zz-test-game-a/b) are KEPT,
 -- not deleted -- they're the safe sandbox used for verifying future
