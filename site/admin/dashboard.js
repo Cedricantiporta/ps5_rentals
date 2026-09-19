@@ -289,6 +289,65 @@
   $('signOutBtn').addEventListener('click', function () { window.rcSignOut(); });
 
   // ---- data loading ----
+  // ---- new-item alerts (sound + browser notification) ----
+  // The dashboard only polls every 5s while its own tab is open, so a
+  // backgrounded/minimized tab can sit on a new pending payment or swap
+  // request for a while with nothing to draw the admin back. This fires a
+  // beep + OS-level notification the moment either count goes UP.
+  //
+  // Counts here are computed straight from state.rentals/state.swapRequests
+  // (not from pendingRows()/renderSwaps()'s row lists), because those are
+  // filtered by whatever the admin currently has typed into search -- using
+  // them would fire a false "new item" every time a search narrows the
+  // count back down and then a re-render widens it again.
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+  var audioCtx = null;
+  function playAlertBeep() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.36);
+    } catch (e) {}
+  }
+  function notifyNewItem(title, body) {
+    playAlertBeep();
+    try {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body: body, tag: title });
+      }
+    } catch (e) {}
+  }
+  var alertCounts = { pending: null, swaps: null };
+  function checkForNewAlerts() {
+    var pendingCount = state.rentals.filter(function (r) { return r.status === 'pending' && r.queue_position == null; }).length;
+    var swapsCount = state.swapRequestsAvailable
+      ? state.swapRequests.filter(function (r) { return r.status === 'pending'; }).length
+      : 0;
+    // null means "first load" -- skip alerting on whatever's already sitting
+    // there when the dashboard opens, only alert on genuinely new arrivals.
+    if (alertCounts.pending !== null && pendingCount > alertCounts.pending) {
+      var newPending = pendingCount - alertCounts.pending;
+      notifyNewItem('New pending payment', newPending === 1 ? 'A customer is waiting for payment confirmation.' : newPending + ' customers are waiting for payment confirmation.');
+    }
+    if (alertCounts.swaps !== null && swapsCount > alertCounts.swaps) {
+      var newSwaps = swapsCount - alertCounts.swaps;
+      notifyNewItem('New swap request', newSwaps === 1 ? 'A customer submitted a swap request.' : newSwaps + ' customers submitted swap requests.');
+    }
+    alertCounts.pending = pendingCount;
+    alertCounts.swaps = swapsCount;
+  }
+
   function loadAll() {
     return Promise.all([
       supabase.from('games').select('*').order('title'),
@@ -326,6 +385,8 @@
       var swapReqRes = results[4];
       state.swapRequestsAvailable = !swapReqRes.error;
       state.swapRequests = swapReqRes.data || [];
+
+      checkForNewAlerts();
 
       renderPending();
       renderSwaps();
