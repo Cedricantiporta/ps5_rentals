@@ -274,15 +274,14 @@
    card height instead would land the buttons on top of the genre tag/title. */
 .rc-strip-nav {
   position: absolute; top: 24%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%;
-  background: rgba(10,10,15,.55); color: #fff; border: 1px solid rgba(255,255,255,.2);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  background: #fff; color: #0a0a0f; border: none;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.35); z-index: 4;
   transition: background-color .15s, transform .15s, opacity .2s;
   opacity: 0; pointer-events: none;
 }
 .rc-strip-nav .rc-icon { width: 20px; height: 20px; }
-.rc-strip-nav:hover { background: rgba(10,10,15,.82); }
+.rc-strip-nav:hover { background: #ececec; }
 .rc-strip-nav:active { transform: translateY(-50%) scale(.94); }
 .rc-strip-nav-prev { left: 14px; }
 .rc-strip-nav-next { right: 14px; }
