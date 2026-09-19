@@ -31,7 +31,7 @@
       '<div class="a-modal-backdrop" id="genericModalBackdrop" hidden></div>' +
       '<div class="a-card a-modal-card a-generic-modal" id="genericModal" hidden>' +
         '<p class="a-generic-modal-msg" id="genericModalMsg"></p>' +
-        '<div class="a-field" id="genericModalInputWrap" hidden><input type="text" id="genericModalInput"></div>' +
+        '<div class="a-field" id="genericModalInputWrap" style="display:none;"><input type="text" id="genericModalInput"></div>' +
         '<div class="a-generic-modal-actions">' +
           '<button type="button" class="a-btn" id="genericModalCancelBtn">Cancel</button>' +
           '<button type="button" class="a-btn a-btn-primary" id="genericModalOkBtn">OK</button>' +
@@ -76,13 +76,17 @@
     okBtn.textContent = opts.okLabel || (mode === 'alert' ? 'OK' : 'Confirm');
     cancelBtn.textContent = opts.cancelLabel || 'Cancel';
     cancelBtn.hidden = mode === 'alert';
+    // .a-field sets display:flex unconditionally, which beats the [hidden]
+    // attribute's UA display:none at equal specificity -- toggle inline
+    // style instead (same reason the rest of the app uses style.display for
+    // .a-field visibility, e.g. toggleNewRenterFields, rather than .hidden).
     if (mode === 'prompt') {
-      inputWrap.hidden = false;
+      inputWrap.style.display = '';
       input.type = opts.inputType || 'text';
       input.value = opts.defaultValue != null ? opts.defaultValue : '';
       input.placeholder = opts.placeholder || '';
     } else {
-      inputWrap.hidden = true;
+      inputWrap.style.display = 'none';
     }
     $('genericModalBackdrop').hidden = false;
     $('genericModal').hidden = false;
