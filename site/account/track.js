@@ -119,10 +119,10 @@
 
     var big = r.days_left !== null && r.days_left !== undefined ? RCAccount.daysLeftBig(r.days_left) : null;
     var daysBadge = big ?
-      '<div class="rc-rental-days-badge ' + big.cls + '">' +
-        '<span class="rc-rental-days-num">' + RCAccount.esc(big.num) + '</span>' +
+      '<p class="rc-rental-days-plain ' + big.cls + '">' +
+        '<span class="rc-rental-days-num">' + RCAccount.esc(big.num) + '</span> ' +
         '<span class="rc-rental-days-label">' + RCAccount.esc(big.label) + '</span>' +
-      '</div>' : '';
+      '</p>' : '';
 
     var swapBlock;
     if (r.pending_swap_id) {
@@ -140,8 +140,8 @@
       '<div class="rc-rental-card" data-game-slug="' + RCAccount.esc(r.game_slug || '') + '">' +
         '<div class="rc-rental-cover-wrap">' +
           '<img class="rc-rental-cover" loading="lazy" src="' + RCAccount.esc(r.game_cover || '') + '" alt="' + RCAccount.esc(r.game_title || '') + '">' +
-          daysBadge +
         '</div>' +
+        daysBadge +
         '<div class="rc-rental-body">' +
           '<p class="rc-rental-title">' + RCAccount.esc(r.game_title || 'Unknown game') + '</p>' +
           '<div class="rc-rental-tags">' +

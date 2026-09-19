@@ -369,17 +369,17 @@
     // days-left badge is skipped there.
     var big = current.status !== 'pending' ? RCAccount.daysLeftBig(RCAccount.daysLeft(endDate)) : null;
     var daysBadge = big ?
-      '<div class="rc-rental-days-badge ' + big.cls + '">' +
-        '<span class="rc-rental-days-num">' + RCAccount.esc(big.num) + '</span>' +
+      '<p class="rc-rental-days-plain ' + big.cls + '">' +
+        '<span class="rc-rental-days-num">' + RCAccount.esc(big.num) + '</span> ' +
         '<span class="rc-rental-days-label">' + RCAccount.esc(big.label) + '</span>' +
-      '</div>' : '';
+      '</p>' : '';
 
     return '' +
       '<div class="rc-rental-card" data-game-slug="' + RCAccount.esc(game.slug || '') + '">' +
         '<div class="rc-rental-cover-wrap">' +
           '<img class="rc-rental-cover" loading="lazy" src="' + RCAccount.esc(game.cover || '') + '" alt="' + RCAccount.esc(game.title || '') + '">' +
-          daysBadge +
         '</div>' +
+        daysBadge +
         '<div class="rc-rental-body">' +
           '<p class="rc-rental-title">' + RCAccount.esc(game.title || 'Unknown game') + '</p>' +
           '<div class="rc-rental-tags">' +

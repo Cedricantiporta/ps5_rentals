@@ -311,7 +311,7 @@
    genre, release date, Trophy/Non-Trophy status, Weekly/Monthly prices),
    just laid out with more room to breathe per the reference. */
 .rc-soon-card {
-  position: relative; flex: 0 0 320px; border-radius: 1.4rem;
+  position: relative; flex: 0 0 254px; border-radius: 1.2rem;
   overflow: hidden; background: linear-gradient(180deg, #0a0a0a 0%, #1a233f 100%); border: none;
   cursor: pointer; transition: transform .18s, box-shadow .18s;
   display: flex; flex-direction: column;
@@ -325,18 +325,18 @@
 .rc-soon-card:hover { transform: translateY(-3px); box-shadow: 0 0 0 2px var(--rc-blue); }
 .rc-soon-cover-wrap { position: relative; overflow: hidden; }
 .rc-soon-cover { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #1c1e28; }
-.rc-soon-body { padding: 1rem 1.15rem 1.2rem; display: flex; flex-direction: column; flex: 1; }
+.rc-soon-body { padding: 0.85rem 0.95rem 1rem; display: flex; flex-direction: column; flex: 1; }
 .rc-soon-genre { color: var(--rc-blue); font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 0.4rem; }
-.rc-soon-title { color: var(--rc-text); font-size: 1.1rem; font-weight: 800; line-height: 1.25; margin: 0 0 0.4rem; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.rc-soon-desc { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; font-size: 0.78rem; font-weight: 600; color: var(--rc-text-2); margin: 0 0 0.9rem; line-height: 1.4; }
+.rc-soon-title { color: var(--rc-text); font-size: 0.95rem; font-weight: 800; line-height: 1.25; margin: 0 0 0.3rem; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.rc-soon-desc { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem; font-size: 0.7rem; font-weight: 600; color: var(--rc-text-2); margin: 0 0 0.7rem; line-height: 1.35; }
 
-.rc-soon-status { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.7rem; }
+.rc-soon-status { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.6rem; font-size: 0.9em; }
 
 .rc-soon-price-row { display: flex; gap: 0.6rem; margin-top: auto; }
-.rc-soon-price-box { flex: 1; text-align: center; padding: 0.55rem 0.3rem; border-radius: 0.7rem; background: rgba(255,255,255,.07); }
+.rc-soon-price-box { flex: 1; text-align: center; padding: 0.45rem 0.25rem; border-radius: 0.6rem; background: rgba(255,255,255,.07); }
 [data-theme="light"] .rc-soon-price-box { background: #00000010; }
-.rc-soon-price-box .rc-price-label { display: block; font-size: 0.62rem; font-weight: 700; color: var(--rc-text-2); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 0.15rem; }
-.rc-soon-price-box .rc-price-value { font-size: 1.1rem; font-weight: 800; color: var(--rc-text); }
+.rc-soon-price-box .rc-price-label { display: block; font-size: 0.56rem; font-weight: 700; color: var(--rc-text-2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 0.1rem; }
+.rc-soon-price-box .rc-price-value { font-size: 0.94rem; font-weight: 800; color: var(--rc-text); }
 
 /* badges */
 .rc-badge {
@@ -867,7 +867,7 @@
 
 @media (max-width: 640px) {
   .rc-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-  .rc-soon-card { flex-basis: 78vw; max-width: 300px; }
+  .rc-soon-card { flex-basis: 68vw; max-width: 240px; }
 }
 
 /* testimonials */

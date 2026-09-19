@@ -30,7 +30,7 @@ body > .footer { flex: none; }
   margin-right: auto;
   margin-top: 2.5rem;
 }
-.rc-account-wrap.rc-account-wide { max-width: 900px; }
+.rc-account-wrap.rc-account-wide { max-width: 1400px; }
 @media (max-width: 480px) {
   .rc-account-wrap { margin-top: 1.5rem; }
 }
@@ -343,44 +343,35 @@ body > .footer { flex: none; }
 .rc-rental-cover-wrap { position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden; }
 .rc-rental-cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; background: #1c1e28; }
 
-/* The big, hard-to-miss "days left" focal point. Sits on top of the cover
-   art so it reads first, before title/tags -- per the owner's "more bigger
-   better X days left" note. */
-.rc-rental-days-badge {
-  position: absolute;
-  right: 0.75rem;
-  bottom: 0.75rem;
+/* The big, hard-to-miss "days left" focal point -- plain text below the
+   cover, not a badge overlaid on it (per owner feedback: it read as part of
+   the artwork before, not as data). No background/border/padding -- just a
+   large number and a small label, sitting between the cover and the body. */
+.rc-rental-days-plain {
+  margin: 0.6rem 0 0;
+  padding: 0 1.25rem;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgba(10, 10, 15, 0.82);
-  backdrop-filter: blur(4px);
-  border-radius: 0.9rem;
-  padding: 0.5rem 0.9rem;
-  min-width: 4.6rem;
-  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, .5);
+  align-items: baseline;
+  gap: 0.4rem;
 }
 .rc-rental-days-num {
   font-family: var(--_typography---font-family--headers);
   font-size: 1.9rem;
   font-weight: 400;
   line-height: 1;
-  color: #fff;
+  color: var(--rc-text);
 }
 .rc-rental-days-label {
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #ffffffcc;
-  text-align: center;
-  margin-top: 0.15rem;
+  color: var(--rc-text-2);
 }
-.rc-rental-days-badge.is-urgent { background: var(--rc-red); }
-.rc-rental-days-badge.is-urgent .rc-rental-days-label { color: #fff; }
-.rc-rental-days-badge.is-ended { background: rgba(20, 20, 24, 0.82); }
-.rc-rental-days-badge.is-ended .rc-rental-days-num { font-size: 1.15rem; font-weight: 700; }
+.rc-rental-days-plain.is-urgent .rc-rental-days-num,
+.rc-rental-days-plain.is-urgent .rc-rental-days-label { color: var(--rc-red); }
+.rc-rental-days-plain.is-ended .rc-rental-days-num { font-size: 1.15rem; font-weight: 700; color: var(--rc-text-2); }
+.rc-rental-days-plain.is-ended .rc-rental-days-label { color: var(--rc-text-3); }
 
 .rc-rental-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.55rem; padding: 1.1rem 1.25rem 1.25rem; }
 .rc-rental-title { font-size: 1.15rem; font-weight: 700; margin: 0; color: var(--rc-text); }
