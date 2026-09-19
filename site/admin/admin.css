@@ -121,14 +121,57 @@ a { color: inherit; }
 
 .a-table-wrap { width: 100%; overflow-x: auto; }
 table.a-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
-table.a-table th, table.a-table td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--a-border); vertical-align: middle; white-space: nowrap; }
-table.a-table td.a-actions-cell { white-space: normal; }
-/* Normal-case header, still distinct via weight/color/size instead of caps. */
-table.a-table th { color: var(--a-text-2); font-weight: 700; font-size: 0.7rem; letter-spacing: .01em; }
+/* overflow:hidden here is what keeps a manually-narrowed column (see the
+   resize handle below) clipping its own nowrap content instead of visually
+   bleeding into the next column once table-layout switches to fixed --
+   .a-actions-cell opts back out since its 3-dot menu popup (.a-menu-list,
+   position:fixed) must never be clipped by its own cell. */
+table.a-table th, table.a-table td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--a-border); vertical-align: middle; white-space: nowrap; overflow: hidden; }
+table.a-table td.a-actions-cell { white-space: normal; overflow: visible; }
+/* Normal-case header, still distinct via weight/color/size instead of caps.
+   position:relative anchors each header's .a-col-resize-handle (absolutely
+   positioned, added by makeTableResizable() in dashboard.js). */
+table.a-table th { color: var(--a-text-2); font-weight: 700; font-size: 0.7rem; letter-spacing: .01em; position: relative; }
 table.a-table tbody tr { transition: background-color .1s; }
 table.a-table tbody tr:hover { background: rgba(0,0,0,.025); }
 table.a-table tbody tr:last-child td { border-bottom: none; }
 .a-empty { color: var(--a-text-3); padding: 1.5rem 0; text-align: center; font-size: 0.8125rem; }
+
+/* Notes column (Rentals/Reservations/History) -- the owner explicitly said
+   it's fine if a long note doesn't show in full; max-width caps the column
+   so one long note can't stretch the whole row, and the ellipsis-truncated
+   text still carries the full note via a native title="" tooltip (see
+   dashboard.js) for anyone who needs to read it in full. */
+th.a-notes-th, td.a-notes-cell { max-width: 14ch; }
+td.a-notes-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Generic per-column resize handle -- one thin hit target on the right
+   edge of every <th>, added by makeTableResizable() in dashboard.js and
+   shared by all nine .a-table tables rather than a bespoke per-table
+   implementation. */
+.a-col-resize-handle { position: absolute; top: 0; right: 0; width: 6px; height: 100%; cursor: col-resize; z-index: 5; }
+.a-col-resize-handle:hover { background: rgba(0,113,227,.25); }
+body.a-col-resizing { cursor: col-resize; user-select: none; }
+/* table-layout:fixed here works together with the inline `width` that
+   makeTableResizable()/updateTableWidth() set on the table itself in
+   dashboard.js (an inline style always wins over table.a-table's own
+   width:100% above, regardless of selector specificity). Without that
+   explicit inline width, a fixed-layout table left at width:100% gets
+   every column rescaled proportionally the instant one column's own
+   width changes (to keep the total at exactly 100%), which would visibly
+   squeeze every other column on a drag instead of resizing just the one
+   being dragged; growing past the card's width instead spills into the
+   existing .a-table-wrap{overflow-x:auto} scroll area, same as any other
+   resizable table. */
+table.a-table.a-table-resizable { table-layout: fixed; }
+
+/* Click-to-sort header affordance -- subtle triangle, no new color, in
+   keeping with the table's normal-case/no-shouting header style. Added by
+   wireTableSort() in dashboard.js to every th[data-sort-key]. */
+table.a-table th.a-sortable-th { cursor: pointer; }
+table.a-table th.a-sortable-th:hover { color: var(--a-text); }
+table.a-table th.a-sort-asc::after { content: "\25B2"; margin-left: 0.3em; font-size: 0.65em; }
+table.a-table th.a-sort-desc::after { content: "\25BC"; margin-left: 0.3em; font-size: 0.65em; }
 
 /* Normal-case pill text: text-transform:capitalize (never :uppercase) just
    upper-cases the first letter of each word -- e.g. a raw "active"/"paid"
