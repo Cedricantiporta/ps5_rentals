@@ -3,7 +3,7 @@
 
   var supabase = window.rcSupabase;
   var state = {
-    games: [], renters: [], rentals: [], requests: [], swapFromRental: null, activeRequestId: null,
+    games: [], renters: [], rentals: [], swapFromRental: null,
     amountManuallyEdited: false, rentalsFilter: 'all', rentalsSearch: '', gamesSortByRented: false,
     rentersFilter: 'all', mergeRemoveId: null,
     // Self-serve rent flow additions (RENT-FLOW-CONTRACT.md / CONTRACT-AMENDMENT-1.md).
@@ -15,8 +15,107 @@
   };
 
   function $(id) { return document.getElementById(id); }
+
+  // ---- generic modal system (replaces every native alert()/confirm()/
+  // prompt() with a styled modal that matches the rest of the app, instead
+  // of the browser's own native dialog box). Built fresh here rather than
+  // tied to any one #panel-*, since it's used from all over the dashboard --
+  // markup is injected into <body> once, on first use, and reused after
+  // that. Same visual language as the existing .a-modal-backdrop /
+  // .a-modal-card pattern (see admin.css), just a smaller generic card. ----
+  var gm = { resolve: null, mode: null };
+  function ensureGenericModalDom() {
+    if ($('genericModalBackdrop')) return;
+    var host = document.createElement('div');
+    host.innerHTML =
+      '<div class="a-modal-backdrop" id="genericModalBackdrop" hidden></div>' +
+      '<div class="a-card a-modal-card a-generic-modal" id="genericModal" hidden>' +
+        '<p class="a-generic-modal-msg" id="genericModalMsg"></p>' +
+        '<div class="a-field" id="genericModalInputWrap" style="display:none;"><input type="text" id="genericModalInput"></div>' +
+        '<div class="a-generic-modal-actions">' +
+          '<button type="button" class="a-btn" id="genericModalCancelBtn">Cancel</button>' +
+          '<button type="button" class="a-btn a-btn-primary" id="genericModalOkBtn">OK</button>' +
+        '</div>' +
+      '</div>';
+    while (host.firstChild) document.body.appendChild(host.firstChild);
+
+    $('genericModalBackdrop').addEventListener('click', function () { finishGenericModal(false); });
+    $('genericModalCancelBtn').addEventListener('click', function () { finishGenericModal(false); });
+    $('genericModalOkBtn').addEventListener('click', function () { finishGenericModal(true); });
+    $('genericModalInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); finishGenericModal(true); }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !$('genericModal').hidden) finishGenericModal(false);
+    });
+  }
+  function finishGenericModal(accepted) {
+    if (!gm.resolve) return; // nothing open (or already resolved) -- ignore
+    var mode = gm.mode;
+    var resolve = gm.resolve;
+    gm.resolve = null;
+    gm.mode = null;
+    $('genericModalBackdrop').hidden = true;
+    $('genericModal').hidden = true;
+    if (mode === 'alert') { resolve(true); return; }
+    if (mode === 'confirm') { resolve(!!accepted); return; }
+    // mode === 'prompt': mirror native prompt()'s null-on-cancel contract.
+    resolve(accepted ? $('genericModalInput').value : null);
+  }
+  function openGenericModal(mode, message, opts) {
+    ensureGenericModalDom();
+    opts = opts || {};
+    gm.mode = mode;
+    var msgEl = $('genericModalMsg');
+    msgEl.textContent = message; // .a-generic-modal-msg has white-space:pre-line, so \n still breaks lines
+    var inputWrap = $('genericModalInputWrap');
+    var input = $('genericModalInput');
+    var cancelBtn = $('genericModalCancelBtn');
+    var okBtn = $('genericModalOkBtn');
+    okBtn.className = 'a-btn ' + (opts.danger ? 'a-btn-red' : 'a-btn-primary');
+    okBtn.textContent = opts.okLabel || (mode === 'alert' ? 'OK' : 'Confirm');
+    cancelBtn.textContent = opts.cancelLabel || 'Cancel';
+    cancelBtn.hidden = mode === 'alert';
+    // .a-field sets display:flex unconditionally, which beats the [hidden]
+    // attribute's UA display:none at equal specificity -- toggle inline
+    // style instead (same reason the rest of the app uses style.display for
+    // .a-field visibility, e.g. toggleNewRenterFields, rather than .hidden).
+    if (mode === 'prompt') {
+      inputWrap.style.display = '';
+      input.type = opts.inputType || 'text';
+      input.value = opts.defaultValue != null ? opts.defaultValue : '';
+      input.placeholder = opts.placeholder || '';
+    } else {
+      inputWrap.style.display = 'none';
+    }
+    $('genericModalBackdrop').hidden = false;
+    $('genericModal').hidden = false;
+    // Focus the input (prompt) or the primary action (alert/confirm) --
+    // not a full focus trap, but Tab still cycles between Cancel/OK/input
+    // since they're the only focusable elements in the modal.
+    setTimeout(function () {
+      if (mode === 'prompt') { input.focus(); input.select(); } else { okBtn.focus(); }
+    }, 0);
+    return new Promise(function (resolve) { gm.resolve = resolve; });
+  }
+  // showAlert(message, opts) -- one message, one OK button.
+  function showAlert(message, opts) { return openGenericModal('alert', message, opts); }
+  // showConfirm(message, opts) -- Cancel/Confirm (or opts.okLabel, e.g.
+  // "Decline"), opts.danger for a destructive action's red confirm button.
+  // Returns a Promise<boolean>.
+  function showConfirm(message, opts) { return openGenericModal('confirm', message, opts); }
+  // showPrompt(message, opts) -- Cancel/OK plus a text input. opts.defaultValue,
+  // opts.placeholder, opts.inputType. Resolves with the string entered, or
+  // null on cancel (matches native prompt()'s contract exactly).
+  function showPrompt(message, opts) { return openGenericModal('prompt', message, opts); }
+
   var MESSENGER_ICON = '<svg class="a-msg-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" title="Has a Messenger link"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
   function messengerIcon(url) { return url ? MESSENGER_ICON : ''; }
+  // Inline "copy" / "copied" icons for icon-only copy buttons (no external
+  // icon library -- same house style as MESSENGER_ICON above: lucide-style
+  // 24x24 viewBox, currentColor stroke).
+  var COPY_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+  var CHECK_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>';
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function todayISO() { return new Date().toISOString().slice(0, 10); }
   function addDaysISO(iso, days) {
@@ -79,7 +178,6 @@
     pending: { title: 'Pending Payments', desc: 'Self-serve rentals awaiting GCash confirmation -- the main admin queue.' },
     swaps: { title: 'Swap Requests', desc: 'Customer-submitted game swaps waiting for approval.' },
     overview: { title: 'Overview', desc: 'Snapshot of revenue, active rentals, and renters.' },
-    requests: { title: 'Legacy Requests', desc: 'Historical rental requests from before the self-serve flow, waiting to be matched.' },
     rentals: { title: 'Rentals', desc: 'Every rental -- active, pending, and past.' },
     renters: { title: 'Renters', desc: 'Renter profiles, Messenger links, and lifetime spend.' },
     games: { title: 'Games', desc: 'Live catalog status -- changes here go out to the public site immediately.' },
@@ -108,6 +206,7 @@
     tab.addEventListener('click', function () {
       closeNewRentalModal();
       closeAddGameModal();
+      closeAddRenterModal();
       Array.prototype.forEach.call(document.querySelectorAll('.a-tab'), function (t) { t.classList.remove('is-active'); });
       Array.prototype.forEach.call(document.querySelectorAll('.a-panel'), function (p) { p.classList.remove('is-active'); });
       tab.classList.add('is-active');
@@ -116,8 +215,8 @@
     });
   });
 
-  // ---- New Rental as a popup (used by Legacy Requests' "Use this" so
-  // the admin doesn't lose their place on that tab) ----
+  // ---- New Rental as a popup (opened from the Rentals tab's "+ New
+  // Rental" button, or pre-filled by Swap Game) ----
   function openNewRentalModal() {
     $('panel-new-rental').classList.add('is-modal-open');
     $('newRentalBackdrop').hidden = false;
@@ -127,7 +226,6 @@
     $('panel-new-rental').classList.remove('is-modal-open');
     $('newRentalBackdrop').hidden = true;
     $('closeNewRentalModalBtn').hidden = true;
-    state.activeRequestId = null;
   }
   $('newRentalBackdrop').addEventListener('click', closeNewRentalModal);
   $('closeNewRentalModalBtn').addEventListener('click', closeNewRentalModal);
@@ -152,6 +250,22 @@
   $('closeAddGameModalBtn').addEventListener('click', closeAddGameModal);
   $('openAddGameBtn').addEventListener('click', openAddGameModal);
 
+  // ---- Add Renter as a popup (same modal pattern as Add Game -- moved off
+  // the Renters panel body into a modal opened from a button) ----
+  function openAddRenterModal() {
+    $('panel-add-renter').classList.add('is-modal-open');
+    $('addRenterBackdrop').hidden = false;
+    $('closeAddRenterModalBtn').hidden = false;
+  }
+  function closeAddRenterModal() {
+    $('panel-add-renter').classList.remove('is-modal-open');
+    $('addRenterBackdrop').hidden = true;
+    $('closeAddRenterModalBtn').hidden = true;
+  }
+  $('addRenterBackdrop').addEventListener('click', closeAddRenterModal);
+  $('closeAddRenterModalBtn').addEventListener('click', closeAddRenterModal);
+  $('openAddRenterBtn').addEventListener('click', openAddRenterModal);
+
   $('signOutBtn').addEventListener('click', function () { window.rcSignOut(); });
 
   // ---- data loading ----
@@ -170,7 +284,6 @@
       // loadGames() before -- see the comment there). '*' always works
       // regardless of which columns exist.
       supabase.from('rentals').select('*, games(*), renters(*)').order('created_at', { ascending: false }),
-      supabase.from('rental_requests').select('*').eq('handled', false).order('created_at', { ascending: false }),
       // `settings` (migration_14) and `swap_requests` (migration_16,
       // CONTRACT-AMENDMENT-1.md) may not exist in the live DB at all yet --
       // a query against a table that doesn't exist resolves with
@@ -184,14 +297,13 @@
       state.games = (results[0].data || []);
       state.renters = (results[1].data || []);
       state.rentals = (results[2].data || []);
-      state.requests = (results[3].data || []);
 
-      var settingsRes = results[4];
+      var settingsRes = results[3];
       state.settingsAvailable = !settingsRes.error;
       state.settings = {};
       (settingsRes.data || []).forEach(function (row) { state.settings[row.key] = row.value; });
 
-      var swapReqRes = results[5];
+      var swapReqRes = results[4];
       state.swapRequestsAvailable = !swapReqRes.error;
       state.swapRequests = swapReqRes.data || [];
 
@@ -200,7 +312,6 @@
       renderRentals();
       renderRenters();
       renderGames();
-      renderRequests();
       renderOverview();
       renderSettings();
       populateRenterSelect();
@@ -234,7 +345,6 @@
     $('statActiveCount').textContent = activeCount;
     $('statEndingSoon').textContent = endingSoon.length + ' ending in 2 days';
     $('statRenterCount').textContent = state.renters.length;
-    $('statRequestCount').textContent = state.requests.length + ' new request' + (state.requests.length === 1 ? '' : 's');
 
     var tbody = document.querySelector('#endingSoonTable tbody');
     tbody.innerHTML = '';
@@ -277,6 +387,23 @@
     } catch (e) { /* clipboard unsupported -- nothing more we can do */ }
   }
   function flashCopied(btn) {
+    // Icon-only buttons (e.g. the copy-message button) give feedback by
+    // briefly swapping their icon for a checkmark instead of replacing
+    // text that isn't there; text buttons (e.g. the ref-code button) keep
+    // the original "Copied!" text swap.
+    if (btn.classList.contains('a-icon-btn')) {
+      var originalTitle = btn.getAttribute('title');
+      var originalHtml = btn.innerHTML;
+      btn.innerHTML = CHECK_ICON;
+      btn.classList.add('is-copied');
+      btn.setAttribute('title', 'Copied!');
+      setTimeout(function () {
+        btn.innerHTML = originalHtml;
+        btn.classList.remove('is-copied');
+        if (originalTitle != null) btn.setAttribute('title', originalTitle);
+      }, 1200);
+      return;
+    }
     var original = btn.textContent;
     btn.textContent = 'Copied!';
     setTimeout(function () { btn.textContent = original; }, 1200);
@@ -319,7 +446,7 @@
     var msg = publicCodeMessage(code);
     return '<span class="a-code-actions">' +
       '<button type="button" class="a-refcode-btn" data-copy="' + esc(code) + '" title="Click to copy the code">' + esc(code) + '</button>' +
-      '<button type="button" class="a-link-btn a-copy-msg-btn" data-copy-msg="' + esc(msg) + '" title="Copy a ready-to-paste Messenger message">Copy message</button>' +
+      '<button type="button" class="a-icon-btn a-copy-msg-btn" data-copy-msg="' + esc(msg) + '" title="Copy a ready-to-paste Messenger message with this code">' + COPY_ICON + '</button>' +
       '</span>';
   }
   function timeSinceLabel(iso) {
@@ -420,41 +547,43 @@
   }
 
   function confirmPending(rental) {
-    var input = window.prompt('GCash reference number (optional -- leave blank and click OK to skip):', rental.gcash_ref || '');
-    if (input === null) return; // admin cancelled -- do nothing
-    var patch = { status: 'active', payment_status: 'paid' };
-    // hold_expires_at only exists once migration_14 has run -- guard with
-    // hasOwnProperty (present as an explicit key, even when null, whenever
-    // the column exists) rather than assuming it's there, same reasoning
-    // as the select-side guidance: an unknown column in the update payload
-    // 400s the whole request just as badly as one in a filter.
-    if (Object.prototype.hasOwnProperty.call(rental, 'hold_expires_at')) patch.hold_expires_at = null;
-    var ref = input.trim();
-    if (ref) patch.gcash_ref = ref;
-    // IMPORTANT: do NOT touch games.*_available/*_available_at here. The
-    // slot was already soft-held (flipped unavailable) the moment
-    // create_rental_hold created this pending row -- flipping it again on
-    // confirm would be a second, redundant "close" that has no matching
-    // "open" and desyncs the slot from reality the next time this rental
-    // legitimately frees up. Confirming payment only changes the rental's
-    // own status/payment_status.
-    supabase.from('rentals').update(patch).eq('id', rental.id).then(function (res) {
-      if (res.error) { alert(res.error.message); return; }
-      loadAll();
+    showPrompt('GCash reference number (optional -- leave blank and click OK to skip):', { defaultValue: rental.gcash_ref || '' }).then(function (input) {
+      if (input === null) return; // admin cancelled -- do nothing
+      var patch = { status: 'active', payment_status: 'paid' };
+      // hold_expires_at only exists once migration_14 has run -- guard with
+      // hasOwnProperty (present as an explicit key, even when null, whenever
+      // the column exists) rather than assuming it's there, same reasoning
+      // as the select-side guidance: an unknown column in the update payload
+      // 400s the whole request just as badly as one in a filter.
+      if (Object.prototype.hasOwnProperty.call(rental, 'hold_expires_at')) patch.hold_expires_at = null;
+      var ref = input.trim();
+      if (ref) patch.gcash_ref = ref;
+      // IMPORTANT: do NOT touch games.*_available/*_available_at here. The
+      // slot was already soft-held (flipped unavailable) the moment
+      // create_rental_hold created this pending row -- flipping it again on
+      // confirm would be a second, redundant "close" that has no matching
+      // "open" and desyncs the slot from reality the next time this rental
+      // legitimately frees up. Confirming payment only changes the rental's
+      // own status/payment_status.
+      supabase.from('rentals').update(patch).eq('id', rental.id).then(function (res) {
+        if (res.error) { showAlert(res.error.message); return; }
+        loadAll();
+      });
     });
   }
 
   function declinePending(rental) {
-    var ok = window.confirm('Decline this pending payment and free the slot? This cannot be undone from here.');
-    if (!ok) return;
-    supabase.from('rentals').update({ status: 'cancelled' }).eq('id', rental.id).then(function (res) {
-      if (res.error) { alert(res.error.message); return; }
-      // Declining is the one case where we DO free the slot -- nobody is
-      // going to pay for it, so the hold this pending row was placed on
-      // needs to be released back to the public site.
-      setGameSlotAvailable(rental.game_id, rental.slot, true).then(function (res2) {
-        if (res2.error) { alert(res2.error.message); return; }
-        loadAll();
+    showConfirm('Decline this pending payment and free the slot? This cannot be undone from here.', { okLabel: 'Decline', danger: true }).then(function (ok) {
+      if (!ok) return;
+      supabase.from('rentals').update({ status: 'cancelled' }).eq('id', rental.id).then(function (res) {
+        if (res.error) { showAlert(res.error.message); return; }
+        // Declining is the one case where we DO free the slot -- nobody is
+        // going to pay for it, so the hold this pending row was placed on
+        // needs to be released back to the public site.
+        setGameSlotAvailable(rental.game_id, rental.slot, true).then(function (res2) {
+          if (res2.error) { showAlert(res2.error.message); return; }
+          loadAll();
+        });
       });
     });
   }
@@ -548,23 +677,26 @@
     return null;
   }
   function approveSwapRequest(req) {
-    var note = window.prompt('Optional note for this approval (leave blank and press OK to skip):', '');
-    if (note === null) return;
-    supabase.rpc('approve_swap_request', { p_id: req.id, p_note: note.trim() || null }).then(function (res) {
-      var err = swapRpcResultError(res);
-      if (err) { alert(err); return; }
-      loadAll();
+    showPrompt('Optional note for this approval (leave blank and press OK to skip):', { defaultValue: '' }).then(function (note) {
+      if (note === null) return;
+      supabase.rpc('approve_swap_request', { p_id: req.id, p_note: note.trim() || null }).then(function (res) {
+        var err = swapRpcResultError(res);
+        if (err) { showAlert(err); return; }
+        loadAll();
+      });
     });
   }
   function declineSwapRequest(req) {
-    var ok = window.confirm('Decline this swap request and release the held slot back to the public site?');
-    if (!ok) return;
-    var note = window.prompt('Optional note for this decline (leave blank and press OK to skip):', '');
-    if (note === null) return;
-    supabase.rpc('decline_swap_request', { p_id: req.id, p_note: note.trim() || null }).then(function (res) {
-      var err = swapRpcResultError(res);
-      if (err) { alert(err); return; }
-      loadAll();
+    showConfirm('Decline this swap request and release the held slot back to the public site?', { okLabel: 'Decline', danger: true }).then(function (ok) {
+      if (!ok) return;
+      showPrompt('Optional note for this decline (leave blank and press OK to skip):', { defaultValue: '' }).then(function (note) {
+        if (note === null) return;
+        supabase.rpc('decline_swap_request', { p_id: req.id, p_note: note.trim() || null }).then(function (res) {
+          var err = swapRpcResultError(res);
+          if (err) { showAlert(err); return; }
+          loadAll();
+        });
+      });
     });
   }
   document.querySelector('#swapsTable tbody').addEventListener('click', function (e) {
@@ -596,114 +728,6 @@
     if (!sr || !sr.handled_at) return false;
     return (Date.now() - new Date(sr.handled_at).getTime()) / 3600000 < 24;
   }
-
-  // ---- incoming requests tab ----
-  // rental_requests.renter_id doesn't exist in the live DB until
-  // migration_13_request_identity.sql is applied -- req.renter_id is simply
-  // undefined until then, which this treats identically to "anonymous", so
-  // the existing flow keeps working with zero visual change until the
-  // column is live.
-  function resolveRequester(req) {
-    var renterId = req.renter_id;
-    if (renterId == null) {
-      return '<span class="a-pill a-pill-anon" title="No linked account -- match this to a renter manually">Anonymous</span>';
-    }
-    var renter = state.renters.filter(function (r) { return r.id === renterId; })[0];
-    if (!renter) {
-      return '<span class="a-pill a-pill-anon" title="Linked renter id not found in Renters">Unknown renter</span>';
-    }
-    return esc(renter.name) + ' <span class="a-pill a-pill-linked" title="Signed-in customer account">Linked</span>';
-  }
-  function renderRequests() {
-    var tbody = document.querySelector('#requestsTable tbody');
-    tbody.innerHTML = '';
-    $('requestsEmpty').hidden = state.requests.length > 0;
-    var badge = $('requestsBadge');
-    badge.textContent = state.requests.length ? '(' + state.requests.length + ')' : '';
-    state.requests.forEach(function (req) {
-      var tr = document.createElement('tr');
-      var when = new Date(req.created_at);
-      tr.innerHTML =
-        '<td>' + esc(req.game_title) + '</td>' +
-        '<td>' + resolveRequester(req) + '</td>' +
-        '<td>' + (req.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + '</td>' +
-        '<td>' + esc(req.plan || '—') + '</td>' +
-        '<td>' + (req.amount != null ? '₱' + req.amount : '—') + '</td>' +
-        '<td>' + when.toLocaleString() + '</td>' +
-        '<td class="a-actions-cell">' + actionsMenu(
-          '<button type="button" class="a-menu-item" data-action="use" data-id="' + req.id + '">Use this</button>' +
-          '<button type="button" class="a-menu-item" data-action="dismiss" data-id="' + req.id + '">Dismiss</button>'
-        ) + '</td>';
-      tbody.appendChild(tr);
-    });
-    // Legacy Requests is historical-only now (new requests land straight in
-    // Pending Payments as real `rentals` rows) -- once there is nothing
-    // left in the old inbox, collapse the nav tab so it stops adding noise.
-    // If it was the active tab when it emptied out, fall back to Pending
-    // Payments instead of leaving the admin on a hidden tab.
-    var requestsTab = document.querySelector('.a-tab[data-tab="requests"]');
-    var wasActiveAndNowEmpty = state.requests.length === 0 && requestsTab.classList.contains('is-active');
-    requestsTab.hidden = state.requests.length === 0;
-    if (wasActiveAndNowEmpty) document.querySelector('.a-tab[data-tab="pending"]').click();
-  }
-
-  document.querySelector('#requestsTable tbody').addEventListener('click', function (e) {
-    var btn = e.target.closest('button[data-action]');
-    if (!btn) return;
-    var id = Number(btn.getAttribute('data-id'));
-    var req = state.requests.filter(function (r) { return r.id === id; })[0];
-    if (!req) return;
-    if (btn.getAttribute('data-action') === 'dismiss') {
-      supabase.from('rental_requests').update({ handled: true }).eq('id', id).then(loadAll);
-      return;
-    }
-    // "Use this": jump to New Rental with game/slot/plan pre-filled. Clear
-    // any leftover swap state first (mirrors openBlankNewRentalBtn) so a
-    // stale disabled renterSelect from a previous swap/request can't bleed
-    // into this one.
-    cancelSwap();
-    var match = state.games.filter(function (g) { return g.slug === req.game_slug; })[0];
-    if (match) {
-      $('gameSearch').value = match.title;
-      $('gameSelect').value = match.id;
-    }
-    $('slotSelect').value = req.slot;
-    if (req.plan) $('planSelect').value = req.plan;
-    updateSlotHintAndAmount();
-    applyRequestRenter(req);
-    // Only marked handled once the rental is actually created (see the
-    // newRentalForm submit handler) -- closing the popup without finishing
-    // should leave the request in the list.
-    state.activeRequestId = id;
-    openNewRentalModal();
-  });
-
-  // Pre-attaches the request's renter (when it has one) so approving it
-  // can't silently spawn a second, unlinked renter -- the exact failure
-  // mode migration_13 exists to close off. Locked by default (like
-  // startSwap's precedent) but with an explicit override, because real
-  // cases exist where the linked account is wrong (customer confusion,
-  // shared device) and the admin needs an escape hatch rather than being
-  // stuck re-typing everything into a brand-new request.
-  function applyRequestRenter(req) {
-    var hint = $('requestRenterHint');
-    if (req.renter_id == null) { hint.hidden = true; return; }
-    var renter = state.renters.filter(function (r) { return r.id === req.renter_id; })[0];
-    if (!renter) { hint.hidden = true; return; }
-    populateRenterSelect();
-    $('renterSelect').value = String(renter.id);
-    $('renterSelect').disabled = true;
-    toggleNewRenterFields();
-    hint.innerHTML = 'This request came from <strong>' + esc(renter.name) + '</strong>&rsquo;s account -- renter ' +
-      'locked in to keep this rental attached to it. <button type="button" class="a-link-btn" id="overrideRequestRenterBtn">Use a different renter</button>';
-    hint.hidden = false;
-  }
-  $('panel-new-rental').addEventListener('click', function (e) {
-    if (!e.target || e.target.id !== 'overrideRequestRenterBtn') return;
-    $('renterSelect').disabled = false;
-    toggleNewRenterFields();
-    $('requestRenterHint').hidden = true;
-  });
 
   // ---- rentals tab ----
   function statusPill(status) {
@@ -868,7 +892,7 @@
         '<td>' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + '</td>' +
         '<td>' + (r.plan === 'weekly' ? 'Weekly' : 'Monthly') + ' (₱<span data-amount-display>' + r.amount + '</span>' +
           ' <button type="button" class="a-edit-amount" data-action="edit-amount" data-id="' + r.id + '" title="Edit amount">✎</button>)</td>' +
-        '<td>' + (r.status === 'ended' && wasSwapped(r.id) ? '<span class="a-pill a-pill-swap">SWAPPED</span>' : statusPill(r.status)) + '</td>' +
+        '<td>' + (r.status === 'ended' && wasSwapped(r.id) ? '<span class="a-pill a-pill-swap">Swapped</span>' : statusPill(r.status)) + '</td>' +
         '<td>' + paymentPill(r.payment_status) + '</td>' +
         // Still in the queue -- start/end aren't real yet (they only
         // become meaningful once activated), so don't show a countdown
@@ -896,11 +920,14 @@
             var ren = state.renters.filter(function (x) { return x.id === r.renter_id; })[0];
             return '#' + r.queue_position + ' (' + (ren ? ren.name : 'unknown') + ')';
           }).join(', ');
-          var ok = window.confirm(
+          showConfirm(
             'This renter is #' + rental.queue_position + ' in the queue for this slot -- ' + aheadNames +
             ' is still ahead of them and hasn\'t been activated or cancelled yet. Activate this one anyway?'
-          );
-          if (!ok) return;
+          ).then(function (ok) {
+            if (!ok) return;
+            activateRental(rental);
+          });
+          return;
         }
       }
       activateRental(rental);
@@ -909,18 +936,21 @@
     else if (action === 'end') setRentalStatus(rental, 'ended', true);
     else if (action === 'end-override') {
       var left = daysLeft(rental.end_date);
-      var ok = window.confirm(
-        'This rental still has ' + left + ' day' + (left === 1 ? '' : 's') + ' remaining. End it early anyway?'
-      );
-      if (ok) setRentalStatus(rental, 'ended', true);
+      showConfirm(
+        'This rental still has ' + left + ' day' + (left === 1 ? '' : 's') + ' remaining. End it early anyway?',
+        { okLabel: 'End Early', danger: true }
+      ).then(function (ok) {
+        if (ok) setRentalStatus(rental, 'ended', true);
+      });
     } else if (action === 'edit-amount') {
-      var input = window.prompt('Amount actually paid (₱) for this rental:', rental.amount);
-      if (input === null) return;
-      var newAmount = Number(input);
-      if (!(newAmount >= 0)) { alert('Enter a valid non-negative number.'); return; }
-      supabase.from('rentals').update({ amount: newAmount }).eq('id', id).then(function (res) {
-        if (res.error) { alert(res.error.message); return; }
-        loadAll();
+      showPrompt('Amount actually paid (₱) for this rental:', { defaultValue: rental.amount, inputType: 'number' }).then(function (input) {
+        if (input === null) return;
+        var newAmount = Number(input);
+        if (!(newAmount >= 0)) { showAlert('Enter a valid non-negative number.'); return; }
+        supabase.from('rentals').update({ amount: newAmount }).eq('id', id).then(function (res) {
+          if (res.error) { showAlert(res.error.message); return; }
+          loadAll();
+        });
       });
     } else if (action === 'swap') {
       startSwap(rental);
@@ -930,10 +960,10 @@
         var g = r.games || {};
         return (i + 1) + '. ' + (g.title || 'Unknown') + ' (' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ')' + (i === chain.length - 1 ? ' -- current' : '');
       });
-      window.alert('Swap history for this rental (' + (chain.length - 1) + ' swap' + (chain.length - 1 === 1 ? '' : 's') + '):\n\n' + lines.join('\n'));
+      showAlert('Swap history for this rental (' + (chain.length - 1) + ' swap' + (chain.length - 1 === 1 ? '' : 's') + '):\n\n' + lines.join('\n'));
     } else if (action === 'confirm-payment') {
       supabase.from('rentals').update({ payment_status: 'paid' }).eq('id', id).then(function (res) {
-        if (res.error) { alert(res.error.message); return; }
+        if (res.error) { showAlert(res.error.message); return; }
         loadAll();
       });
     }
@@ -952,11 +982,11 @@
     supabase.from('rentals').update({
       status: 'active', payment_status: 'paid', start_date: start, end_date: end
     }).eq('id', rental.id).then(function (res) {
-      if (res.error) { alert(res.error.message); return; }
+      if (res.error) { showAlert(res.error.message); return; }
       // Slot frees up the day after the rental's end date -- shown on the
       // public site as a "Xd left" countdown instead of a flat FULL.
       return setGameSlotAvailable(rental.game_id, rental.slot, false, addDaysISO(end, 1)).then(function (res2) {
-        if (res2.error) { alert(res2.error.message); return; }
+        if (res2.error) { showAlert(res2.error.message); return; }
         return incrementTimesRented(rental.game_id).then(function () {
           return resolveQueueSlot(rental).then(loadAll);
         });
@@ -966,9 +996,9 @@
 
   function setRentalStatus(rental, status, freeSlot) {
     supabase.from('rentals').update({ status: status }).eq('id', rental.id).then(function (res) {
-      if (res.error) { alert(res.error.message); return; }
+      if (res.error) { showAlert(res.error.message); return; }
       if (freeSlot) return setGameSlotAvailable(rental.game_id, rental.slot, true).then(function (res2) {
-        if (res2.error) { alert(res2.error.message); return; }
+        if (res2.error) { showAlert(res2.error.message); return; }
         return resolveQueueSlot(rental).then(loadAll);
       });
       return resolveQueueSlot(rental).then(loadAll);
@@ -1104,7 +1134,7 @@
       return;
     }
     var available = g[slot + '_available'];
-    hint.textContent = (available ? 'Slot currently open.' : 'Heads up: this slot is currently marked FULL.') +
+    hint.textContent = (available ? 'Slot currently open.' : 'Heads up: this slot is currently marked full.') +
       ' Price on file: ₱' + (price || 0) + '.';
   }
 
@@ -1112,12 +1142,12 @@
   // renter/end-date so the remaining paid time carries over) ----
   function startSwap(rental) {
     if (swapLimitReached(rental)) {
-      alert('This is a Weekly rental -- it already used its 1 included swap.');
+      showAlert('This is a Weekly rental -- it already used its 1 included swap.');
       return;
     }
     var cooldownHours = swapCooldownHoursLeft(rental);
     if (cooldownHours > 0) {
-      alert('This rental started less than 24 hours ago. Swap available in ' + cooldownHours + ' more hour' + (cooldownHours === 1 ? '' : 's') + '.');
+      showAlert('This rental started less than 24 hours ago. Swap available in ' + cooldownHours + ' more hour' + (cooldownHours === 1 ? '' : 's') + '.');
       return;
     }
     var renter = state.renters.filter(function (r) { return r.id === rental.renter_id; })[0];
@@ -1147,10 +1177,8 @@
 
   function cancelSwap() {
     state.swapFromRental = null;
-    state.activeRequestId = null;
     $('swapBanner').hidden = true;
     $('renterSelect').disabled = false;
-    $('requestRenterHint').hidden = true;
     $('newRentalHeading').textContent = 'New rental';
     $('createRentalBtn').textContent = 'Create rental (pending payment)';
     $('newRentalForm').reset();
@@ -1224,16 +1252,9 @@
         if (res2.error) { $('newRentalError').textContent = res2.error.message; return; }
         $('newRentalForm').reset();
         state.amountManuallyEdited = false;
-        var handledRequestId = state.activeRequestId;
-        state.activeRequestId = null;
-        var markHandled = handledRequestId
-          ? supabase.from('rental_requests').update({ handled: true }).eq('id', handledRequestId)
-          : Promise.resolve();
         function goToRentals() { loadAll(); document.querySelector('.a-tab[data-tab="rentals"]').click(); }
-        return markHandled.then(function () {
-          if (isReservation) return syncReservationStatus(g.id, slot).then(goToRentals);
-          goToRentals();
-        });
+        if (isReservation) return syncReservationStatus(g.id, slot).then(goToRentals);
+        goToRentals();
       });
     });
   });
@@ -1346,17 +1367,20 @@
       var uid = Number(unregBtn.getAttribute('data-id'));
       var ur = state.renters.filter(function (r) { return r.id === uid; })[0];
       if (!ur) return;
-      if (!window.confirm(
+      showConfirm(
         'Remove the account registration for ' + ur.name + '?\n\n' +
         'Their rentals, history and tracking code all stay exactly as they are -- ' +
         'only the email login stops being attached to this renter.\n\n' +
         'If they sign up again with the same email they will get a NEW, empty renter ' +
         'row, so use Merge afterwards if that happens. To free the email address ' +
-        'entirely, also delete the user in Supabase: Authentication -> Users.'
-      )) return;
-      supabase.from('renters').update({ auth_user_id: null }).eq('id', uid).then(function (res) {
-        if (res.error) { alert(res.error.message); return; }
-        loadAll();
+        'entirely, also delete the user in Supabase: Authentication -> Users.',
+        { okLabel: 'Remove', danger: true }
+      ).then(function (ok) {
+        if (!ok) return;
+        supabase.from('renters').update({ auth_user_id: null }).eq('id', uid).then(function (res) {
+          if (res.error) { showAlert(res.error.message); return; }
+          loadAll();
+        });
       });
       return;
     }
@@ -1370,13 +1394,15 @@
       var dr = state.renters.filter(function (r) { return r.id === did; })[0];
       if (!dr) return;
       if (renterRentals(did).length) {
-        alert('This renter has rentals, so they cannot be deleted. Merge them into another renter instead.');
+        showAlert('This renter has rentals, so they cannot be deleted. Merge them into another renter instead.');
         return;
       }
-      if (!window.confirm('Permanently delete the renter "' + dr.name + '"? This cannot be undone.')) return;
-      supabase.from('renters').delete().eq('id', did).then(function (res) {
-        if (res.error) { alert(res.error.message); return; }
-        loadAll();
+      showConfirm('Permanently delete the renter "' + dr.name + '"? This cannot be undone.', { okLabel: 'Delete', danger: true }).then(function (ok) {
+        if (!ok) return;
+        supabase.from('renters').delete().eq('id', did).then(function (res) {
+          if (res.error) { showAlert(res.error.message); return; }
+          loadAll();
+        });
       });
       return;
     }
@@ -1386,14 +1412,15 @@
       var id = Number(editBtn.getAttribute('data-id'));
       var renter = state.renters.filter(function (r) { return r.id === id; })[0];
       if (!renter) return;
-      var input = window.prompt(
+      showPrompt(
         'Messenger conversation link for ' + renter.name + ' (paste the URL from your address bar while viewing their thread in Messenger/Business Suite):',
-        renter.messenger_url || 'https://www.facebook.com/messages/t/'
-      );
-      if (input === null) return;
-      supabase.from('renters').update({ messenger_url: input.trim() || null }).eq('id', id).then(function (res) {
-        if (res.error) { alert(res.error.message); return; }
-        loadAll();
+        { defaultValue: renter.messenger_url || 'https://www.facebook.com/messages/t/' }
+      ).then(function (input) {
+        if (input === null) return;
+        supabase.from('renters').update({ messenger_url: input.trim() || null }).eq('id', id).then(function (res) {
+          if (res.error) { showAlert(res.error.message); return; }
+          loadAll();
+        });
       });
       return;
     }
@@ -1480,23 +1507,32 @@
     }).then(function (res) {
       if (res.error) { $('addRenterError').textContent = res.error.message; return; }
       $('addRenterForm').reset();
+      closeAddRenterModal();
       loadAll();
     });
   });
 
   // ---- games tab ----
+  // Display label for a reservation-status/available enum value -- the
+  // underlying value (stored + compared elsewhere) stays the DB's
+  // upper/underscored form (e.g. "PRIORITY_LIST"); only what's shown in the
+  // <option> text is turned into a normal-case label ("Priority list").
+  function enumLabel(o) {
+    var s = String(o).toLowerCase().replace(/_/g, ' ');
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
   function slotControlHtml(g, slot) {
     if (g.status === 'upcoming') {
       var val = g[slot + '_reservation_status'];
       var opts = ['OPEN', 'LIMITED', 'PRIORITY_LIST', 'CLOSED'];
       return '<select data-game="' + g.id + '" data-slot="' + slot + '" data-field="reservation">' +
-        opts.map(function (o) { return '<option value="' + o + '"' + (o === val ? ' selected' : '') + '>' + o.replace('_', ' ') + '</option>'; }).join('') +
+        opts.map(function (o) { return '<option value="' + o + '"' + (o === val ? ' selected' : '') + '>' + enumLabel(o) + '</option>'; }).join('') +
         '</select>';
     }
     var avail = g[slot + '_available'];
     return '<select data-game="' + g.id + '" data-slot="' + slot + '" data-field="available">' +
-      '<option value="true"' + (avail ? ' selected' : '') + '>AVAILABLE</option>' +
-      '<option value="false"' + (!avail ? ' selected' : '') + '>FULL</option>' +
+      '<option value="true"' + (avail ? ' selected' : '') + '>Available</option>' +
+      '<option value="false"' + (!avail ? ' selected' : '') + '>Full</option>' +
       '</select>';
   }
 
@@ -1533,7 +1569,7 @@
       if (sel.value === 'true') patch[slot + '_available_at'] = null;
     } else patch[slot + '_reservation_status'] = sel.value;
     supabase.from('games').update(patch).eq('id', gameId).then(function (res) {
-      if (res.error) alert(res.error.message);
+      if (res.error) showAlert(res.error.message);
       loadAll();
     });
   });
