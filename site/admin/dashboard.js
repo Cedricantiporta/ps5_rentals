@@ -789,17 +789,35 @@
         swapsInfo = used + (limit != null ? ' / ' + limit : '') +
           (limit != null ? ' <span class="a-text-3">(' + Math.max(0, limit - used) + ' left)</span>' : '');
       }
+      // payment_status/price_diff only exist once migration_22 has run --
+      // older swap_requests rows (or a pre-migration_22 database) come back
+      // undefined, which reads as "not_required" (a free/lateral/cheaper
+      // swap) rather than blocking Approve on a column that isn't there.
+      var isUpchargePending = req.payment_status === 'pending';
+      var paymentCell = '<span class="a-text-3">&mdash;</span>';
+      if (isUpchargePending) {
+        paymentCell = '<span class="a-pill a-pill-pending">Unpaid ₱' + (req.price_diff || 0) + '</span>';
+      } else if (req.payment_status === 'paid') {
+        paymentCell = '<span class="a-pill a-pill-paid">Paid ₱' + (req.price_diff || 0) + '</span>';
+      }
+      var approveBtn = isUpchargePending
+        ? '<button type="button" class="a-btn a-btn-green" disabled title="Confirm the ₱' + (req.price_diff || 0) + ' upcharge was received first">Approve</button>'
+        : '<button type="button" class="a-btn a-btn-green" data-action="approve-swap" data-id="' + req.id + '">Approve</button>';
+      var confirmPayBtn = isUpchargePending
+        ? ' <button type="button" class="a-btn" data-action="confirm-swap-payment" data-id="' + req.id + '">Confirm Payment</button>'
+        : '';
       tr.innerHTML =
         '<td>' + esc(renter.name || 'Unknown') + '<br>' + publicCodeCell(renter) + '</td>' +
         '<td>' + esc(fromGame.title || 'Unknown') + ' (' + (req.from_slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ')</td>' +
         '<td>' + esc(toGame.title || 'Unknown') + ' (' + (req.to_slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ')</td>' +
         '<td>' + (rental ? fmtDate(rental.end_date) : '&mdash;') + '</td>' +
         '<td>' + swapsInfo + '</td>' +
+        '<td>' + paymentCell + '</td>' +
         '<td>' + refCode + '</td>' +
         '<td class="a-live-since">--</td>' +
         '<td class="a-live-hold">--</td>' +
         '<td class="a-actions-cell">' +
-          '<button type="button" class="a-btn a-btn-green" data-action="approve-swap" data-id="' + req.id + '">Approve</button> ' +
+          approveBtn + confirmPayBtn + ' ' +
           '<button type="button" class="a-btn a-btn-red" data-action="decline-swap" data-id="' + req.id + '">Decline</button>' +
         '</td>';
       tbody.appendChild(tr);
@@ -844,6 +862,20 @@
       });
     });
   }
+  // Plain column write, not an RPC -- there's no server-side rule to
+  // enforce here beyond what approve_swap_request already backstops
+  // (it refuses while payment_status is 'pending' regardless of this
+  // button ever being clicked). This just records that the owner actually
+  // received the GCash upcharge before they hit Approve.
+  function confirmSwapPayment(req) {
+    showConfirm('Mark the ₱' + (req.price_diff || 0) + ' upcharge as received for this swap?', { okLabel: 'Confirm Payment' }).then(function (ok) {
+      if (!ok) return;
+      supabase.from('swap_requests').update({ payment_status: 'paid' }).eq('id', req.id).then(function (res) {
+        if (res.error) { showAlert('Could not update: ' + res.error.message); return; }
+        loadAll();
+      });
+    });
+  }
   document.querySelector('#swapsTable tbody').addEventListener('click', function (e) {
     var btn = e.target.closest('button[data-action]');
     if (!btn) return; // copy buttons are handled by the delegated listener above
@@ -853,6 +885,7 @@
     var action = btn.getAttribute('data-action');
     if (action === 'approve-swap') approveSwapRequest(req);
     else if (action === 'decline-swap') declineSwapRequest(req);
+    else if (action === 'confirm-swap-payment') confirmSwapPayment(req);
   });
 
   // A rental created by an approved swap request still needs its new

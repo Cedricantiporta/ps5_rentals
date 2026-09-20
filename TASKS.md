@@ -75,19 +75,21 @@ they're stable in `main` and mentioned in a commit message.
       hamburgers merged into one always-visible toggle beside the topbar
       title, Rentals' Game column capped/truncated so a long title + swap
       pills can't stretch the table.
+- [x] All admin tables' horizontal scrollbar is now always visibly drawn
+      (thin, styled thumb) instead of relying on an auto-hiding OS/overlay
+      scrollbar to reveal that a table can scroll.
+- [x] Swap Requests tab now shows each request's payment status ("Unpaid
+      ₱X" / "Paid ₱X" / "--" for a free swap) and a "Confirm Payment"
+      action (plain `payment_status` column write) for an unpaid upcharge;
+      Approve stays disabled with an explanatory tooltip until that's
+      done -- `approve_swap_request` already refused server-side, this is
+      just the admin UI finally showing that state.
 
-### Migrations the owner still needs to run (Supabase SQL editor, Ctrl+A, Run)
-- `migration_21_guest_name_uses_tracking_code.sql`
-- `migration_20_reservation_queue_fix.sql` (from the previous session, if
-  not already applied)
-- `migration_22_swap_upcharge_payment.sql`
-
-### Still to build
-- Admin-side visibility for a pending swap's `payment_status`/amount due on
-  the Swap Requests tab, plus a "Confirm Payment" action -- `approve_swap_
-  request` already refuses server-side while payment_status is 'pending'
-  (a real backstop), but the admin UI doesn't yet show that state or offer
-  a way to mark it paid.
+### Migrations
+- `migration_21_guest_name_uses_tracking_code.sql` -- run.
+- `migration_22_swap_upcharge_payment.sql` -- run.
+- `migration_20_reservation_queue_fix.sql` -- from the previous session;
+  confirm applied if not sure.
 
 ## Known gap, not yet scheduled
 
