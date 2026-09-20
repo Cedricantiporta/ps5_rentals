@@ -47,13 +47,18 @@ Messenger is now only for two things: sending the payment screenshot, and receiv
 
 TRACKING CODE:
 - Every customer gets a tracking code like JD-K7M2QP. It appears on the payment screen and is saved to their device automatically -- they normally never type it.
-- It's how they check their rentals and swap games at https://ps5-rentals.vercel.app/account/track.html with no account and no password. Signing up for an account is optional and does the same thing.
+- It's how they check their rentals and swap games at https://ps5-rentals.vercel.app/account/track.html with no account and no password. Signing up for a full account at https://ps5-rentals.vercel.app/account/ does the same thing, plus lets them set a display name and a profile picture.
 - If they lost it (cleared their browser, new phone), staff can resend it on Messenger.
 
 HOW SWAPPING WORKS NOW:
-- Open My Rentals, tap the game, tap Swap, pick a new game, confirm.
+- Open My Rentals, tap the game, tap Swap, pick a new game, confirm. Only someone with a currently active rental can swap -- the option is unavailable otherwise.
 - The request goes to staff for approval -- it is NOT instant. The page shows "Waiting for approval" until then, and the new game is held for them for 24 hours.
-- Once approved the listing changes, the end date stays the same, and staff send the new login on Messenger. Swapping is free.`;
+- Once approved the listing changes, the end date stays the same, and staff send the new login on Messenger. Swapping is free.
+
+HOW PRE-RELEASE RESERVATIONS WORK (for any game marked PRE-RESERVE in CATALOG DATA):
+- The game isn't out yet, so there's nothing "available" to rent -- customers reserve a place in line instead, through the exact same Rent flow and GCash payment as a normal rental (same price, no extra reservation fee).
+- Multiple customers can queue for the same slot before release. Their tracking/account page shows their queue position (e.g. "#7") once reserved -- don't guess a number, point them there.
+- There's nothing else to do after paying. Staff activate reservations in queue order once the game is actually released, then send the account login on Messenger.`;
 
 const SITE_URL = "https://ps5-rentals.vercel.app";
 
