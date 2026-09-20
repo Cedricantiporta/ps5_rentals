@@ -1117,21 +1117,37 @@
         p_game_slug: g.slug, p_slot: slotKey, p_plan: state.plan,
         p_renter_id: renterId || null
       };
+      // BUG FIX: this RPC used to always go through getPublicSupabase()'s
+      // client, which is created with persistSession/autoRefreshToken all
+      // false and never carries the customer's session -- so auth.uid() was
+      // NULL for this call even when the customer was genuinely signed in
+      // via window.RCAccount's own (separate) client. create_rental_hold's
+      // is_own_rental(p_renter_id) check therefore NEVER passed for a
+      // signed-in customer, silently falling through to "create/reuse a
+      // guest renter" every time -- the rental never actually linked to
+      // their account, so it never showed up on their My Rentals page even
+      // after the admin approved it. Routing this specific call through
+      // RCAccount.getClient() (the customer-session-bearing client) when
+      // we have a renterId at all means auth.uid() actually resolves
+      // server-side, so is_own_rental() can genuinely verify ownership.
+      var rpcClient = (renterId && window.RCAccount && window.RCAccount.getClient()) || sb;
       // p_public_code lets a returning guest keep one renter row and one
       // tracking code across rentals (migration_18). Harmless when absent or
-      // stale -- the server falls back to creating a renter. Ignored for a
-      // signed-in customer, whose p_renter_id takes priority.
+      // stale -- the server falls back to creating a renter. Still sent even
+      // when signed in, as a safety net: the server already prioritizes a
+      // verified p_renter_id over this, so it only ever matters as a
+      // fallback if is_own_rental() somehow doesn't verify.
       var code = loadTrackCode();
-      if (!code) return sb.rpc('create_rental_hold', args);
+      if (!code) return rpcClient.rpc('create_rental_hold', args);
       args.p_public_code = code;
-      return sb.rpc('create_rental_hold', args).then(function (res) {
+      return rpcClient.rpc('create_rental_hold', args).then(function (res) {
         // Before migration_18 the function has six arguments, so passing a
         // seventh means PostgREST can't resolve it at all. Retry without the
         // code rather than failing outright -- losing the renter-reuse
         // nicety beats losing the rental.
         if (res && res.error) {
           delete args.p_public_code;
-          return sb.rpc('create_rental_hold', args);
+          return rpcClient.rpc('create_rental_hold', args);
         }
         return res;
       });
