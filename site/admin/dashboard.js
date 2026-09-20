@@ -790,10 +790,8 @@
       }
       tr.innerHTML =
         '<td>' + esc(renter.name || 'Unknown') + '<br>' + publicCodeCell(renter) + '</td>' +
-        '<td>' + (fromGame.cover ? '<img class="a-pending-cover" src="' + esc(fromGame.cover) + '" alt="">' : '') +
-          esc(fromGame.title || 'Unknown') + ' (' + (req.from_slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ')</td>' +
-        '<td>' + (toGame.cover ? '<img class="a-pending-cover" src="' + esc(toGame.cover) + '" alt="">' : '') +
-          esc(toGame.title || 'Unknown') + ' (' + (req.to_slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ')</td>' +
+        '<td>' + esc(fromGame.title || 'Unknown') + ' (' + (req.from_slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ')</td>' +
+        '<td>' + esc(toGame.title || 'Unknown') + ' (' + (req.to_slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + ')</td>' +
         '<td>' + (rental ? fmtDate(rental.end_date) : '&mdash;') + '</td>' +
         '<td>' + swapsInfo + '</td>' +
         '<td>' + refCode + '</td>' +
