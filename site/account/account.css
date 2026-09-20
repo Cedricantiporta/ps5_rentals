@@ -484,6 +484,13 @@ body > .footer { flex: none; }
 }
 .rc-account-empty p { margin: 0 0 1.25rem; line-height: 1.5; }
 
+/* one-time first-visit welcome modal (index.html) -- reuses .rc-modal /
+   .rc-modal-body / .rc-modal-cta from catalog.css as-is; this is just the
+   bullet-list content inside it. */
+.rc-welcome-list { margin: 0 0 1.3rem; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.55rem; }
+.rc-welcome-list li { font-size: 0.86rem; line-height: 1.45; color: var(--rc-text-2); }
+.rc-welcome-list li strong { color: var(--rc-text); }
+
 @media (max-width: 480px) {
   .rc-account-card { padding: 1.5rem 1.25rem; }
   .rc-rental-days-badge { padding: 0.4rem 0.7rem; min-width: 3.8rem; }
