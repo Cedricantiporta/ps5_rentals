@@ -46,26 +46,48 @@ they're stable in `main` and mentioned in a commit message.
       (`+₱150`), cheaper descending (`Save ₱100`). **Display only** --
       swapping is still mechanically free; see the still-open question
       below if that's not what's wanted.
-- [x] Admin: "Edit" action (Rentals/Reservations menu, a new icon button on
-      Pending) opens a modal to change a renter's name and/or a rental's
-      note; clicking any editable Notes cell opens the same modal
-      pre-filled. History's Notes column stays read-only, on purpose.
+- [x] Admin: "Edit" action (Rentals/Reservations menu) opens a modal to
+      change a rental's note; renter name+note editing moved onto the
+      Renters tab's own "Edit name / note" menu item (was briefly on
+      Pending Payments, corrected to Renters per owner's follow-up).
+- [x] Add Game: price is a tier picker (4 real catalog price points) instead
+      of four free-typed numbers; "Custom..." still falls back to manual
+      entry.
+- [x] **Critical fix**: signed-in customers' self-serve rentals now always
+      link to their account instead of silently falling back to the
+      tracking-code/guest path (`create_rental_hold` was always called
+      through the anon Supabase client, so `auth.uid()` was never set even
+      when the customer was signed in via the other client -- see
+      `catalog.js`'s `confirmPaymentSent()`).
+- [x] Device-specific tracking code auto-populate on the guest login/track
+      pages -- investigated, already worked correctly; not a bug.
+- [x] Removed game cover thumbnails from the Swap Requests table.
+- [x] Swap price-tier labels are no longer display-only: swapping to a
+      pricier game now actually collects the difference via the same GCash
+      flow a new rental uses ("Add ₱X" -> submit -> payment screen ->
+      "I've Paid"), enforced server-side (`migration_22`). Same-price/
+      cheaper swaps are unaffected -- still free, no label.
+- [x] A rental (including its very first swap) can't be swapped until 24h
+      after it was created -- was already hinted at in the admin dashboard
+      but never actually enforced for the customer-facing RPC; now is
+      (`migration_22`, new `too_new` error code).
+- [x] Admin layout: sidebar narrowed to 188px, the two separate hide/show
+      hamburgers merged into one always-visible toggle beside the topbar
+      title, Rentals' Game column capped/truncated so a long title + swap
+      pills can't stretch the table.
 
 ### Migrations the owner still needs to run (Supabase SQL editor, Ctrl+A, Run)
 - `migration_21_guest_name_uses_tracking_code.sql`
 - `migration_20_reservation_queue_fix.sql` (from the previous session, if
   not already applied)
+- `migration_22_swap_upcharge_payment.sql`
 
-## Open questions for the owner (nothing built yet pending an answer)
-
-1. **Swap price-tier labels** -- currently display-only (see above).
-   Should swapping to a pricier game actually require collecting the price
-   difference before approval? That would be a real new feature (payment
-   UI, admin confirmation step, RPC changes), not a small follow-up --
-   flagging before anyone builds it on spec.
-2. **"Delete" on a rental** -- read as the existing End Rental/Cancel
-   actions (already present), not a new hard-delete. The new Edit action
-   only covers renaming/notes. Confirm this is what was meant.
+### Still to build
+- Admin-side visibility for a pending swap's `payment_status`/amount due on
+  the Swap Requests tab, plus a "Confirm Payment" action -- `approve_swap_
+  request` already refuses server-side while payment_status is 'pending'
+  (a real backstop), but the admin UI doesn't yet show that state or offer
+  a way to mark it paid.
 
 ## Known gap, not yet scheduled
 
