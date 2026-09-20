@@ -33,6 +33,9 @@ they're stable in `main` and mentioned in a commit message.
       first-ever load happens to have zero rows.
 - [x] Chat assistant's system prompt now covers pre-release reservations,
       the full-account profile, and the active-rental-required swap gate.
+- [x] One-time welcome modal on the signed-in account portal's first visit
+      (localStorage-gated, copy is a first pass -- worth the owner's
+      eyeball once seen live).
 
 ### Migrations the owner still needs to run (Supabase SQL editor, Ctrl+A, Run)
 - `migration_21_guest_name_uses_tracking_code.sql`
@@ -86,10 +89,5 @@ Depends on #1 landing first (so there's one swap picker to enhance, not two).
   Rental/Cancel actions (already present), not a new hard-delete -- flag
   to the owner if that's wrong.
 
-### 4. Account page: first-visit welcome/onboarding popup
-A modal shown once on `site/account/index.html`, gated by a localStorage
-flag so it never shows again after the first dismissal. Content: a short
-walkthrough of the account page -- active rentals, tracking code, profile/
-avatar, swap. Owner hasn't supplied exact copy or a design reference; a
-first pass will use plain, short copy matching the rest of the portal's
-tone and can be revised once seen live.
+### 4. ~~Account page: first-visit welcome/onboarding popup~~ -- done
+Moved to "Done this session" above.
