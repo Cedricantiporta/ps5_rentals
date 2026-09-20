@@ -181,6 +181,11 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
    dashboard.js) for anyone who needs to read it in full. */
 th.a-notes-th, td.a-notes-cell { max-width: 14ch; }
 td.a-notes-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Only Rentals/Reservations/Renters' Notes cells open the edit modal on
+   click (see openEditRentalModal()/openEditRenterNoteModal() in
+   dashboard.js) -- History's stays plain text, so the pointer cursor is
+   scoped to just the three editable tables instead of the shared class. */
+#rentalsTable td.a-notes-cell, #reservationsTable td.a-notes-cell, #rentersTable td.a-notes-cell { cursor: pointer; }
 
 /* Generic per-column resize handle -- one thin hit target on the right
    edge of every <th>, added by makeTableResizable() in dashboard.js and
