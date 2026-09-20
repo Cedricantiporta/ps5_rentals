@@ -2041,9 +2041,19 @@
       // Lock in today's rendered (auto-layout) width as each column's
       // starting point *before* switching to table-layout:fixed below, so
       // columns don't all jump to some other distribution the instant
-      // this runs.
+      // this runs. BUT: auto-layout only widens a column to fit whatever
+      // rows exist *right now* -- if this table's very first load happens
+      // to have zero rows (e.g. no pending payments yet), an empty header
+      // like the actions column's measures near-zero and that width gets
+      // baked in forever (_resizableInit below means this only ever runs
+      // once). data-min-width on a <th> (set in dashboard.html for the 5
+      // actions columns, sized to what their real buttons/menu need) is a
+      // floor under that measurement so a table that starts empty doesn't
+      // end up with an unusably-squeezed actions column the first time a
+      // real row actually appears in it.
       var col = document.createElement('col');
-      col.style.width = th.offsetWidth + 'px';
+      var minWidth = parseInt(th.getAttribute('data-min-width'), 10) || 0;
+      col.style.width = Math.max(th.offsetWidth, minWidth) + 'px';
       colgroup.appendChild(col);
       cols.push(col);
     });

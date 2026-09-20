@@ -301,24 +301,20 @@
 
   document.getElementById('rcEditProfileBtn').addEventListener('click', openProfileModal);
 
-  // ---- click-to-open-modal ----
+  // ---- "Swap Game" button ----
   //
-  // Depends on window.RCCatalog.openModal(slug), a hook a parallel agent is
-  // adding to site/assets/catalog.js (this page already loads catalog.js +
-  // catalog.css). That work may not be merged into main yet, so this checks
-  // for the hook every time and no-ops silently if it's missing rather than
-  // erroring -- clicking a rental card should never break just because the
-  // hook hasn't landed.
+  // The card itself is not clickable (an active rental isn't something to
+  // "rent again" by tapping it -- only the dedicated button does anything).
+  // Depends on window.RCCatalog.openModal(slug), a hook site/assets/
+  // catalog.js exports (this page already loads catalog.js + catalog.css);
+  // no-ops silently if it's ever missing rather than erroring.
   function wireCardClicks(gridId) {
     var grid = document.getElementById(gridId);
     if (!grid) return;
     grid.addEventListener('click', function (e) {
-      // The "Swapped N times" <details> inside a card/row has its own
-      // click-to-expand behavior; don't hijack it into opening the modal.
-      if (e.target.closest('.rc-swap-history')) return;
-      var item = e.target.closest('.rc-rental-card, .rc-rental-history-row');
-      if (!item) return;
-      var slug = item.getAttribute('data-game-slug');
+      var btn = e.target.closest('.rc-rental-swap-btn');
+      if (!btn) return;
+      var slug = btn.getAttribute('data-game-slug');
       if (!slug) return;
       if (typeof window.RCCatalog !== 'undefined' && window.RCCatalog.openModal) {
         window.RCCatalog.openModal(slug);
@@ -326,7 +322,6 @@
     });
   }
   wireCardClicks('rcActiveGrid');
-  wireCardClicks('rcHistoryGrid');
 
   function wasSwapped(rentalId, rentals) {
     return rentals.some(function (r) { return r.swapped_from_rental_id === rentalId; });
@@ -391,6 +386,8 @@
           '<div class="rc-rental-dates">' +
             '<strong>' + RCAccount.fmtDate(chainStart) + '</strong> – <strong>' + RCAccount.fmtDate(endDate) + '</strong>' +
           '</div>' +
+          (game.slug ? '<button type="button" class="rc-rental-swap-btn" data-game-slug="' + RCAccount.esc(game.slug) + '">' +
+            RCAccount.icon('refresh-cw') + ' Swap Game</button>' : '') +
           swapHistoryNote(chain) +
         '</div>' +
       '</div>';

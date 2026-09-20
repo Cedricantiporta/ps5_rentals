@@ -191,35 +191,16 @@
   }
 
   // Single delegated click handler shared by both grids: a dedicated
-  // "Swap Game" button keeps doing what it always did (opens the swap
-  // wizard), while a click anywhere else on a card/row opens the game's
-  // rent/swap modal via window.RCCatalog.openModal (see comment below) --
-  // the early `return` after handling the swap button means the two never
-  // both fire for the same click.
+  // The card itself is not clickable (an active rental isn't something to
+  // "rent again" by tapping it, and it was confusing customers into landing
+  // on the New Rental/Swap intent screen for a game they already have) --
+  // only the "Swap Game" button does anything.
   function handleRentalGridClick(e) {
     var btn = e.target.closest('.rc-rental-swap-btn');
-    if (btn) {
-      if (btn.disabled) return;
-      var id = btn.getAttribute('data-rental-id');
-      var rental = currentRentals.filter(function (r) { return String(r.rental_id) === String(id); })[0];
-      if (rental) openSwapModal(rental);
-      return;
-    }
-
-    // Click-to-open-modal: opens the SAME game's rent/swap modal so a
-    // customer can rent again, extend, or start a fresh swap through the
-    // normal catalog flow. Depends on window.RCCatalog.openModal(slug), a
-    // hook a parallel agent is adding to site/assets/catalog.js (this page
-    // already loads catalog.js + catalog.css). That work may not be merged
-    // into main yet, so this checks for the hook every time and no-ops
-    // silently if it's missing rather than erroring.
-    var item = e.target.closest('.rc-rental-card, .rc-rental-history-row');
-    if (!item) return;
-    var slug = item.getAttribute('data-game-slug');
-    if (!slug) return;
-    if (typeof window.RCCatalog !== 'undefined' && window.RCCatalog.openModal) {
-      window.RCCatalog.openModal(slug);
-    }
+    if (!btn || btn.disabled) return;
+    var id = btn.getAttribute('data-rental-id');
+    var rental = currentRentals.filter(function (r) { return String(r.rental_id) === String(id); })[0];
+    if (rental) openSwapModal(rental);
   }
   els.activeGrid.addEventListener('click', handleRentalGridClick);
   els.historyGrid.addEventListener('click', handleRentalGridClick);
