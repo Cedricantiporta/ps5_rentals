@@ -301,6 +301,81 @@
 
   document.getElementById('rcEditProfileBtn').addEventListener('click', openProfileModal);
 
+  // ---- first-visit welcome modal ----
+  //
+  // Shown once, the first time a signed-in customer's account data has
+  // actually finished loading -- init() below only calls
+  // maybeShowWelcomeModal() after a successful rentals fetch, so it never
+  // appears ahead of real data and never fires in the rcUnlinkedState/
+  // rcErrorState early returns. Gated by a localStorage flag so it never
+  // shows again after that. localStorage throws in private-browsing/
+  // storage-blocked modes, so both the read and the write are wrapped
+  // exactly like shared.js's saveGuestCode()/loadGuestCode() -- worst case
+  // a customer whose browser blocks storage sees the tour again next
+  // visit, which is harmless.
+  var WELCOME_SEEN_KEY = 'rc-account-welcome-seen';
+  function hasSeenWelcome() {
+    try { return window.localStorage.getItem(WELCOME_SEEN_KEY) === '1'; } catch (e) { return true; }
+  }
+  function markWelcomeSeen() {
+    try { window.localStorage.setItem(WELCOME_SEEN_KEY, '1'); } catch (e) {}
+  }
+
+  // Same overlay/panel markup + open/close mechanics as ensureProfileModal()/
+  // openProfileModal()/closeProfileModal() above -- separate element IDs so
+  // the two modals never collide, but otherwise a straight copy of the
+  // pattern (backdrop click, X button, Escape key all route through one
+  // close function).
+  function ensureWelcomeModal() {
+    if (document.getElementById('rcWelcomeOverlay')) return;
+    var overlay = document.createElement('div');
+    overlay.className = 'rc-modal-overlay';
+    overlay.id = 'rcWelcomeOverlay';
+    overlay.innerHTML =
+      '<div class="rc-modal" id="rcWelcomeModal">' +
+        '<button type="button" class="rc-modal-close" id="rcWelcomeCloseX" aria-label="Close">' + RCAccount.icon('x') + '</button>' +
+        '<div class="rc-modal-body">' +
+          '<h2 class="rc-modal-title">Welcome to Your Account</h2>' +
+          '<p class="rc-profile-sub" style="margin:0 0 1rem;">Quick tour before you dive in:</p>' +
+          '<ul class="rc-welcome-list">' +
+            '<li><strong>Active Rentals</strong> — see what’s out and how many days you’ve got left.</li>' +
+            '<li><strong>Edit Profile</strong> — set a name and avatar, so it’s not just your tracking code up top.</li>' +
+            '<li><strong>Swap Game</strong> — done with a title early? Tap it on any active rental to trade it in.</li>' +
+            '<li><strong>History</strong> — every past rental, kept below your active ones.</li>' +
+          '</ul>' +
+          '<button type="button" class="rc-modal-cta" id="rcWelcomeGotItBtn">Got it</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeWelcomeModal(); });
+    document.getElementById('rcWelcomeCloseX').addEventListener('click', closeWelcomeModal);
+    document.getElementById('rcWelcomeGotItBtn').addEventListener('click', closeWelcomeModal);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeWelcomeModal();
+    });
+  }
+
+  function openWelcomeModal() {
+    ensureWelcomeModal();
+    document.getElementById('rcWelcomeOverlay').classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Every close path (Got it, X, backdrop, Escape) funnels through here, so
+  // however the customer dismisses it, the flag is set and it won't show
+  // again.
+  function closeWelcomeModal() {
+    var overlay = document.getElementById('rcWelcomeOverlay');
+    if (overlay) overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+    markWelcomeSeen();
+  }
+
+  function maybeShowWelcomeModal() {
+    if (hasSeenWelcome()) return;
+    openWelcomeModal();
+  }
+
   // ---- "Swap Game" button ----
   //
   // The card itself is not clickable (an active rental isn't something to
@@ -489,6 +564,7 @@
             return;
           }
           renderRentals(rentalsRes.data || []);
+          maybeShowWelcomeModal();
         });
     }).catch(function (err) {
       console.error('June Digitals: account load failed', err);
