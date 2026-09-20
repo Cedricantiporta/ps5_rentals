@@ -1639,6 +1639,32 @@
     if (overlay) overlay.addEventListener('click', function (e) { if (e.target === overlay) requestCloseOverlay('share'); });
   }
 
+  // A search typed while on e.g. "Available Now" finds nothing if the
+  // matching game is actually Upcoming/reserved -- the quick-filter chip is
+  // silently hiding it, and the customer has no way to know that's why
+  // their search came up empty. If the current chip has zero matches but
+  // "All" would have some, switch to "All" automatically so the search
+  // actually works; if the current chip already has a match, leave it
+  // alone (no need to jump tabs when the result was already visible), and
+  // if literally nothing matches under any filter, leave it alone too --
+  // that's a real "no such game" empty state, not a wrong-tab problem.
+  function maybeSwitchToAllIfNoMatches() {
+    if (!state.query || state.quickFilter === 'all') return;
+    var genreOk = function (g) { return !state.genre || g.genre.indexOf(state.genre) !== -1; };
+    var matchesCurrentFilter = state.games.some(function (g) {
+      return matchesQuery(g, state.query) && matchesQuickFilter(g, state.quickFilter) && genreOk(g);
+    });
+    if (matchesCurrentFilter) return;
+    var matchesAnyFilter = state.games.some(function (g) { return matchesQuery(g, state.query) && genreOk(g); });
+    if (!matchesAnyFilter) return;
+    state.quickFilter = 'all';
+    var allChip = document.querySelector('.rc-chip[data-filter="all"]');
+    if (allChip) {
+      Array.prototype.forEach.call(document.querySelectorAll('.rc-chip'), function (c) { c.classList.remove('is-active'); });
+      allChip.classList.add('is-active');
+    }
+  }
+
   function wireToolbar() {
     var searchInput = document.getElementById('rcSearch');
     if (!searchInput) return; // no catalog toolbar on this page
@@ -1648,7 +1674,9 @@
       if (searchWrap) searchWrap.classList.toggle('has-value', !!searchInput.value);
     };
     searchInput.addEventListener('input', function (e) {
-      state.query = e.target.value; state.page = 1; renderGrid();
+      state.query = e.target.value; state.page = 1;
+      maybeSwitchToAllIfNoMatches();
+      renderGrid();
       updateClearVisibility();
     });
     if (clearBtn) {
