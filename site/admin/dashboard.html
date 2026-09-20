@@ -54,9 +54,6 @@
     <aside class="a-sidebar">
       <h1 class="a-sidebar-title">
         <img src="/assets/brand/junedigitals-logo-transparent.png" alt="June Digitals" class="a-sidebar-logo">
-        <button type="button" class="a-sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Hide sidebar">
-          <svg viewBox="0 0 20 20" width="16" height="16"><path d="M4 5h12M4 10h12M4 15h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        </button>
       </h1>
       <nav class="a-nav">
         <button class="a-tab" data-tab="overview">Overview</button>
@@ -88,7 +85,7 @@
     <main class="a-main">
     <div class="a-topbar" id="topbar">
       <div class="a-topbar-left">
-        <button type="button" class="a-sidebar-toggle" id="sidebarShowBtn" aria-label="Show sidebar">
+        <button type="button" class="a-sidebar-toggle" id="sidebarShowBtn" aria-label="Toggle sidebar">
           <svg viewBox="0 0 20 20" width="16" height="16"><path d="M4 5h12M4 10h12M4 15h12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
         <div class="a-topbar-info">
@@ -191,7 +188,7 @@
         <table class="a-table" id="rentalsTable">
           <thead>
             <tr>
-              <th data-sort-key="games.title">Game</th><th data-sort-key="renters.name">Renter</th><th data-sort-key="slot">Slot</th><th data-sort-key="plan">Plan</th>
+              <th data-sort-key="games.title" class="a-game-th">Game</th><th data-sort-key="renters.name">Renter</th><th data-sort-key="slot">Slot</th><th data-sort-key="plan">Plan</th>
               <th data-sort-key="status">Status</th><th data-sort-key="payment_status">Payment</th><th data-sort-key="start_date">Start</th><th data-sort-key="end_date">End</th><th data-sort-key="end_date">Time Left</th><th data-sort-key="notes" class="a-notes-th">Notes</th><th class="a-actions-th" data-min-width="56"></th>
             </tr>
           </thead>

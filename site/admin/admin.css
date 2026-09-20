@@ -3,7 +3,7 @@
   --a-text: #1d1d1f; --a-text-2: rgba(29,29,31,.65); --a-text-3: rgba(29,29,31,.42);
   --a-blue: #0071e3; --a-green: #248a3d; --a-red: #d70015; --a-amber: #b25000;
   --a-radius: 1rem; --a-radius-sm: 0.7rem;
-  --a-sidebar-w: 230px;
+  --a-sidebar-w: 188px;
 }
 * { box-sizing: border-box; }
 body {
@@ -18,13 +18,8 @@ a { color: inherit; }
   width: var(--a-sidebar-w); flex: none; background: var(--a-panel); border-right: 1px solid var(--a-border);
   display: flex; flex-direction: column; padding: 1.25rem 0.85rem; position: sticky; top: 0; height: 100vh;
 }
-.a-sidebar-title { display: flex; align-items: center; justify-content: space-between; margin: 0 0 1.25rem; padding: 0 0.5rem; }
-.a-sidebar-logo { height: 26px; width: auto; filter: invert(1); }
-.a-sidebar-collapse-btn {
-  background: transparent; border: none; color: var(--a-text-2); cursor: pointer;
-  width: 1.75rem; height: 1.75rem; border-radius: var(--a-radius-sm); display: flex; align-items: center; justify-content: center; flex: none;
-}
-.a-sidebar-collapse-btn:hover { background: var(--a-panel-2); color: var(--a-text); }
+.a-sidebar-title { display: flex; align-items: center; margin: 0 0 1.25rem; padding: 0 0.5rem; }
+.a-sidebar-logo { width: 150px; height: auto; max-width: 100%; filter: invert(1); }
 .a-user-row { display: flex; align-items: center; gap: 0.6rem; padding: 0 0.5rem; margin-bottom: 0.6rem; }
 .a-avatar {
   width: 30px; height: 30px; border-radius: 50%; background: var(--a-blue); color: #fff;
@@ -65,11 +60,10 @@ a { color: inherit; }
 }
 .a-topbar-left { display: flex; align-items: center; gap: 0.9rem; min-width: 0; }
 .a-sidebar-toggle {
-  display: none; background: transparent; border: none; color: var(--a-text-2); cursor: pointer;
+  display: flex; background: transparent; border: none; color: var(--a-text-2); cursor: pointer;
   width: 2rem; height: 2rem; border-radius: var(--a-radius-sm); align-items: center; justify-content: center; flex: none;
 }
 .a-sidebar-toggle:hover { background: var(--a-panel-2); color: var(--a-text); }
-.a-shell.is-sidebar-collapsed .a-sidebar-toggle { display: flex; }
 .a-shell.is-sidebar-collapsed .a-sidebar { display: none; }
 .a-topbar-info { min-width: 0; }
 .a-topbar-title-row { display: flex; align-items: center; gap: 0.4rem; }
@@ -181,6 +175,11 @@ table.a-table tbody tr:last-child td { border-bottom: none; }
    dashboard.js) for anyone who needs to read it in full. */
 th.a-notes-th, td.a-notes-cell { max-width: 14ch; }
 td.a-notes-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Rentals' Game column: a long title plus its swap-status pills could
+   otherwise stretch the whole table -- same ellipsis-plus-tooltip treatment
+   as Notes above, just wider since titles run longer than notes. */
+th.a-game-th, td.a-game-cell { max-width: 20ch; }
+td.a-game-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Only Rentals/Reservations/Renters' Notes cells open the edit modal on
    click (see openEditRentalModal()/openEditRenterNoteModal() in
    dashboard.js) -- History's stays plain text, so the pointer cursor is

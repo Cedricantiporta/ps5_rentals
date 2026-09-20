@@ -221,8 +221,9 @@
     shellEl.classList.toggle('is-sidebar-collapsed', collapsed);
     try { localStorage.setItem('a_sidebar_collapsed', collapsed ? '1' : '0'); } catch (e) {}
   }
-  $('sidebarCollapseBtn').addEventListener('click', function () { setSidebarCollapsed(true); });
-  $('sidebarShowBtn').addEventListener('click', function () { setSidebarCollapsed(false); });
+  $('sidebarShowBtn').addEventListener('click', function () {
+    setSidebarCollapsed(!shellEl.classList.contains('is-sidebar-collapsed'));
+  });
   try { if (localStorage.getItem('a_sidebar_collapsed') === '1') setSidebarCollapsed(true); } catch (e) {}
 
   // ---- tabs ----
@@ -1046,7 +1047,7 @@
         }
       }
       tr.innerHTML =
-        '<td>' + esc(game.title) + swapInfo + '</td>' +
+        '<td class="a-game-cell" title="' + esc(game.title || '') + '">' + esc(game.title) + swapInfo + '</td>' +
         '<td>' + esc(renter.name) + ' ' + messengerIcon(renterObj && renterObj.messenger_url) + '</td>' +
         '<td>' + (r.slot === 'trophy' ? 'Trophy' : 'Non-Trophy') + '</td>' +
         '<td>' + (r.plan === 'weekly' ? 'Weekly' : 'Monthly') + ' (₱<span data-amount-display>' + r.amount + '</span>' +
