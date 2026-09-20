@@ -7,7 +7,7 @@
     amountManuallyEdited: false, rentalsSearch: '', historySearch: '',
     rentersFilter: 'all', mergeRemoveId: null,
     // Which row + which column the edit-row modal (openEditRentalModal()/
-    // openEditRenterNoteModal()) is currently pointed at -- null when closed.
+    // openEditRenterModal()) is currently pointed at -- null when closed.
     editRow: null,
     // Per-table click-to-sort state -- keyed by table id, e.g.
     // { rentalsTable: { key: 'end_date', dir: 'asc' } }. Not persisted
@@ -125,10 +125,6 @@
   // publicCodeCell()'s tracking-code button is a plain text .a-refcode-btn
   // now, styled/animated the same way the ref-code copy buttons always were.
   var CHECK_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>';
-  // Icon-only Edit affordance on Pending Payments' row (the only actions
-  // column here that's two literal buttons, not an actionsMenu() dropdown --
-  // see renderPending()). Same house style as MESSENGER_ICON/CHECK_ICON above.
-  var EDIT_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>';
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function todayISO() { return new Date().toISOString().slice(0, 10); }
   function addDaysISO(iso, days) {
@@ -663,11 +659,7 @@
         '<td class="a-live-hold">--</td>' +
         '<td class="a-actions-cell">' +
           '<button type="button" class="a-btn a-btn-green" data-action="confirm-paid" data-id="' + r.id + '">Confirm Paid</button> ' +
-          '<button type="button" class="a-btn a-btn-red" data-action="decline" data-id="' + r.id + '">Decline</button> ' +
-          // Pending's row is two literal buttons, not an actionsMenu()
-          // dropdown -- a third icon-only button instead of converting the
-          // whole row, per the owner's ask to keep Confirm Paid/Decline as-is.
-          '<button type="button" class="a-icon-btn" data-action="edit-rental" data-id="' + r.id + '" title="Edit renter name / notes">' + EDIT_ICON + '</button>' +
+          '<button type="button" class="a-btn a-btn-red" data-action="decline" data-id="' + r.id + '">Decline</button>' +
         '</td>';
       tbody.appendChild(tr);
     });
@@ -725,7 +717,6 @@
     var action = btn.getAttribute('data-action');
     if (action === 'confirm-paid') confirmPending(rental);
     else if (action === 'decline') declinePending(rental);
-    else if (action === 'edit-rental') openEditRentalModal(rental);
   });
 
   // ---- swap requests tab (CONTRACT-AMENDMENT-1.md -- swaps no longer
@@ -1592,10 +1583,11 @@
       var activeNow = theirRentals.filter(function (x) { return x.status === 'active'; }).length;
       var tr = document.createElement('tr');
       // See renderRentals()'s identical data-id comment -- read by the
-      // delegated .a-notes-cell click handler (openEditRenterNoteModal()).
+      // delegated .a-notes-cell click handler (openEditRenterModal()).
       tr.setAttribute('data-id', r.id);
       var menuItems = '';
       if (r.messenger_url) menuItems += '<a class="a-menu-item" href="' + esc(r.messenger_url) + '" target="_blank" rel="noopener">Open Messenger</a>';
+      menuItems += '<button type="button" class="a-menu-item" data-action="edit-renter" data-id="' + r.id + '">Edit name / note</button>';
       menuItems += '<button type="button" class="a-menu-item" data-action="edit-messenger-link" data-id="' + r.id + '">' +
         (r.messenger_url ? 'Edit Messenger link' : 'Add Messenger link') + '</button>';
       menuItems += '<button type="button" class="a-menu-item" data-action="merge" data-id="' + r.id + '">Merge into another renter&hellip;</button>';
@@ -1683,6 +1675,13 @@
           loadAll();
         });
       });
+      return;
+    }
+
+    var editRenterBtn = e.target.closest('button[data-action="edit-renter"]');
+    if (editRenterBtn) {
+      var er = state.renters.filter(function (r) { return r.id === Number(editRenterBtn.getAttribute('data-id')); })[0];
+      if (er) openEditRenterModal(er);
       return;
     }
 
@@ -1777,9 +1776,10 @@
 
   // ---- edit-row modal (Rentals/Reservations/Pending "Edit" action, and a
   // click on any editable Notes cell) -- one shared modal shell with two
-  // thin entry points, matching the owner's ask: renaming a renter or
-  // editing rental notes from a rental row, vs. editing a renter's contact
-  // note from the Renters tab where the name already has its own column.
+  // thin entry points: editing a rental's own note from a rental row
+  // (Rentals/Reservations), vs. editing a renter's name/contact note
+  // directly from the Renters tab (its own "Edit name / note" menu item,
+  // or clicking its Notes cell -- both open the same renter-mode modal).
   // state.editRow carries which mode is open and which row(s) Save should
   // write to; cleared on close so a stray Save after Escape can't fire. ----
   function openEditRentalModal(rental) {
@@ -1798,18 +1798,19 @@
     $('editRowModal').hidden = false;
     setTimeout(function () { (renter ? $('editRowNameInput') : $('editRowNoteInput')).focus(); }, 0);
   }
-  function openEditRenterNoteModal(renter) {
-    state.editRow = { mode: 'renterNote', renterId: renter.id };
-    $('editRowTitle').textContent = 'Edit note';
-    // Renters tab already shows Name as its own column/action -- editing it
-    // from a note click would be a confusing second path to the same field,
-    // so this mode never shows the name input at all.
-    $('editRowNameField').style.display = 'none';
+  // Renters tab -- edits the renter directly (name + contact_note), not a
+  // specific rental. Reachable from the row's "Edit name / note" menu item
+  // and from clicking the row's Notes cell -- both land here.
+  function openEditRenterModal(renter) {
+    state.editRow = { mode: 'renter', renterId: renter.id };
+    $('editRowTitle').textContent = 'Edit renter';
+    $('editRowNameField').style.display = '';
+    $('editRowNameInput').value = renter.name || '';
     $('editRowNoteLabel').textContent = 'Contact note';
     $('editRowNoteInput').value = renter.contact_note || '';
     $('editRowBackdrop').hidden = false;
     $('editRowModal').hidden = false;
-    setTimeout(function () { $('editRowNoteInput').focus(); }, 0);
+    setTimeout(function () { $('editRowNameInput').focus(); }, 0);
   }
   function closeEditRowModal() {
     state.editRow = null;
@@ -1822,8 +1823,10 @@
     var ctx = state.editRow;
     if (!ctx) return;
     var noteVal = $('editRowNoteInput').value.trim() || null;
-    if (ctx.mode === 'renterNote') {
-      supabase.from('renters').update({ contact_note: noteVal }).eq('id', ctx.renterId).then(function (res) {
+    if (ctx.mode === 'renter') {
+      var renterNameVal = $('editRowNameInput').value.trim();
+      if (!renterNameVal) { showAlert('Renter name cannot be blank.'); return; }
+      supabase.from('renters').update({ name: renterNameVal, contact_note: noteVal }).eq('id', ctx.renterId).then(function (res) {
         if (res.error) { showAlert(res.error.message); return; }
         closeEditRowModal();
         loadAll();
@@ -1860,7 +1863,7 @@
     if (!id) return;
     if (table.id === 'rentersTable') {
       var renterForNote = state.renters.filter(function (r) { return r.id === id; })[0];
-      if (renterForNote) openEditRenterNoteModal(renterForNote);
+      if (renterForNote) openEditRenterModal(renterForNote);
     } else if (table.id === 'rentalsTable' || table.id === 'reservationsTable') {
       var rentalForNote = state.rentals.filter(function (r) { return r.id === id; })[0];
       if (rentalForNote) openEditRentalModal(rentalForNote);
