@@ -468,12 +468,12 @@ body > .footer { flex: none; }
 .rc-swap-game-slots .rc-slot-option { min-width: 92px; padding: 0.45rem 0.65rem; border-radius: 0.43rem; background: var(--rc-panel-2); border: none; cursor: pointer; text-align: left; }
 .rc-swap-game-slots .rc-slot-option-name { font-size: 0.72rem; }
 .rc-swap-game-slots .rc-slot-option-price { font-size: 0.65rem; }
-/* price-relative-to-current-rental tag next to a swap candidate's title --
-   display only, the swap itself stays free/unchanged (see openSwapModal's
-   comment in shared.js). Omitted entirely for a same-price (lateral) swap. */
+/* Upcharge tag next to a pricier swap candidate's title -- same-price and
+   cheaper candidates show no tag (still free), only a pricier one does,
+   since only that case requires paying the difference before submitting
+   (see renderSwapUpcharge()/requiresUpcharge() in shared.js). */
 .rc-swap-price-tag { font-size: 0.7rem; font-weight: 700; margin-left: 0.4rem; white-space: nowrap; }
 .rc-swap-price-tag.rc-swap-price-more { color: var(--rc-red); }
-.rc-swap-price-tag.rc-swap-price-less { color: var(--rc-green); }
 
 .rc-account-empty {
   text-align: center;

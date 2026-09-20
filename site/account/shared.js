@@ -272,6 +272,22 @@
   // caller to refresh until the customer has read that and clicked through.
   // ---------------------------------------------------------------------
   var SWAP_MESSENGER_URL = 'https://m.me/junedigitalaccess';
+  var publicSettingsCache = null;
+  // Only needed for the upcharge payment screen (renderSwapUpcharge) --
+  // fetched lazily there instead of on every modal open, since most swaps
+  // never need it. Cached for the rest of the page's life like
+  // swapGamesCache below; settings don't change mid-session.
+  function getPublicSettingsForSwap() {
+    if (publicSettingsCache) return Promise.resolve(publicSettingsCache);
+    var sb = getClient();
+    if (!sb) return Promise.reject(new Error('no supabase client'));
+    return sb.rpc('get_public_settings').then(function (res) {
+      if (res.error) throw res.error;
+      var row = Array.isArray(res.data) ? res.data[0] : res.data;
+      publicSettingsCache = row || {};
+      return publicSettingsCache;
+    });
+  }
   var swapState = { rental: null, opts: null, selected: null, games: null, fromPrice: null };
   var swapGamesCache = null;
 
@@ -306,18 +322,15 @@
     return (p === null || p === undefined) ? null : p;
   }
 
-  // Display-only tag, per the owner's request to show swap candidates
-  // relative to the price of the rental being swapped out of -- the swap
-  // itself stays free/unchanged no matter what this says (submit_swap_
-  // request never charges or credits a price difference); it's here only
-  // so a customer isn't surprised by what a "free" swap actually gets them.
+  // A cheaper/lateral swap is still free (no label, nothing to flag) --
+  // only a PRICIER game gets a label, since only that case now actually
+  // requires the customer to pay the difference before the swap is
+  // submitted (see requiresUpcharge()/renderSwapUpcharge below).
   function swapPriceTag(price, fromPrice) {
     if (price == null || fromPrice == null) return '';
     var diff = price - fromPrice;
-    if (diff === 0) return '';
-    return diff > 0
-      ? ' <span class="rc-swap-price-tag rc-swap-price-more">+' + peso(diff) + '</span>'
-      : ' <span class="rc-swap-price-tag rc-swap-price-less">Save ' + peso(-diff) + '</span>';
+    if (diff <= 0) return '';
+    return ' <span class="rc-swap-price-tag rc-swap-price-more">Add ' + peso(diff) + '</span>';
   }
 
   function ensureSwapModal() {
@@ -369,12 +382,14 @@
     '</button>';
   }
 
-  // Groups the picker into same-price / pricier / cheaper tiers relative to
-  // the current rental's own plan price (owner's request) -- a lateral
-  // (same-price) swap gets no tag, only a difference is worth flagging.
-  // Falls back to the plain, untagged, unsorted list if the current game's
-  // price can't be found (e.g. it's since been removed from the catalog)
-  // rather than showing a comparison that might be wrong.
+  // Groups the picker into same-price / cheaper / pricier tiers relative to
+  // the current rental's own plan price (owner's request) -- same-price and
+  // cheaper swaps are still free and listed first with no label; pricier
+  // ones (which now require paying the difference, see requiresUpcharge())
+  // are pushed to the end, labeled with the upcharge. Falls back to the
+  // plain, untagged, unsorted list if the current game's price can't be
+  // found (e.g. it's since been removed from the catalog) rather than
+  // showing a comparison that might be wrong.
   function renderSwapGameList(query) {
     var list = document.getElementById('rcSwapGameList');
     if (!list) return;
@@ -400,7 +415,7 @@
       });
       pricier.sort(function (a, b) { return swapGamePrice(a, r.plan) - swapGamePrice(b, r.plan); });
       cheaper.sort(function (a, b) { return swapGamePrice(b, r.plan) - swapGamePrice(a, r.plan); });
-      rows = same.concat(pricier, cheaper);
+      rows = same.concat(cheaper, pricier);
     }
 
     list.innerHTML = rows.map(function (g) {
@@ -458,13 +473,28 @@
   function renderSwapConfirm() {
     var body = document.getElementById('rcSwapBody');
     var r = swapState.rental, s = swapState.selected;
+    // Client-side estimate only, for a heads-up before submitting -- the
+    // authoritative price_diff comes back from submit_swap_request itself
+    // (server-computed from the catalog, never trusted from here) and is
+    // what actually decides whether renderSwapUpcharge shows afterward.
+    var estDiff = null;
+    if (swapState.fromPrice != null && swapState.games) {
+      var selGame = swapState.games.filter(function (g) { return g.slug === s.slug; })[0];
+      if (selGame) {
+        var p = swapGamePrice(selGame, r.plan);
+        if (p != null) estDiff = p - swapState.fromPrice;
+      }
+    }
+    var upchargeNote = estDiff > 0
+      ? '<p class="rc-account-sub" style="margin:0 0 1.25rem;">This costs an extra ' + peso(estDiff) + ' -- you\'ll send that via GCash before this can be approved.</p>'
+      : '<p class="rc-account-sub" style="margin:0 0 1.25rem;">This submits a swap request -- it isn\'t instant. Our admin reviews it and messages you once it\'s approved with the new account details.</p>';
     body.innerHTML =
       '<h2 class="rc-modal-title">Confirm Swap</h2>' +
       '<p class="rc-modal-note" style="text-align:left;margin-bottom:0.5rem;">' +
         '<strong>' + esc(r.game_title) + '</strong> (' + slotName(r.slot) + ') &rarr; ' +
         '<strong>' + esc(s.title) + '</strong> (' + slotName(s.slot) + ')' +
       '</p>' +
-      '<p class="rc-account-sub" style="margin:0 0 1.25rem;">This submits a swap request -- it isn\'t instant. Our admin reviews it and messages you once it\'s approved with the new account details.</p>' +
+      upchargeNote +
       '<button type="button" class="rc-modal-cta" id="rcSwapConfirmBtn">Confirm Swap</button>' +
       '<button type="button" class="rc-account-signout" id="rcSwapBackBtn" style="width:100%;margin-top:0.6rem;">Back</button>' +
       '<p class="rc-account-error" id="rcSwapConfirmError"></p>';
@@ -482,6 +512,7 @@
       case 'slot_unavailable': return 'That slot just became unavailable. Pick another.';
       case 'same_game': return 'Pick a different game or slot than what you already have.';
       case 'already_pending': return 'You already have a swap request waiting for approval.';
+      case 'too_new': return 'Swaps open up 24 hours after your rental starts.';
       default: return 'Something went wrong with that swap request. Please try again or message us on Messenger.';
     }
   }
@@ -520,6 +551,61 @@
     });
   }
 
+  // Shown instead of renderSwapResult() when the swap request came back
+  // with price_diff > 0 -- the target slot is already held (same as any
+  // swap request), but this one also needs the difference paid via GCash
+  // before the admin will approve it (approve_swap_request refuses to
+  // approve while payment_status is still 'pending', enforced server-side,
+  // not just by this screen existing).
+  function renderSwapUpcharge(row) {
+    var body = document.getElementById('rcSwapBody');
+    body.innerHTML =
+      '<h2 class="rc-modal-title">Send Payment via GCash</h2>' +
+      '<p class="rc-modal-note" style="text-align:left;margin:0 0 1rem;">' +
+        '<strong>' + esc(row.from_game_title || '') + '</strong> &rarr; <strong>' + esc(row.to_game_title || '') + '</strong> (' + slotName(row.to_slot) + ')' +
+      '</p>' +
+      '<p class="rc-account-sub">Loading payment details&hellip;</p>';
+
+    getPublicSettingsForSwap().then(function (settings) {
+      var gcashNumber = settings.gcash_number, gcashName = settings.gcash_name;
+      // Same rc-pay-* markup/classes as catalog.js's rental payment screen
+      // (this page already loads catalog.css) so the two payment screens
+      // look identical instead of a second, slightly-different design.
+      body.innerHTML =
+        '<h2 class="rc-modal-title">Send Payment via GCash</h2>' +
+        '<p class="rc-modal-note" style="text-align:left;margin:0 0 1rem;">' +
+          '<strong>' + esc(row.from_game_title || '') + '</strong> &rarr; <strong>' + esc(row.to_game_title || '') + '</strong> (' + slotName(row.to_slot) + ')' +
+        '</p>' +
+        '<div class="rc-pay-summary">' +
+          '<div class="rc-pay-row rc-pay-row-amount"><span>Amount Due</span><b>' + peso(row.price_diff) + '</b></div>' +
+        '</div>' +
+        '<div class="rc-pay-gcash">' +
+          '<div class="rc-pay-field">' +
+            '<span class="rc-pay-field-label">GCash Number</span>' +
+            '<div class="rc-pay-field-row"><span class="rc-pay-field-value">' + esc(gcashNumber || '—') + '</span></div>' +
+          '</div>' +
+          '<div class="rc-pay-field">' +
+            '<span class="rc-pay-field-label">GCash Name</span>' +
+            '<div class="rc-pay-field-row"><span class="rc-pay-field-value">' + esc(gcashName || '—') + '</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<p class="rc-pay-instruction">Send ' + peso(row.price_diff) + ' to this number, mentioning reference <strong>' + esc(row.swap_ref_code || '') + '</strong>, then tap the button below. Our admin confirms it and messages you the new account details once it\'s approved.</p>' +
+        '<button type="button" class="rc-modal-cta rc-pay-cta" id="rcSwapUpchargePaidBtn">' + icon('message-circle') + ' I\'ve Paid -- Message Us</button>';
+
+      document.getElementById('rcSwapUpchargePaidBtn').addEventListener('click', function () {
+        var text = 'Hi! I just swapped to "' + row.to_game_title + '" (' + slotName(row.to_slot) +
+          ') and sent the ' + peso(row.price_diff) + ' upcharge via GCash. Swap reference: ' + row.swap_ref_code + '.';
+        window.location.href = SWAP_MESSENGER_URL + '?text=' + encodeURIComponent(text);
+      });
+    }, function (err) {
+      console.warn('June Digitals: loading settings for swap upcharge failed', err);
+      body.innerHTML =
+        '<h2 class="rc-modal-title">Send Payment via GCash</h2>' +
+        '<p class="rc-account-sub">Amount due ' + peso(row.price_diff) + ', reference <strong>' + esc(row.swap_ref_code || '') + '</strong>. Message us on Messenger and we\'ll send the GCash details.</p>' +
+        '<a href="' + SWAP_MESSENGER_URL + '" target="_blank" class="rc-guide-cta" style="display:block;text-align:center;">Message Us</a>';
+    });
+  }
+
   function submitSwap() {
     var btn = document.getElementById('rcSwapConfirmBtn');
     var errEl = document.getElementById('rcSwapConfirmError');
@@ -550,7 +636,8 @@
         errEl.textContent = mapSwapError(row.error);
         return;
       }
-      renderSwapResult(row);
+      if (row.price_diff > 0) renderSwapUpcharge(row);
+      else renderSwapResult(row);
     }, function (err) {
       console.warn('June Digitals: submit_swap_request call failed', err);
       renderSwapUnavailable();
