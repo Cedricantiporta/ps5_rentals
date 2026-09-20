@@ -393,13 +393,31 @@
             <div class="a-field"><label>Trophy status</label>
               <select id="gTrophyAvailable"><option value="true">Available</option><option value="false">Full</option></select>
             </div>
-            <div class="a-field"><label for="gTrophyWeekly">Trophy weekly (PHP)</label><input id="gTrophyWeekly" type="number" min="0"></div>
-            <div class="a-field"><label for="gTrophyMonthly">Trophy monthly (PHP)</label><input id="gTrophyMonthly" type="number" min="0"></div>
-          </div>
-          <div class="a-form-row a-form-row-3">
             <div class="a-field"><label>Non-Trophy status</label>
               <select id="gNontrophyAvailable"><option value="true">Available</option><option value="false">Full</option></select>
             </div>
+            <!-- Trophy/Non-Trophy are always priced identically across the
+                 whole catalog (every existing game -- see seed_games.sql),
+                 and the business only ever uses these 4 tiers -- a single
+                 preset picks all four price columns at once instead of
+                 typing four numbers by hand and risking a typo/mismatch.
+                 "Custom..." reveals the original four inputs for the rare
+                 game that needs to break from a tier. -->
+            <div class="a-field"><label for="gPriceTier">Price tier</label>
+              <select id="gPriceTier">
+                <option value="199|599">₱199/week &middot; ₱599/month</option>
+                <option value="249|699">₱249/week &middot; ₱699/month</option>
+                <option value="299|799">₱299/week &middot; ₱799/month</option>
+                <option value="349|899">₱349/week &middot; ₱899/month</option>
+                <option value="custom">Custom&hellip;</option>
+              </select>
+            </div>
+          </div>
+          <div class="a-form-row a-form-row-3" id="gCustomPriceRow" hidden>
+            <div class="a-field"><label for="gTrophyWeekly">Trophy weekly (PHP)</label><input id="gTrophyWeekly" type="number" min="0"></div>
+            <div class="a-field"><label for="gTrophyMonthly">Trophy monthly (PHP)</label><input id="gTrophyMonthly" type="number" min="0"></div>
+          </div>
+          <div class="a-form-row a-form-row-3" id="gCustomPriceRow2" hidden>
             <div class="a-field"><label for="gNontrophyWeekly">Non-Trophy weekly (PHP)</label><input id="gNontrophyWeekly" type="number" min="0"></div>
             <div class="a-field"><label for="gNontrophyMonthly">Non-Trophy monthly (PHP)</label><input id="gNontrophyMonthly" type="number" min="0"></div>
           </div>

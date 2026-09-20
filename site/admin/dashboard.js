@@ -1966,6 +1966,14 @@
     });
   }
 
+  if ($('gPriceTier')) {
+    $('gPriceTier').addEventListener('change', function () {
+      var isCustom = $('gPriceTier').value === 'custom';
+      $('gCustomPriceRow').hidden = !isCustom;
+      $('gCustomPriceRow2').hidden = !isCustom;
+    });
+  }
+
   if ($('addGameForm')) {
     $('addGameForm').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -1979,24 +1987,42 @@
       var btn = $('addGameBtn');
       btn.disabled = true;
 
+      // Price tier picks all four price columns at once (Trophy/Non-Trophy
+      // are always identical across the catalog) -- "Custom..." falls back
+      // to the four typed inputs for the rare game that needs to differ.
+      var tier = $('gPriceTier').value;
+      var trophyWeekly, trophyMonthly, nontrophyWeekly, nontrophyMonthly;
+      if (tier === 'custom') {
+        trophyWeekly = Number($('gTrophyWeekly').value) || null;
+        trophyMonthly = Number($('gTrophyMonthly').value) || null;
+        nontrophyWeekly = Number($('gNontrophyWeekly').value) || null;
+        nontrophyMonthly = Number($('gNontrophyMonthly').value) || null;
+      } else {
+        var parts = tier.split('|');
+        trophyWeekly = nontrophyWeekly = Number(parts[0]);
+        trophyMonthly = nontrophyMonthly = Number(parts[1]);
+      }
+
       Promise.resolve(file ? uploadCover(file, slug) : null).then(function (coverUrl) {
         return supabase.from('games').insert({
           slug: slug, title: title, genre: genre, platform: $('gPlatform').value.trim() || 'PS5',
           cover: coverUrl || null, release_date: $('gReleaseDate').value || null, status: status,
           upcoming_order: Number($('gUpcomingOrder').value) || 99999,
           trophy_available: $('gTrophyAvailable').value === 'true',
-          trophy_weekly: Number($('gTrophyWeekly').value) || null,
-          trophy_monthly: Number($('gTrophyMonthly').value) || null,
+          trophy_weekly: trophyWeekly,
+          trophy_monthly: trophyMonthly,
           trophy_reservation_status: $('gTrophyReservation').value,
           nontrophy_available: $('gNontrophyAvailable').value === 'true',
-          nontrophy_weekly: Number($('gNontrophyWeekly').value) || null,
-          nontrophy_monthly: Number($('gNontrophyMonthly').value) || null,
+          nontrophy_weekly: nontrophyWeekly,
+          nontrophy_monthly: nontrophyMonthly,
           nontrophy_reservation_status: $('gNontrophyReservation').value
         });
       }).then(function (res) {
         if (res.error) throw res.error;
         $('addGameForm').reset();
         $('gReservationRow').hidden = true;
+        $('gCustomPriceRow').hidden = true;
+        $('gCustomPriceRow2').hidden = true;
         closeAddGameModal();
         loadAll();
       }).catch(function (err) {
