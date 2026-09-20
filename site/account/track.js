@@ -187,7 +187,6 @@
     show(els.historyEmpty, historyRows.length === 0);
   }
 
-  // Single delegated click handler shared by both grids: a dedicated
   // The card itself is not clickable (an active rental isn't something to
   // "rent again" by tapping it, and it was confusing customers into landing
   // on the New Rental/Swap intent screen for a game they already have) --
