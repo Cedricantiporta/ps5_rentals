@@ -248,6 +248,315 @@
     return chain;
   }
 
+  // ---- swap modal -- shared by track.js's guest portal and index.html's
+  // signed-in portal, both of which call submit_swap_request() per
+  // RENT-FLOW-CONTRACT.md / CONTRACT-AMENDMENT-1. Previously each portal
+  // had its own copy; track.js's was the correct, complete one (index.html
+  // just opened the general catalog rent modal's old static-Messenger swap
+  // path) so this is that implementation, moved here and adapted to accept
+  // either portal's rental shape.
+  //
+  // Callers pass a normalized `rental` object with only the fields both
+  // portals can trivially supply: { rental_id, ref_code, game_slug,
+  // game_title, slot, plan }. ref_code alone is enough to authenticate
+  // the swap -- submit_swap_request's p_code also accepts a renter's
+  // public_code, but this specific rental's own ref_code is on both
+  // portals' rental rows already (lookup_rentals_by_code's flat columns,
+  // and index.html's raw `rentals.*` select) and scopes identically, since
+  // p_rental_id already pins the exact rental (see code_matches() in
+  // migration_16_swap_and_lookup.sql).
+  //
+  // opts.onSwapped(row), if given, fires when the customer dismisses the
+  // "Swap Requested" screen -- not immediately on submit, since a swap
+  // request only ever lands in an admin queue here; there's nothing for a
+  // caller to refresh until the customer has read that and clicked through.
+  // ---------------------------------------------------------------------
+  var SWAP_MESSENGER_URL = 'https://m.me/junedigitalaccess';
+  var swapState = { rental: null, opts: null, selected: null, games: null, fromPrice: null };
+  var swapGamesCache = null;
+
+  // Mirrors assets/catalog.js's loadGames() is_test filter so the picker
+  // matches the live public catalog. During manual testing, feed fake rows
+  // straight into swapState.games instead of relying on this filter, so
+  // zz-test-game-a/b aren't hidden.
+  function loadSwapGames() {
+    if (swapGamesCache) return Promise.resolve(swapGamesCache);
+    var sb = getClient();
+    if (!sb) return Promise.reject(new Error('no supabase client'));
+    return sb.from('games').select('*').then(function (res) {
+      if (res.error) throw res.error;
+      swapGamesCache = res.data.filter(function (row) { return row.is_test !== true; }).map(function (row) {
+        return {
+          slug: row.slug, title: row.title, cover: row.cover,
+          trophy_available: row.trophy_available, nontrophy_available: row.nontrophy_available,
+          trophy_weekly: row.trophy_weekly, trophy_monthly: row.trophy_monthly
+        };
+      });
+      return swapGamesCache;
+    });
+  }
+
+  // trophy_/nontrophy_ prices are identical for every game in this catalog
+  // (see seed_games.sql) -- trophy_* is used as the one representative
+  // price per game+plan for the picker's grouping/sort/tag. If a game is
+  // ever priced differently per slot, this needs to move to a per-slot-
+  // button price instead of one tag per game row.
+  function swapGamePrice(g, plan) {
+    var p = plan === 'monthly' ? g.trophy_monthly : g.trophy_weekly;
+    return (p === null || p === undefined) ? null : p;
+  }
+
+  // Display-only tag, per the owner's request to show swap candidates
+  // relative to the price of the rental being swapped out of -- the swap
+  // itself stays free/unchanged no matter what this says (submit_swap_
+  // request never charges or credits a price difference); it's here only
+  // so a customer isn't surprised by what a "free" swap actually gets them.
+  function swapPriceTag(price, fromPrice) {
+    if (price == null || fromPrice == null) return '';
+    var diff = price - fromPrice;
+    if (diff === 0) return '';
+    return diff > 0
+      ? ' <span class="rc-swap-price-tag rc-swap-price-more">+' + peso(diff) + '</span>'
+      : ' <span class="rc-swap-price-tag rc-swap-price-less">Save ' + peso(-diff) + '</span>';
+  }
+
+  function ensureSwapModal() {
+    if (document.getElementById('rcSwapOverlay')) return;
+    var overlay = document.createElement('div');
+    overlay.className = 'rc-modal-overlay';
+    overlay.id = 'rcSwapOverlay';
+    overlay.innerHTML =
+      '<div class="rc-modal" id="rcSwapModal">' +
+        '<button type="button" class="rc-modal-close" id="rcSwapCloseX" aria-label="Close">' + icon('x') + '</button>' +
+        '<div class="rc-modal-body" id="rcSwapBody"></div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeSwapModal(); });
+    document.getElementById('rcSwapCloseX').addEventListener('click', closeSwapModal);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeSwapModal();
+    });
+  }
+
+  function openSwapModal(rental, opts) {
+    ensureSwapModal();
+    swapState.rental = rental;
+    swapState.opts = opts || {};
+    swapState.selected = null;
+    swapState.fromPrice = null;
+    document.getElementById('rcSwapOverlay').classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    renderSwapPick();
+  }
+
+  function closeSwapModal() {
+    var overlay = document.getElementById('rcSwapOverlay');
+    if (overlay) overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  function swapSlotBtn(g, slotKey) {
+    var available = slotKey === 'trophy' ? g.trophy_available : g.nontrophy_available;
+    var isCurrent = swapState.rental.game_slug === g.slug && swapState.rental.slot === slotKey;
+    var disabled = !available || isCurrent;
+    return '<button type="button" class="rc-slot-option' + (disabled ? ' is-disabled' : '') + '"' +
+      (disabled ? ' disabled' : '') +
+      ' data-slug="' + esc(g.slug) + '" data-slot="' + slotKey + '"' +
+      ' data-title="' + esc(g.title) + '" data-cover="' + esc(g.cover || '') + '">' +
+      '<div class="rc-slot-option-top"><span class="rc-slot-option-name">' + slotName(slotKey) + '</span></div>' +
+      '<span class="rc-slot-option-price">' + (isCurrent ? 'Current' : (available ? 'Available' : 'Unavailable')) + '</span>' +
+    '</button>';
+  }
+
+  // Groups the picker into same-price / pricier / cheaper tiers relative to
+  // the current rental's own plan price (owner's request) -- a lateral
+  // (same-price) swap gets no tag, only a difference is worth flagging.
+  // Falls back to the plain, untagged, unsorted list if the current game's
+  // price can't be found (e.g. it's since been removed from the catalog)
+  // rather than showing a comparison that might be wrong.
+  function renderSwapGameList(query) {
+    var list = document.getElementById('rcSwapGameList');
+    if (!list) return;
+    var r = swapState.rental;
+    var all = swapState.games || [];
+    var q = (query || '').trim().toLowerCase();
+    var games = q ? all.filter(function (g) { return g.title.toLowerCase().indexOf(q) !== -1; }) : all;
+
+    if (!games.length) {
+      list.innerHTML = '<p class="rc-account-sub">No games match.</p>';
+      return;
+    }
+
+    var fromPrice = swapState.fromPrice;
+    var rows = games;
+    if (fromPrice != null) {
+      var same = [], pricier = [], cheaper = [];
+      games.forEach(function (g) {
+        var p = swapGamePrice(g, r.plan);
+        if (p == null || p === fromPrice) same.push(g);
+        else if (p > fromPrice) pricier.push(g);
+        else cheaper.push(g);
+      });
+      pricier.sort(function (a, b) { return swapGamePrice(a, r.plan) - swapGamePrice(b, r.plan); });
+      cheaper.sort(function (a, b) { return swapGamePrice(b, r.plan) - swapGamePrice(a, r.plan); });
+      rows = same.concat(pricier, cheaper);
+    }
+
+    list.innerHTML = rows.map(function (g) {
+      var tag = fromPrice != null ? swapPriceTag(swapGamePrice(g, r.plan), fromPrice) : '';
+      return '' +
+        '<div class="rc-swap-game-row">' +
+          '<img class="rc-swap-game-cover" loading="lazy" src="' + esc(g.cover || '') + '" alt="">' +
+          '<p class="rc-swap-game-title">' + esc(g.title) + tag + '</p>' +
+          '<div class="rc-swap-game-slots">' + swapSlotBtn(g, 'trophy') + swapSlotBtn(g, 'nontrophy') + '</div>' +
+        '</div>';
+    }).join('');
+
+    Array.prototype.forEach.call(list.querySelectorAll('.rc-slot-option:not(.is-disabled)'), function (btn) {
+      btn.addEventListener('click', function () {
+        swapState.selected = {
+          slug: btn.getAttribute('data-slug'),
+          slot: btn.getAttribute('data-slot'),
+          title: btn.getAttribute('data-title'),
+          cover: btn.getAttribute('data-cover')
+        };
+        renderSwapConfirm();
+      });
+    });
+  }
+
+  function renderSwapPick() {
+    var body = document.getElementById('rcSwapBody');
+    var r = swapState.rental;
+    body.innerHTML =
+      '<h2 class="rc-modal-title">Swap Game</h2>' +
+      '<p class="rc-modal-note" style="text-align:left;margin:0 0 1rem;">Swapping out <strong>' +
+        esc(r.game_title) + '</strong> (' + slotName(r.slot) + '). Pick a new game and slot.</p>' +
+      '<div class="rc-search" style="margin-bottom:1rem;">' +
+        '<span class="rc-search-icon">' + icon('search') + '</span>' +
+        '<input id="rcSwapSearch" type="text" placeholder="Search games...">' +
+      '</div>' +
+      '<div id="rcSwapGameList" class="rc-swap-game-list"><p class="rc-account-sub">Loading games...</p></div>';
+
+    document.getElementById('rcSwapSearch').addEventListener('input', function (e) {
+      renderSwapGameList(e.target.value);
+    });
+
+    loadSwapGames().then(function (games) {
+      swapState.games = games;
+      var fromGame = games.filter(function (g) { return g.slug === r.game_slug; })[0];
+      swapState.fromPrice = fromGame ? swapGamePrice(fromGame, r.plan) : null;
+      renderSwapGameList('');
+    }, function (err) {
+      console.warn('June Digitals: loading games for swap picker failed', err);
+      var list = document.getElementById('rcSwapGameList');
+      if (list) list.innerHTML = '<p class="rc-account-error">Couldn\'t load the game list. Please try again, or message us on Messenger.</p>';
+    });
+  }
+
+  function renderSwapConfirm() {
+    var body = document.getElementById('rcSwapBody');
+    var r = swapState.rental, s = swapState.selected;
+    body.innerHTML =
+      '<h2 class="rc-modal-title">Confirm Swap</h2>' +
+      '<p class="rc-modal-note" style="text-align:left;margin-bottom:0.5rem;">' +
+        '<strong>' + esc(r.game_title) + '</strong> (' + slotName(r.slot) + ') &rarr; ' +
+        '<strong>' + esc(s.title) + '</strong> (' + slotName(s.slot) + ')' +
+      '</p>' +
+      '<p class="rc-account-sub" style="margin:0 0 1.25rem;">This submits a swap request -- it isn\'t instant. Our admin reviews it and messages you once it\'s approved with the new account details.</p>' +
+      '<button type="button" class="rc-modal-cta" id="rcSwapConfirmBtn">Confirm Swap</button>' +
+      '<button type="button" class="rc-account-signout" id="rcSwapBackBtn" style="width:100%;margin-top:0.6rem;">Back</button>' +
+      '<p class="rc-account-error" id="rcSwapConfirmError"></p>';
+
+    document.getElementById('rcSwapBackBtn').addEventListener('click', renderSwapPick);
+    document.getElementById('rcSwapConfirmBtn').addEventListener('click', submitSwap);
+  }
+
+  function mapSwapError(code) {
+    switch (code) {
+      case 'not_found': return "We couldn't find that rental.";
+      case 'not_active': return "This rental isn't active, so it can't be swapped.";
+      case 'too_close_to_end': return 'Your rental ends too soon to swap.';
+      case 'swap_limit_reached': return "You've used all your swaps for this rental.";
+      case 'slot_unavailable': return 'That slot just became unavailable. Pick another.';
+      case 'same_game': return 'Pick a different game or slot than what you already have.';
+      case 'already_pending': return 'You already have a swap request waiting for approval.';
+      default: return 'Something went wrong with that swap request. Please try again or message us on Messenger.';
+    }
+  }
+
+  function renderSwapUnavailable() {
+    var body = document.getElementById('rcSwapBody');
+    body.innerHTML =
+      '<h2 class="rc-modal-title">Swap Requests Aren\'t Live Yet</h2>' +
+      '<p class="rc-account-sub">This feature isn\'t set up on our end just yet. Message us on Messenger and we\'ll take care of the swap for you.</p>' +
+      '<a href="' + SWAP_MESSENGER_URL + '" target="_blank" class="rc-guide-cta" style="display:block;text-align:center;">Message Us</a>' +
+      '<button type="button" class="rc-account-signout" id="rcSwapDoneBtn" style="width:100%;margin-top:0.6rem;">Close</button>';
+    document.getElementById('rcSwapDoneBtn').addEventListener('click', closeSwapModal);
+  }
+
+  // Per the swap-flow amendment: ok=true means SUBMITTED, not done. Never
+  // claim the swap happened -- show a pending confirmation with the swap
+  // reference code, and keep Messenger as a secondary "ask about this" link,
+  // never as the way to submit.
+  function renderSwapResult(row) {
+    var body = document.getElementById('rcSwapBody');
+    body.innerHTML =
+      '<h2 class="rc-modal-title">Swap Requested</h2>' +
+      '<p class="rc-account-notice" style="margin:0 0 1rem;">Reference code <strong>' + esc(row.swap_ref_code || '') + '</strong></p>' +
+      '<p class="rc-modal-note" style="text-align:left;">' +
+        '<strong>' + esc(row.from_game_title || '') + '</strong> &rarr; <strong>' + esc(row.to_game_title || '') + '</strong> (' + slotName(row.to_slot) + ')' +
+      '</p>' +
+      '<p class="rc-account-sub">Not done yet -- our admin will review this and message you the new account details once it\'s approved. Swaps left: ' +
+        (row.swaps_left != null ? row.swaps_left : '—') + '.</p>' +
+      '<a href="' + SWAP_MESSENGER_URL + '" target="_blank" class="rc-guide-cta" style="display:block;text-align:center;margin-bottom:0.6rem;">Message Us About This</a>' +
+      '<button type="button" class="rc-account-signout" id="rcSwapDoneBtn" style="width:100%;">Close</button>';
+
+    document.getElementById('rcSwapDoneBtn').addEventListener('click', function () {
+      var onSwapped = swapState.opts && swapState.opts.onSwapped;
+      closeSwapModal();
+      if (onSwapped) onSwapped(row);
+    });
+  }
+
+  function submitSwap() {
+    var btn = document.getElementById('rcSwapConfirmBtn');
+    var errEl = document.getElementById('rcSwapConfirmError');
+    var r = swapState.rental, s = swapState.selected;
+    var sb = getClient();
+    if (!sb) { renderSwapUnavailable(); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+    errEl.textContent = '';
+
+    sb.rpc('submit_swap_request', {
+      p_code: r.ref_code,
+      p_rental_id: r.rental_id,
+      p_new_game_slug: s.slug,
+      p_new_slot: s.slot
+    }).then(function (res) {
+      if (res.error) {
+        console.warn('June Digitals: submit_swap_request unavailable (migration not applied yet?)', res.error);
+        renderSwapUnavailable();
+        return;
+      }
+      var row = Array.isArray(res.data) ? res.data[0] : res.data;
+      if (!row) { renderSwapUnavailable(); return; }
+      if (!row.ok) {
+        btn.disabled = false;
+        btn.textContent = 'Confirm Swap';
+        errEl.textContent = mapSwapError(row.error);
+        return;
+      }
+      renderSwapResult(row);
+    }, function (err) {
+      console.warn('June Digitals: submit_swap_request call failed', err);
+      renderSwapUnavailable();
+    });
+  }
+
   // Nav link ("Sign in" <-> "My Account"). Any element in the page tagged
   // data-rc-account-link gets its text/href updated once we know whether a
   // customer session exists. Fails silently (leaves the signed-out default
@@ -372,7 +681,8 @@
     paymentInfo: paymentInfo,
     icon: icon,
     esc: esc,
-    swapChain: swapChain
+    swapChain: swapChain,
+    openSwapModal: openSwapModal
   };
 
   if (document.readyState === 'loading') {

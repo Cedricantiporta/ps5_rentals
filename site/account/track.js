@@ -18,7 +18,6 @@
 
   if (!window.RCAccount) return;
 
-  var MESSENGER_URL = 'https://m.me/junedigitalaccess';
   // RENT-FLOW-CONTRACT.md: "swap_count < SWAP_LIMIT (2)". The RPC enforces
   // this server-side; this is only used to show "swaps left" on a card.
   var SWAP_LIMIT = 2;
@@ -42,8 +41,6 @@
 
   var currentCode = '';
   var currentRentals = [];
-  var gamesCache = null;
-  var swapState = { rental: null, selected: null, games: null };
 
   function show(el, on) { if (el) el.style.display = on ? '' : 'none'; }
 
@@ -190,7 +187,6 @@
     show(els.historyEmpty, historyRows.length === 0);
   }
 
-  // Single delegated click handler shared by both grids: a dedicated
   // The card itself is not clickable (an active rental isn't something to
   // "rent again" by tapping it, and it was confusing customers into landing
   // on the New Rental/Swap intent screen for a game they already have) --
@@ -200,243 +196,19 @@
     if (!btn || btn.disabled) return;
     var id = btn.getAttribute('data-rental-id');
     var rental = currentRentals.filter(function (r) { return String(r.rental_id) === String(id); })[0];
-    if (rental) openSwapModal(rental);
+    // rental_id/ref_code/game_slug/game_title/slot/plan are exactly the
+    // fields RCAccount.openSwapModal's shared implementation needs, and
+    // lookup_rentals_by_code already returns them under those same names --
+    // no adapting required here (see shared.js's swap-modal comment for why
+    // index.html, whose rental rows look different, needs a small mapper).
+    if (rental) {
+      RCAccount.openSwapModal(rental, {
+        onSwapped: function () { if (currentCode) doLookup(currentCode, true); }
+      });
+    }
   }
   els.activeGrid.addEventListener('click', handleRentalGridClick);
   els.historyGrid.addEventListener('click', handleRentalGridClick);
-
-  // ---- swap games list (copied from assets/catalog.js's loadGames(), not
-  // imported -- this file only owns site/account/. Keeps the same
-  // client-side is_test filter so the picker matches the live catalog;
-  // during manual testing, feed fake game rows straight into swapState.games
-  // instead of relying on this filter, so zz-test-game-a/b aren't hidden. ----
-
-  function loadSwapGames() {
-    if (gamesCache) return Promise.resolve(gamesCache);
-    var sb = RCAccount.getClient();
-    if (!sb) return Promise.reject(new Error('no supabase client'));
-    return sb.from('games').select('*').then(function (res) {
-      if (res.error) throw res.error;
-      gamesCache = res.data.filter(function (row) { return row.is_test !== true; }).map(function (row) {
-        return {
-          slug: row.slug, title: row.title, cover: row.cover,
-          trophy_available: row.trophy_available, nontrophy_available: row.nontrophy_available
-        };
-      });
-      return gamesCache;
-    });
-  }
-
-  // ---- swap modal ----
-
-  function ensureSwapModal() {
-    if (document.getElementById('rcSwapOverlay')) return;
-    var overlay = document.createElement('div');
-    overlay.className = 'rc-modal-overlay';
-    overlay.id = 'rcSwapOverlay';
-    overlay.innerHTML =
-      '<div class="rc-modal" id="rcSwapModal">' +
-        '<button type="button" class="rc-modal-close" id="rcSwapCloseX" aria-label="Close">' + RCAccount.icon('x') + '</button>' +
-        '<div class="rc-modal-body" id="rcSwapBody"></div>' +
-      '</div>';
-    document.body.appendChild(overlay);
-
-    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeSwapModal(); });
-    document.getElementById('rcSwapCloseX').addEventListener('click', closeSwapModal);
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeSwapModal();
-    });
-  }
-
-  function openSwapModal(rental) {
-    ensureSwapModal();
-    swapState.rental = rental;
-    swapState.selected = null;
-    document.getElementById('rcSwapOverlay').classList.add('is-open');
-    document.body.style.overflow = 'hidden';
-    renderSwapPick();
-  }
-
-  function closeSwapModal() {
-    var overlay = document.getElementById('rcSwapOverlay');
-    if (overlay) overlay.classList.remove('is-open');
-    document.body.style.overflow = '';
-  }
-
-  function swapSlotBtn(g, slotKey) {
-    var available = slotKey === 'trophy' ? g.trophy_available : g.nontrophy_available;
-    var isCurrent = swapState.rental.game_slug === g.slug && swapState.rental.slot === slotKey;
-    var disabled = !available || isCurrent;
-    return '<button type="button" class="rc-slot-option' + (disabled ? ' is-disabled' : '') + '"' +
-      (disabled ? ' disabled' : '') +
-      ' data-slug="' + RCAccount.esc(g.slug) + '" data-slot="' + slotKey + '"' +
-      ' data-title="' + RCAccount.esc(g.title) + '" data-cover="' + RCAccount.esc(g.cover || '') + '">' +
-      '<div class="rc-slot-option-top"><span class="rc-slot-option-name">' + RCAccount.slotName(slotKey) + '</span></div>' +
-      '<span class="rc-slot-option-price">' + (isCurrent ? 'Current' : (available ? 'Available' : 'Unavailable')) + '</span>' +
-    '</button>';
-  }
-
-  function renderSwapGameList(query) {
-    var list = document.getElementById('rcSwapGameList');
-    if (!list) return;
-    var games = swapState.games || [];
-    var q = (query || '').trim().toLowerCase();
-    if (q) games = games.filter(function (g) { return g.title.toLowerCase().indexOf(q) !== -1; });
-
-    if (!games.length) {
-      list.innerHTML = '<p class="rc-account-sub">No games match.</p>';
-      return;
-    }
-
-    list.innerHTML = games.map(function (g) {
-      return '' +
-        '<div class="rc-swap-game-row">' +
-          '<img class="rc-swap-game-cover" loading="lazy" src="' + RCAccount.esc(g.cover || '') + '" alt="">' +
-          '<p class="rc-swap-game-title">' + RCAccount.esc(g.title) + '</p>' +
-          '<div class="rc-swap-game-slots">' + swapSlotBtn(g, 'trophy') + swapSlotBtn(g, 'nontrophy') + '</div>' +
-        '</div>';
-    }).join('');
-
-    Array.prototype.forEach.call(list.querySelectorAll('.rc-slot-option:not(.is-disabled)'), function (btn) {
-      btn.addEventListener('click', function () {
-        swapState.selected = {
-          slug: btn.getAttribute('data-slug'),
-          slot: btn.getAttribute('data-slot'),
-          title: btn.getAttribute('data-title'),
-          cover: btn.getAttribute('data-cover')
-        };
-        renderSwapConfirm();
-      });
-    });
-  }
-
-  function renderSwapPick() {
-    var body = document.getElementById('rcSwapBody');
-    var r = swapState.rental;
-    body.innerHTML =
-      '<h2 class="rc-modal-title">Swap Game</h2>' +
-      '<p class="rc-modal-note" style="text-align:left;margin:0 0 1rem;">Swapping out <strong>' +
-        RCAccount.esc(r.game_title) + '</strong> (' + RCAccount.slotName(r.slot) + '). Pick a new game and slot.</p>' +
-      '<div class="rc-search" style="margin-bottom:1rem;">' +
-        '<span class="rc-search-icon">' + RCAccount.icon('search') + '</span>' +
-        '<input id="rcSwapSearch" type="text" placeholder="Search games...">' +
-      '</div>' +
-      '<div id="rcSwapGameList" class="rc-swap-game-list"><p class="rc-account-sub">Loading games...</p></div>';
-
-    document.getElementById('rcSwapSearch').addEventListener('input', function (e) {
-      renderSwapGameList(e.target.value);
-    });
-
-    loadSwapGames().then(function (games) {
-      swapState.games = games;
-      renderSwapGameList('');
-    }, function (err) {
-      console.warn('June Digitals: loading games for swap picker failed', err);
-      var list = document.getElementById('rcSwapGameList');
-      if (list) list.innerHTML = '<p class="rc-account-error">Couldn\'t load the game list. Please try again, or message us on Messenger.</p>';
-    });
-  }
-
-  function renderSwapConfirm() {
-    var body = document.getElementById('rcSwapBody');
-    var r = swapState.rental, s = swapState.selected;
-    body.innerHTML =
-      '<h2 class="rc-modal-title">Confirm Swap</h2>' +
-      '<p class="rc-modal-note" style="text-align:left;margin-bottom:0.5rem;">' +
-        '<strong>' + RCAccount.esc(r.game_title) + '</strong> (' + RCAccount.slotName(r.slot) + ') &rarr; ' +
-        '<strong>' + RCAccount.esc(s.title) + '</strong> (' + RCAccount.slotName(s.slot) + ')' +
-      '</p>' +
-      '<p class="rc-account-sub" style="margin:0 0 1.25rem;">This submits a swap request -- it isn\'t instant. Our admin reviews it and messages you once it\'s approved with the new account details.</p>' +
-      '<button type="button" class="rc-modal-cta" id="rcSwapConfirmBtn">Confirm Swap</button>' +
-      '<button type="button" class="rc-account-signout" id="rcSwapBackBtn" style="width:100%;margin-top:0.6rem;">Back</button>' +
-      '<p class="rc-account-error" id="rcSwapConfirmError"></p>';
-
-    document.getElementById('rcSwapBackBtn').addEventListener('click', renderSwapPick);
-    document.getElementById('rcSwapConfirmBtn').addEventListener('click', submitSwap);
-  }
-
-  function mapSwapError(code) {
-    switch (code) {
-      case 'not_found': return "We couldn't find that rental.";
-      case 'not_active': return "This rental isn't active, so it can't be swapped.";
-      case 'too_close_to_end': return 'Your rental ends too soon to swap.';
-      case 'swap_limit_reached': return "You've used all your swaps for this rental.";
-      case 'slot_unavailable': return 'That slot just became unavailable. Pick another.';
-      case 'same_game': return 'Pick a different game or slot than what you already have.';
-      case 'already_pending': return 'You already have a swap request waiting for approval.';
-      default: return 'Something went wrong with that swap request. Please try again or message us on Messenger.';
-    }
-  }
-
-  function renderSwapUnavailable() {
-    var body = document.getElementById('rcSwapBody');
-    body.innerHTML =
-      '<h2 class="rc-modal-title">Swap Requests Aren\'t Live Yet</h2>' +
-      '<p class="rc-account-sub">This feature isn\'t set up on our end just yet. Message us on Messenger and we\'ll take care of the swap for you.</p>' +
-      '<a href="' + MESSENGER_URL + '" target="_blank" class="rc-guide-cta" style="display:block;text-align:center;">Message Us</a>' +
-      '<button type="button" class="rc-account-signout" id="rcSwapDoneBtn" style="width:100%;margin-top:0.6rem;">Close</button>';
-    document.getElementById('rcSwapDoneBtn').addEventListener('click', closeSwapModal);
-  }
-
-  // Per the swap-flow amendment: ok=true means SUBMITTED, not done. Never
-  // claim the swap happened -- show a pending confirmation with the swap
-  // reference code, and keep Messenger as a secondary "ask about this" link,
-  // never as the way to submit.
-  function renderSwapResult(row) {
-    var body = document.getElementById('rcSwapBody');
-    body.innerHTML =
-      '<h2 class="rc-modal-title">Swap Requested</h2>' +
-      '<p class="rc-account-notice" style="margin:0 0 1rem;">Reference code <strong>' + RCAccount.esc(row.swap_ref_code || '') + '</strong></p>' +
-      '<p class="rc-modal-note" style="text-align:left;">' +
-        '<strong>' + RCAccount.esc(row.from_game_title || '') + '</strong> &rarr; <strong>' + RCAccount.esc(row.to_game_title || '') + '</strong> (' + RCAccount.slotName(row.to_slot) + ')' +
-      '</p>' +
-      '<p class="rc-account-sub">Not done yet -- our admin will review this and message you the new account details once it\'s approved. Swaps left: ' +
-        (row.swaps_left != null ? row.swaps_left : '—') + '.</p>' +
-      '<a href="' + MESSENGER_URL + '" target="_blank" class="rc-guide-cta" style="display:block;text-align:center;margin-bottom:0.6rem;">Message Us About This</a>' +
-      '<button type="button" class="rc-account-signout" id="rcSwapDoneBtn" style="width:100%;">Close</button>';
-
-    document.getElementById('rcSwapDoneBtn').addEventListener('click', function () {
-      closeSwapModal();
-      if (currentCode) doLookup(currentCode, true);
-    });
-  }
-
-  function submitSwap() {
-    var btn = document.getElementById('rcSwapConfirmBtn');
-    var errEl = document.getElementById('rcSwapConfirmError');
-    var r = swapState.rental, s = swapState.selected;
-    var sb = RCAccount.getClient();
-    if (!sb) { renderSwapUnavailable(); return; }
-
-    btn.disabled = true;
-    btn.textContent = 'Submitting...';
-    errEl.textContent = '';
-
-    sb.rpc('submit_swap_request', {
-      p_code: currentCode,
-      p_rental_id: r.rental_id,
-      p_new_game_slug: s.slug,
-      p_new_slot: s.slot
-    }).then(function (res) {
-      if (res.error) {
-        console.warn('June Digitals: submit_swap_request unavailable (migration not applied yet?)', res.error);
-        renderSwapUnavailable();
-        return;
-      }
-      var row = Array.isArray(res.data) ? res.data[0] : res.data;
-      if (!row) { renderSwapUnavailable(); return; }
-      if (!row.ok) {
-        btn.disabled = false;
-        btn.textContent = 'Confirm Swap';
-        errEl.textContent = mapSwapError(row.error);
-        return;
-      }
-      renderSwapResult(row);
-    }, function (err) {
-      console.warn('June Digitals: submit_swap_request call failed', err);
-      renderSwapUnavailable();
-    });
-  }
 
   // ---- entry form / forget / init ----
 

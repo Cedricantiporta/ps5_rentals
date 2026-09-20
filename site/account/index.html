@@ -380,20 +380,38 @@
   //
   // The card itself is not clickable (an active rental isn't something to
   // "rent again" by tapping it -- only the dedicated button does anything).
-  // Depends on window.RCCatalog.openModal(slug), a hook site/assets/
-  // catalog.js exports (this page already loads catalog.js + catalog.css);
-  // no-ops silently if it's ever missing rather than erroring.
+  // Opens RCAccount's shared swap modal (shared.js) -- the same RPC-backed
+  // implementation track.js's guest portal uses -- rather than the old
+  // path of opening catalog.js's general rent modal, whose "swap" option
+  // was just a static pre-filled Messenger message, not a real request.
+  //
+  // The button only carries a rental id (see renderActiveCard below); the
+  // rest of what openSwapModal needs is looked up here from
+  // currentActiveByRentalId, populated by renderRentals each time it runs.
+  var currentActiveByRentalId = {};
   function wireCardClicks(gridId) {
     var grid = document.getElementById(gridId);
     if (!grid) return;
     grid.addEventListener('click', function (e) {
       var btn = e.target.closest('.rc-rental-swap-btn');
       if (!btn) return;
-      var slug = btn.getAttribute('data-game-slug');
-      if (!slug) return;
-      if (typeof window.RCCatalog !== 'undefined' && window.RCCatalog.openModal) {
-        window.RCCatalog.openModal(slug);
-      }
+      var rental = currentActiveByRentalId[btn.getAttribute('data-rental-id')];
+      if (!rental) return;
+      var game = rental.games || {};
+      RCAccount.openSwapModal({
+        rental_id: rental.id,
+        ref_code: rental.ref_code,
+        game_slug: game.slug,
+        game_title: game.title,
+        slot: rental.slot,
+        plan: rental.plan
+      }, {
+        // This portal has no in-place refresh for a single rental's swap
+        // state (swap_count / pending flags) the way track.js's doLookup
+        // re-fetch does -- a full reload is the simplest way to reflect
+        // them correctly rather than duplicating that fetch logic here.
+        onSwapped: function () { window.location.reload(); }
+      });
     });
   }
   wireCardClicks('rcActiveGrid');
@@ -461,7 +479,7 @@
           '<div class="rc-rental-dates">' +
             '<strong>' + RCAccount.fmtDate(chainStart) + '</strong> – <strong>' + RCAccount.fmtDate(endDate) + '</strong>' +
           '</div>' +
-          (game.slug ? '<button type="button" class="rc-rental-swap-btn" data-game-slug="' + RCAccount.esc(game.slug) + '">' +
+          (game.slug ? '<button type="button" class="rc-rental-swap-btn" data-rental-id="' + RCAccount.esc(current.id) + '">' +
             RCAccount.icon('refresh-cw') + ' Swap Game</button>' : '') +
           swapHistoryNote(chain) +
         '</div>' +
@@ -515,6 +533,12 @@
     });
     historyChains.sort(function (a, b) {
       return new Date(b[b.length - 1].end_date) - new Date(a[a.length - 1].end_date);
+    });
+
+    currentActiveByRentalId = {};
+    activeChains.forEach(function (c) {
+      var cur = c[c.length - 1];
+      currentActiveByRentalId[cur.id] = cur;
     });
 
     document.getElementById('rcActiveGrid').innerHTML = activeChains.map(renderActiveCard).join('');
